@@ -48,9 +48,10 @@ app.get('/api/health', (_req, res) => {
 })
 
 app.post('/api/login', (req, res) => {
+  const username = typeof req.body?.username === 'string' ? req.body.username.trim() : ''
   const password = typeof req.body?.password === 'string' ? req.body.password : ''
-  if (password !== env.statsPassword) {
-    res.status(401).json({ error: 'Invalid password' })
+  if (username !== env.statsUsername || password !== env.statsPassword) {
+    res.status(401).json({ error: 'Invalid username or password' })
     return
   }
   res.json({ token: signToken() })

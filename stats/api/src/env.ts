@@ -14,6 +14,7 @@ export const env = {
     'DATABASE_URL',
     'postgres://magies_shell:magies_shell@127.0.0.1:5432/magies_shell_stats',
   ),
+  statsUsername: required('STATS_USERNAME', 'Magies'),
   statsPassword: required('STATS_PASSWORD', 'MagiesStats2026!'),
   jwtSecret: required('JWT_SECRET', 'magies-shell-stats-jwt-change-me'),
   corsOrigins: (process.env.CORS_ORIGINS || 'https://shell.magies.top,https://shell-stats.magies.top,http://localhost:5174,http://localhost:5175')

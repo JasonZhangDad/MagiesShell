@@ -83,8 +83,9 @@ function renderLogin(error = ''): void {
     <div class="login-page">
       <form class="login-card" data-login>
         <h1>MagiesShell Stats</h1>
-        <p>输入访问密码进入运营大屏</p>
+        <p>输入用户名和密码进入运营大屏</p>
         <p class="login-error">${error}</p>
+        <input type="text" name="username" placeholder="Username" autocomplete="username" required />
         <input type="password" name="password" placeholder="Password" autocomplete="current-password" required />
         <button type="submit">进入大屏</button>
       </form>
@@ -93,17 +94,19 @@ function renderLogin(error = ''): void {
   app.querySelector('[data-login]')?.addEventListener('submit', async (event) => {
     event.preventDefault()
     const form = event.target as HTMLFormElement
-    const password = new FormData(form).get('password')
+    const data = new FormData(form)
+    const username = data.get('username')
+    const password = data.get('password')
     try {
       const result = await api<{ token: string }>('/api/login', {
         method: 'POST',
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ username, password }),
       })
       token = result.token
       localStorage.setItem(TOKEN_KEY, token)
       await renderDashboard()
     } catch {
-      renderLogin('密码错误')
+      renderLogin('用户名或密码错误')
     }
   })
 }
