@@ -162,15 +162,13 @@ const copy = {
     changeOs: '重新选择系统',
     recommended: '推荐',
     unavailable: '暂无该资源',
-    unsignedTitle: '未签名版本注意事项',
+    unsignedTitle: '安装后首次打开',
     unsignedMac: {
-      lead: '当前 macOS 安装包尚未公证签名，首次打开可能被系统拦截，可按以下任一方式授权：',
-      steps: [
-        '在「访达」中右键点击 App → 选择「打开」→ 再点「打开」。',
-        '或打开「系统设置 → 隐私与安全性」，在被拦截提示处点击「仍要打开」。',
-        '或在终端执行（将路径换成实际位置）：',
-      ],
-      command: 'xattr -cr /Applications/MagiesTerminal.app',
+      lead: '拖入「应用程序」后，在「终端」执行下面这一条即可（新系统通常没有「仍要打开」）：',
+      command:
+        'sudo xattr -cr /Applications/MagiesTerminal.app && open /Applications/MagiesTerminal.app',
+      copyLabel: '复制命令',
+      copiedLabel: '已复制',
     },
     unsignedWin: {
       lead: '当前 Windows 安装包尚未代码签名，SmartScreen 可能提示“未知发布者”，可按以下方式继续：',
@@ -225,15 +223,13 @@ const copy = {
     changeOs: 'Change OS',
     recommended: 'Recommended',
     unavailable: 'Unavailable',
-    unsignedTitle: 'Unsigned build notice',
+    unsignedTitle: 'After installing on macOS',
     unsignedMac: {
-      lead: 'The macOS build is not notarized yet. Gatekeeper may block the first launch — authorize it with any of these steps:',
-      steps: [
-        'In Finder, Control-click the app → Open → Open again.',
-        'Or go to System Settings → Privacy & Security, then click Open Anyway.',
-        'Or run this in Terminal (adjust the path if needed):',
-      ],
-      command: 'xattr -cr /Applications/MagiesTerminal.app',
+      lead: 'After dragging into Applications, run this one command in Terminal (newer macOS often has no Open Anyway):',
+      command:
+        'sudo xattr -cr /Applications/MagiesTerminal.app && open /Applications/MagiesTerminal.app',
+      copyLabel: 'Copy command',
+      copiedLabel: 'Copied',
     },
     unsignedWin: {
       lead: 'The Windows build is not code-signed yet. SmartScreen may warn about an unknown publisher — continue with:',
@@ -337,10 +333,20 @@ function renderUnsignedNotice(lang: Lang, os: OsId): string {
   if (os !== 'mac' && os !== 'win') return ''
   const t = copy[lang]
   const notice = os === 'mac' ? t.unsignedMac : t.unsignedWin
-  const command =
-    'command' in notice
-      ? `<pre class="unsigned-command"><code>${notice.command}</code></pre>`
-      : ''
+
+  if (os === 'mac' && 'command' in notice) {
+    return `
+    <aside class="unsigned-notice" data-reveal>
+      <p class="unsigned-title">${t.unsignedTitle}</p>
+      <p class="unsigned-lead">${notice.lead}</p>
+      <div class="unsigned-command-row">
+        <pre class="unsigned-command"><code data-install-command>${notice.command}</code></pre>
+        <button type="button" class="btn btn-ghost unsigned-copy" data-copy-install-command>${notice.copyLabel}</button>
+      </div>
+    </aside>`
+  }
+
+  if (!('steps' in notice)) return ''
 
   return `
     <aside class="unsigned-notice" data-reveal>
@@ -349,7 +355,6 @@ function renderUnsignedNotice(lang: Lang, os: OsId): string {
       <ol class="unsigned-steps">
         ${notice.steps.map((step) => `<li>${step}</li>`).join('')}
       </ol>
-      ${command}
     </aside>`
 }
 
@@ -608,6 +613,34 @@ function bindDownload(root: HTMLElement, lang: Lang): void {
         downloadArch: arch || null,
         downloadFile: asset?.name || link.getAttribute('href') || id,
       })
+    })
+  })
+
+  root.querySelectorAll<HTMLButtonElement>('[data-copy-install-command]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const command =
+        root.querySelector<HTMLElement>('[data-install-command]')?.textContent?.trim() || ''
+      if (!command) return
+      const t = copy[lang].unsignedMac
+      try {
+        await navigator.clipboard.writeText(command)
+        btn.textContent = t.copiedLabel
+      } catch {
+        // Fallback for older browsers / insecure contexts
+        const area = document.createElement('textarea')
+        area.value = command
+        area.setAttribute('readonly', '')
+        area.style.position = 'fixed'
+        area.style.left = '-9999px'
+        document.body.appendChild(area)
+        area.select()
+        document.execCommand('copy')
+        document.body.removeChild(area)
+        btn.textContent = t.copiedLabel
+      }
+      window.setTimeout(() => {
+        btn.textContent = t.copyLabel
+      }, 1600)
     })
   })
 }
