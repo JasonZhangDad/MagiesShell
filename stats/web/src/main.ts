@@ -107,18 +107,24 @@ function renderLogin(error = ''): void {
   app.querySelector('[data-login]')?.addEventListener('submit', async (event) => {
     event.preventDefault()
     const form = event.target as HTMLFormElement
+    const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]')
     const data = new FormData(form)
     const username = data.get('username')
     const password = data.get('password')
+    if (submitBtn) {
+      submitBtn.disabled = true
+      submitBtn.textContent = '登录中…'
+    }
     try {
-      const result = await api<{ token: string }>('/api/login', {
+      const result = await api<{ token: string }>('/login', {
         method: 'POST',
         body: JSON.stringify({ username, password }),
       })
       token = result.token
       localStorage.setItem(TOKEN_KEY, token)
       await renderDashboard()
-    } catch {
+    } catch (error) {
+      console.error(error)
       renderLogin('用户名或密码错误')
     }
   })
@@ -198,16 +204,16 @@ async function renderDashboard(): Promise<void> {
   try {
     const [overview, visitDay, downloadDay, visitMonth, downloadMonth, geoVisit, geoDownload, devices, breakdown, recent] =
       await Promise.all([
-        api<Overview>('/api/overview'),
-        api<SeriesPoint[]>('/api/timeseries?metric=visits&grain=day&days=30'),
-        api<SeriesPoint[]>('/api/timeseries?metric=downloads&grain=day&days=30'),
-        api<SeriesPoint[]>('/api/timeseries?metric=visits&grain=month'),
-        api<SeriesPoint[]>('/api/timeseries?metric=downloads&grain=month'),
-        api<GeoRow[]>('/api/geo?type=visit'),
-        api<GeoRow[]>('/api/geo?type=download'),
-        api<{ os: NamedCount[]; device: NamedCount[]; browser: NamedCount[] }>('/api/devices'),
-        api<Breakdown[]>('/api/downloads/breakdown'),
-        api<RecentRow[]>('/api/recent'),
+        api<Overview>('/overview'),
+        api<SeriesPoint[]>('/timeseries?metric=visits&grain=day&days=30'),
+        api<SeriesPoint[]>('/timeseries?metric=downloads&grain=day&days=30'),
+        api<SeriesPoint[]>('/timeseries?metric=visits&grain=month'),
+        api<SeriesPoint[]>('/timeseries?metric=downloads&grain=month'),
+        api<GeoRow[]>('/geo?type=visit'),
+        api<GeoRow[]>('/geo?type=download'),
+        api<{ os: NamedCount[]; device: NamedCount[]; browser: NamedCount[] }>('/devices'),
+        api<Breakdown[]>('/downloads/breakdown'),
+        api<RecentRow[]>('/recent'),
       ])
 
     app.innerHTML = `
@@ -390,7 +396,7 @@ async function boot(): Promise<void> {
     return
   }
   try {
-    await api('/api/overview')
+    await api('/overview')
     await renderDashboard()
     window.setInterval(() => {
       if (token) void renderDashboard()
