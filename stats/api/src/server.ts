@@ -4,7 +4,7 @@ import { env } from './env.js'
 import { query } from './db.js'
 import { requireAuth, signToken } from './auth.js'
 import { lookupGeo, maskIp, resolveClientIp } from './geo.js'
-import { parseUa } from './ua.js'
+import { parseUa, pickBestUa } from './ua.js'
 import {
   getDownloadBreakdown,
   getDevices,
@@ -66,7 +66,10 @@ app.post('/api/track', async (req, res) => {
     }
 
     const eventType = req.body?.eventType === 'download' ? 'download' : 'page_view'
-    const ua = typeof req.body?.ua === 'string' ? req.body.ua : req.headers['user-agent'] || ''
+    const ua = pickBestUa(
+      typeof req.body?.ua === 'string' ? req.body.ua : null,
+      typeof req.headers['user-agent'] === 'string' ? req.headers['user-agent'] : null,
+    )
     const device = parseUa(ua)
     const geo = lookupGeo(ip)
 

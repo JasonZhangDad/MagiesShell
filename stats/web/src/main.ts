@@ -259,8 +259,19 @@ async function renderDashboard(): Promise<void> {
 
         <section class="chart-grid">
           <article class="panel">
-            <h2>设备 / 系统分布</h2>
+            <h2>设备类型分布</h2>
+            <div class="chart" data-chart="device"></div>
+          </article>
+          <article class="panel">
+            <h2>操作系统分布</h2>
             <div class="chart" data-chart="os"></div>
+          </article>
+        </section>
+
+        <section class="chart-grid">
+          <article class="panel">
+            <h2>浏览器分布</h2>
+            <div class="chart" data-chart="browser"></div>
           </article>
           <article class="panel">
             <h2>下载包类型分布</h2>
@@ -269,11 +280,7 @@ async function renderDashboard(): Promise<void> {
         </section>
 
         <section class="bottom-grid">
-          <article class="panel">
-            <h2>浏览器分布</h2>
-            <div class="chart" data-chart="browser"></div>
-          </article>
-          <article class="panel">
+          <article class="panel" style="grid-column: 1 / -1">
             <h2>最近事件</h2>
             <div class="scroll-panel">
               <table class="recent-table">
@@ -291,6 +298,9 @@ async function renderDashboard(): Promise<void> {
                   ${recent
                     .map((row) => {
                       const place = [row.country, row.region, row.city].filter(Boolean).join(' / ') || '-'
+                      const deviceLabel = [row.os_name, row.device_type && row.device_type !== 'unknown' ? row.device_type : null]
+                        .filter(Boolean)
+                        .join(' · ') || '未知'
                       const detail =
                         row.event_type === 'download'
                           ? `${row.download_os || '-'}/${row.download_arch || '-'} ${row.download_file || ''}`
@@ -300,7 +310,7 @@ async function renderDashboard(): Promise<void> {
                         <td><span class="badge ${row.event_type === 'download' ? 'download' : ''}">${row.event_type}</span></td>
                         <td>${row.ip}</td>
                         <td>${place}</td>
-                        <td>${row.os_name || row.device_type || '-'}</td>
+                        <td>${deviceLabel}</td>
                         <td>${detail}</td>
                       </tr>`
                     })
@@ -322,9 +332,19 @@ async function renderDashboard(): Promise<void> {
     const monthEl = app.querySelector('[data-chart="month"]') as HTMLElement
     const geoVisitEl = app.querySelector('[data-chart="geo-visit"]') as HTMLElement
     const geoDownloadEl = app.querySelector('[data-chart="geo-download"]') as HTMLElement
+    const deviceEl = app.querySelector('[data-chart="device"]') as HTMLElement
     const osEl = app.querySelector('[data-chart="os"]') as HTMLElement
     const breakdownEl = app.querySelector('[data-chart="breakdown"]') as HTMLElement
     const browserEl = app.querySelector('[data-chart="browser"]') as HTMLElement
+
+    const labelDevice = (name: string) => {
+      if (name === 'unknown') return '未知'
+      if (name === 'desktop') return '桌面'
+      if (name.startsWith('desktop/')) return `桌面/${name.slice(8)}`
+      if (name === 'mobile') return '手机'
+      if (name === 'tablet') return '平板'
+      return name
+    }
 
     mountChart(dayEl, lineOption('day', visitDay, downloadDay))
     mountChart(
@@ -372,7 +392,11 @@ async function renderDashboard(): Promise<void> {
         geoDownload.map((r) => ({ name: `${r.country} ${r.city}`, count: r.count })),
       ),
     )
-    mountChart(osEl, pieOption(devices.os))
+    mountChart(osEl, pieOption(devices.os.map((r) => ({ ...r, name: r.name === 'Unknown' ? '未知' : r.name }))))
+    mountChart(
+      deviceEl,
+      pieOption(devices.device.map((r) => ({ ...r, name: labelDevice(r.name) }))),
+    )
     mountChart(
       breakdownEl,
       barOption(
@@ -380,7 +404,7 @@ async function renderDashboard(): Promise<void> {
         breakdown.map((r) => ({ name: `${r.os}-${r.arch}`, count: r.count })),
       ),
     )
-    mountChart(browserEl, pieOption(devices.browser))
+    mountChart(browserEl, pieOption(devices.browser.map((r) => ({ ...r, name: r.name === 'Unknown' ? '未知' : r.name }))))
 
     window.addEventListener('resize', () => charts.forEach((c) => c.resize()), { once: true })
   } catch (error) {
