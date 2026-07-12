@@ -31,7 +31,23 @@ type ReleaseInfo = {
 }
 
 const REPO = 'JasonZhangDad/MgTerminal'
-const FALLBACK_VERSION = '0.2.5'
+const FALLBACK_VERSION = '0.2.6'
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+/** Reject non-release tags so GitHub API content cannot inject markup. */
+function sanitizeReleaseTag(tag: string): string | null {
+  const trimmed = tag.trim()
+  if (!/^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/i.test(trimmed)) return null
+  return trimmed
+}
 const TRACK_API = 'https://shell.magies.top/stats-api/track'
 const SESSION_KEY = 'magies-shell-session-id'
 
@@ -274,7 +290,7 @@ function downloadUrl(item: DownloadItem): string | null {
 
 function displayVersion(): string {
   if (releaseLoading && !releaseInfo) return '…'
-  return releaseInfo?.version ?? FALLBACK_VERSION
+  return escapeHtml(releaseInfo?.version ?? FALLBACK_VERSION)
 }
 
 function detectOs(): OsId {
@@ -656,8 +672,8 @@ async function fetchLatestRelease(): Promise<void> {
       tag_name?: string
       assets?: ReleaseAsset[]
     }
-    const tag = data.tag_name?.trim()
-    if (!tag) throw new Error('Missing tag_name')
+    const tag = sanitizeReleaseTag(data.tag_name || '')
+    if (!tag) throw new Error('Missing or invalid tag_name')
     releaseInfo = {
       tag,
       version: normalizeVersion(tag),

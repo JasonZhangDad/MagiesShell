@@ -14,21 +14,42 @@ function normalizeIp(ip: string | undefined | null): string | null {
   return cleaned
 }
 
+function headerValue(
+  headers: Record<string, string | string[] | undefined>,
+  name: string,
+): string | null {
+  const raw = headers[name]
+  if (typeof raw === 'string' && raw.trim()) return raw.trim()
+  if (Array.isArray(raw) && typeof raw[0] === 'string' && raw[0].trim()) return raw[0].trim()
+  return null
+}
+
+/**
+ * Resolve the client IP for rate limiting / geo.
+ *
+ * Prefer the TCP peer by default. Only trust CF-Connecting-IP / X-Forwarded-For
+ * when TRUST_CF_CONNECTING_IP=1 (set in production behind Cloudflare) AND the
+ * reverse proxy has already replaced client-supplied values with a trusted
+ * peer-derived IP (see deploy/shell.magies.top.conf).
+ */
 export function resolveClientIp(req: {
   headers: Record<string, string | string[] | undefined>
   socket?: { remoteAddress?: string }
   ip?: string
 }): string {
-  const cf = req.headers['cf-connecting-ip']
-  if (typeof cf === 'string' && cf.trim()) return normalizeIp(cf) || cf.trim()
+  const trustForwarded = process.env.TRUST_CF_CONNECTING_IP === '1'
+  if (trustForwarded) {
+    const cf = headerValue(req.headers, 'cf-connecting-ip')
+    if (cf) return normalizeIp(cf) || cf
 
-  const realIp = req.headers['x-real-ip']
-  if (typeof realIp === 'string' && realIp.trim()) return normalizeIp(realIp) || realIp.trim()
+    const realIp = headerValue(req.headers, 'x-real-ip')
+    if (realIp) return normalizeIp(realIp) || realIp
 
-  const forwarded = req.headers['x-forwarded-for']
-  if (typeof forwarded === 'string' && forwarded.trim()) {
-    const first = forwarded.split(',')[0]?.trim()
-    if (first) return normalizeIp(first) || first
+    const forwarded = headerValue(req.headers, 'x-forwarded-for')
+    if (forwarded) {
+      const first = forwarded.split(',')[0]?.trim()
+      if (first) return normalizeIp(first) || first
+    }
   }
 
   return normalizeIp(req.ip || req.socket?.remoteAddress || '') || '0.0.0.0'

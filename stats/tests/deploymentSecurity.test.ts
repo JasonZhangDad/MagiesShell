@@ -22,3 +22,14 @@ test('obsolete standalone stats domain config is removed', () => {
     false,
   )
 })
+
+test('stats API proxy does not forward client-supplied CF-Connecting-IP', () => {
+  assert.match(nginxConfig, /include \/etc\/nginx\/cloudflare-realip\.conf/)
+  assert.match(nginxConfig, /real_ip_header CF-Connecting-IP/)
+  assert.match(nginxConfig, /proxy_set_header CF-Connecting-IP \$remote_addr/)
+  assert.doesNotMatch(nginxConfig, /proxy_set_header CF-Connecting-IP \$http_cf_connecting_ip/)
+  assert.equal(
+    existsSync(new URL('../deploy/cloudflare-realip.conf', import.meta.url)),
+    true,
+  )
+})
