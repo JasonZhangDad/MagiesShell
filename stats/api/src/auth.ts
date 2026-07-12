@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { env } from './env.js'
+import { readSessionToken } from './sessionCookie.js'
 
 export type AuthPayload = {
   role: 'admin'
@@ -11,13 +12,14 @@ export function signToken(): string {
 }
 
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {
-  const header = req.headers.authorization
-  if (!header?.startsWith('Bearer ')) {
+  const token = readSessionToken(req.headers.cookie)
+  if (!token) {
     res.status(401).json({ error: 'Unauthorized' })
     return
   }
   try {
-    jwt.verify(header.slice(7), env.jwtSecret)
+    const payload = jwt.verify(token, env.jwtSecret)
+    if (typeof payload !== 'object' || payload.role !== 'admin') throw new Error('Invalid role')
     next()
   } catch {
     res.status(401).json({ error: 'Unauthorized' })

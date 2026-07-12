@@ -6,6 +6,8 @@ import { requireAuth, signToken } from './auth.js'
 import { lookupGeo, maskIp, resolveClientIp } from './geo.js'
 import { parseUa, pickBestUa } from './ua.js'
 import { normalizeTrackInput } from './trackInput.js'
+import { FixedWindowRateLimiter } from './rateLimit.js'
+import { buildSessionCookie, clearSessionCookie } from './sessionCookie.js'
 import {
   getDownloadBreakdown,
   getDevices,
@@ -17,6 +19,7 @@ import {
 
 const app = express()
 app.set('trust proxy', true)
+app.disable('x-powered-by')
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -30,42 +33,42 @@ app.use(
 )
 app.use(express.json({ limit: '32kb' }))
 
-const trackBuckets = new Map<string, { count: number; resetAt: number }>()
+const loginLimiter = new FixedWindowRateLimiter({ limit: 5, windowMs: 15 * 60_000, maxBuckets: 5_000 })
+const trackLimiter = new FixedWindowRateLimiter({ limit: 60, windowMs: 60_000 })
 
-function rateLimit(ip: string, limit = 60): boolean {
-  const now = Date.now()
-  const current = trackBuckets.get(ip)
-  if (!current || current.resetAt < now) {
-    trackBuckets.set(ip, { count: 1, resetAt: now + 60_000 })
-    return true
+function enforceRateLimit(limiter: FixedWindowRateLimiter) {
+  return (req: express.Request, res: express.Response, next: express.NextFunction): void => {
+    if (!limiter.allow(resolveClientIp(req))) {
+      res.status(429).json({ error: 'Too many requests' })
+      return
+    }
+    next()
   }
-  if (current.count >= limit) return false
-  current.count += 1
-  return true
 }
 
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true })
 })
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', enforceRateLimit(loginLimiter), (req, res) => {
   const username = typeof req.body?.username === 'string' ? req.body.username.trim() : ''
   const password = typeof req.body?.password === 'string' ? req.body.password : ''
   if (username !== env.statsUsername || password !== env.statsPassword) {
     res.status(401).json({ error: 'Invalid username or password' })
     return
   }
-  res.json({ token: signToken() })
+  res.setHeader('Set-Cookie', buildSessionCookie(signToken()))
+  res.json({ ok: true })
 })
 
-app.post('/api/track', async (req, res) => {
+app.post('/api/logout', (_req, res) => {
+  res.setHeader('Set-Cookie', clearSessionCookie())
+  res.status(204).send()
+})
+
+app.post('/api/track', enforceRateLimit(trackLimiter), async (req, res) => {
   try {
     const ip = resolveClientIp(req)
-    if (!rateLimit(ip)) {
-      res.status(429).json({ error: 'Too many requests' })
-      return
-    }
-
     const input = normalizeTrackInput(req.body)
     const ua = pickBestUa(
       input.ua,

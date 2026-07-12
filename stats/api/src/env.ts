@@ -14,7 +14,7 @@ export const env = {
   statsUsername: required('STATS_USERNAME'),
   statsPassword: required('STATS_PASSWORD'),
   jwtSecret: required('JWT_SECRET'),
-  corsOrigins: (process.env.CORS_ORIGINS || 'https://shell.magies.top,https://shell-stats.magies.top,http://localhost:5174,http://localhost:5175')
+  corsOrigins: (process.env.CORS_ORIGINS || 'https://shell.magies.top,http://localhost:5174,http://localhost:5175')
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean),

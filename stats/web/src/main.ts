@@ -21,20 +21,17 @@ type SeriesPoint = { bucket: string; count: number }
 type NamedCount = { name: string; count: number }
 type GeoRow = { country: string; region: string; city: string; count: number }
 type Breakdown = { os: string; arch: string; count: number }
-const TOKEN_KEY = 'magies-shell-stats-token'
 const API_BASE = '/stats-api'
 
-let token = localStorage.getItem(TOKEN_KEY) || ''
+let signedIn = false
 const charts: echarts.ECharts[] = []
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers)
   if (!(init?.body instanceof FormData)) headers.set('Content-Type', 'application/json')
-  if (token) headers.set('Authorization', `Bearer ${token}`)
-  const response = await fetch(`${API_BASE}${path}`, { ...init, headers })
+  const response = await fetch(`${API_BASE}${path}`, { ...init, headers, credentials: 'same-origin' })
   if (response.status === 401) {
-    token = ''
-    localStorage.removeItem(TOKEN_KEY)
+    signedIn = false
     renderLogin('登录已过期，请重新登录')
     throw new Error('Unauthorized')
   }
@@ -102,12 +99,11 @@ function renderLogin(error = ''): void {
       submitBtn.textContent = '登录中…'
     }
     try {
-      const result = await api<{ token: string }>('/login', {
+      await api<{ ok: true }>('/login', {
         method: 'POST',
         body: JSON.stringify({ username, password }),
       })
-      token = result.token
-      localStorage.setItem(TOKEN_KEY, token)
+      signedIn = true
       await renderDashboard()
     } catch (error) {
       console.error(error)
@@ -300,9 +296,11 @@ async function renderDashboard(): Promise<void> {
       </div>`
 
     app.querySelector('[data-logout]')?.addEventListener('click', () => {
-      token = ''
-      localStorage.removeItem(TOKEN_KEY)
-      renderLogin()
+      signedIn = false
+      void fetch('/stats-api/logout', {
+        method: 'POST',
+        credentials: 'same-origin',
+      }).finally(() => renderLogin())
     })
 
     const dayEl = app.querySelector('[data-chart="day"]') as HTMLElement
@@ -402,15 +400,12 @@ async function renderDashboard(): Promise<void> {
 }
 
 async function boot(): Promise<void> {
-  if (!token) {
-    renderLogin()
-    return
-  }
   try {
     await api('/overview')
+    signedIn = true
     await renderDashboard()
     window.setInterval(() => {
-      if (token) void renderDashboard()
+      if (signedIn) void renderDashboard()
     }, 60_000)
   } catch {
     renderLogin()
