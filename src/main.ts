@@ -378,6 +378,23 @@ function render(lang: Lang): string {
         </div>
       </section>
 
+      <section class="section gallery" id="gallery" aria-label="MagiesShell gallery">
+        <div class="gallery-grid">
+          <figure class="gallery-card" data-reveal>
+            <img src="/screenshots/gallery-1.png" alt="" width="1448" height="1086" loading="lazy" />
+          </figure>
+          <figure class="gallery-card" data-reveal>
+            <img src="/screenshots/gallery-2.png" alt="" width="1448" height="1086" loading="lazy" />
+          </figure>
+          <figure class="gallery-card" data-reveal>
+            <img src="/screenshots/gallery-3.png" alt="" width="1448" height="1086" loading="lazy" />
+          </figure>
+          <figure class="gallery-card" data-reveal>
+            <img src="/screenshots/gallery-4.png" alt="" width="1448" height="1086" loading="lazy" />
+          </figure>
+        </div>
+      </section>
+
       <section class="section" id="features">
         <p class="section-label">${t.featuresLabel}</p>
         <h2 class="section-title">${t.featuresTitle}</h2>
