@@ -107,7 +107,6 @@ const copy = {
     metaTitle: 'MagiesShell — AI 驱动的 SSH 工作空间',
     metaDesc:
       'MagiesShell 是现代化的跨平台 SSH 客户端、SFTP 浏览器与终端工作空间。内置 AI Agent，让运维与多主机协作更高效。',
-    navDownload: '下载',
     headline: '把服务器舰队装进一个工作空间',
     sub: 'AI 驱动的 SSH 客户端、SFTP 浏览器与终端管理器。分屏、Vault、多主机编排，为日常运维而生。',
     ctaDownload: '立即下载',
@@ -152,7 +151,6 @@ const copy = {
     metaTitle: 'MagiesShell — AI-Powered SSH Workspace',
     metaDesc:
       'MagiesShell is a modern cross-platform SSH client, SFTP browser, and terminal workspace with a built-in AI agent for multi-host ops.',
-    navDownload: 'Download',
     headline: 'Your server fleet, in one workspace',
     sub: 'An AI-powered SSH client, SFTP browser, and terminal manager. Splits, Vault, and multi-host orchestration built for daily ops.',
     ctaDownload: 'Download',
@@ -359,7 +357,6 @@ function render(lang: Lang): string {
           <button type="button" data-lang="zh" class="${lang === 'zh' ? 'is-active' : ''}">中文</button>
           <button type="button" data-lang="en" class="${lang === 'en' ? 'is-active' : ''}">EN</button>
         </div>
-        <a class="btn btn-primary" href="#download">${t.navDownload}</a>
       </div>
     </header>
 
@@ -428,7 +425,7 @@ function render(lang: Lang): string {
             .join('')}
         </ul>
         <figure class="shot-frame" data-reveal>
-          <img src="/screenshots/agent.png" alt="" width="2536" height="1614" loading="lazy" />
+          <img src="/screenshots/agent-settings.png" alt="" width="1586" height="992" loading="lazy" />
         </figure>
       </section>
 
