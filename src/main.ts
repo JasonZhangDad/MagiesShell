@@ -146,6 +146,8 @@ const copy = {
     recommended: '推荐',
     unavailable: '暂无该资源',
     footerNote: 'MagiesShell · AI-Powered SSH Workspace',
+    footerCopyright: '© 2026 Magies. All rights reserved.',
+    footerCompany: '@Magies · Magies 科技',
     license: 'GPL-3.0',
   },
   en: {
@@ -192,6 +194,8 @@ const copy = {
     recommended: 'Recommended',
     unavailable: 'Unavailable',
     footerNote: 'MagiesShell · AI-Powered SSH Workspace',
+    footerCopyright: '© 2026 Magies. All rights reserved.',
+    footerCompany: '@Magies · Magies Technology',
     license: 'GPL-3.0',
   },
 } as const
@@ -427,7 +431,11 @@ function render(lang: Lang): string {
 
     <footer class="site-footer">
       <div class="footer-inner">
-        <span>${t.footerNote}</span>
+        <div class="footer-brand">
+          <span>${t.footerNote}</span>
+          <span class="footer-company">${t.footerCompany}</span>
+          <span class="footer-copyright">${t.footerCopyright}</span>
+        </div>
         <div class="footer-links">
           <a href="#download">${t.navDownload}</a>
           <span>${t.license}</span>
