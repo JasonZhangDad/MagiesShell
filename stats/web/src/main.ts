@@ -186,22 +186,29 @@ function lineOption(title: string, visits: SeriesPoint[], downloads: SeriesPoint
       trigger: 'axis',
       formatter: (params) => formatAxisTooltip(params, formatDayLabel),
     },
-    legend: { data: ['访问', '下载'], textStyle: { color: '#8aa0b5' } },
-    grid: { left: 40, right: 20, top: 40, bottom: 48 },
+    legend: {
+      data: ['访问', '下载'],
+      bottom: 0,
+      itemGap: 20,
+      textStyle: { color: '#8aa0b5' },
+    },
+    // 给横轴日期留空，图例放在时间下方，避免色点挡住日期
+    grid: { left: 40, right: 20, top: 24, bottom: 72 },
     xAxis: {
       type: 'category',
       data: buckets,
       axisLabel: {
         color: '#8aa0b5',
         hideOverlap: true,
+        margin: 12,
         rotate: buckets.length > 14 ? 40 : 0,
         formatter: (value: string) => formatDayLabel(value),
       },
     },
     yAxis: { type: 'value', axisLabel: { color: '#8aa0b5' }, splitLine: { lineStyle: { color: 'rgba(142,186,210,0.12)' } } },
     series: [
-      { name: '访问', type: 'line', smooth: true, showSymbol: buckets.length <= 2, data: buckets.map((b) => visitMap.get(b) || 0) },
-      { name: '下载', type: 'line', smooth: true, showSymbol: buckets.length <= 2, data: buckets.map((b) => downloadMap.get(b) || 0) },
+      { name: '访问', type: 'line', smooth: true, showSymbol: false, data: buckets.map((b) => visitMap.get(b) || 0) },
+      { name: '下载', type: 'line', smooth: true, showSymbol: false, data: buckets.map((b) => downloadMap.get(b) || 0) },
     ],
   }
 }
@@ -275,7 +282,7 @@ async function renderDashboard(): Promise<void> {
         <header class="dash-header">
           <div>
             <h1>MagiesShell 数据运营大屏</h1>
-            <div class="meta">shell.magies.top/stats · 自动刷新 60s</div>
+            <div class="meta">自动刷新 60s</div>
           </div>
           <button type="button" class="ghost-btn" data-logout>退出</button>
         </header>
@@ -399,14 +406,20 @@ async function renderDashboard(): Promise<void> {
           trigger: 'axis',
           formatter: (params) => formatAxisTooltip(params, formatMonthLabel),
         },
-        legend: { data: ['访问', '下载'], textStyle: { color: '#8aa0b5' } },
-        grid: { left: 40, right: 20, top: 40, bottom: 48 },
+        legend: {
+          data: ['访问', '下载'],
+          bottom: 0,
+          itemGap: 20,
+          textStyle: { color: '#8aa0b5' },
+        },
+        grid: { left: 40, right: 20, top: 24, bottom: 72 },
         xAxis: {
           type: 'category',
           data: monthBuckets,
           axisLabel: {
             color: '#8aa0b5',
             hideOverlap: true,
+            margin: 12,
             rotate: 35,
             formatter: (value: string) => formatMonthLabel(value),
           },
