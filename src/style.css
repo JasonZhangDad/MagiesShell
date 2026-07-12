@@ -428,9 +428,9 @@ button {
 
 .shot-frame img {
   width: 100%;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
-  object-position: top center;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
 }
 
 .download {
