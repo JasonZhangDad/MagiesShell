@@ -1,7 +1,9 @@
 import { UAParser } from 'ua-parser-js'
 
+export type DeviceClass = 'phone' | 'tablet' | 'pc' | 'unknown'
+
 export type DeviceInfo = {
-  deviceType: string
+  deviceType: DeviceClass
   osName: string | null
   osVersion: string | null
   browser: string | null
@@ -20,39 +22,89 @@ export function pickBestUa(bodyUa?: string | null, headerUa?: string | null): st
   return body || header || ''
 }
 
+function normalizeOs(name: string | undefined): string | null {
+  if (!name) return null
+  const n = name.toLowerCase()
+  if (n.includes('mac') || n === 'macos' || n === 'mac os') return 'macOS'
+  if (n.includes('windows')) return 'Windows'
+  if (n.includes('android')) return 'Android'
+  if (n === 'ios' || n === 'ipados') return n === 'ipados' ? 'iPadOS' : 'iOS'
+  if (n.includes('chrome os') || n === 'chromium os') return 'ChromeOS'
+  if (n.includes('ubuntu') || n.includes('debian') || n.includes('fedora') || n.includes('linux') || n.includes('unix')) {
+    return 'Linux'
+  }
+  if (n.includes('harmony')) return 'HarmonyOS'
+  return name
+}
+
+function normalizeBrowser(name: string | undefined): string | null {
+  if (!name) return null
+  const n = name.toLowerCase()
+  if (n.includes('edg')) return 'Edge'
+  if (n.includes('chrome') && !n.includes('chromium')) return 'Chrome'
+  if (n.includes('chromium')) return 'Chromium'
+  if (n.includes('safari') && !n.includes('chrome')) return 'Safari'
+  if (n.includes('firefox')) return 'Firefox'
+  if (n.includes('opera')) return 'Opera'
+  if (n.includes('samsung')) return 'Samsung Internet'
+  if (n.includes('brave')) return 'Brave'
+  if (n.includes('vivaldi')) return 'Vivaldi'
+  if (n.includes('qq')) return 'QQ Browser'
+  if (n.includes('ucbrowser') || n === 'uc') return 'UC Browser'
+  if (n.includes('baidu')) return 'Baidu'
+  if (n.includes('micromessenger') || n.includes('wechat')) return 'WeChat'
+  return name
+}
+
+function detectDeviceClass(
+  result: {
+    device: { type?: string; model?: string }
+    os: { name?: string }
+    browser: { name?: string }
+  },
+  ua: string,
+): DeviceClass {
+  const type = (result.device.type || '').toLowerCase()
+  const model = (result.device.model || '').toLowerCase()
+  const os = (result.os.name || '').toLowerCase()
+  const raw = ua.toLowerCase()
+
+  if (type === 'tablet' || model.includes('ipad') || os.includes('ipados') || raw.includes('ipad')) {
+    return 'tablet'
+  }
+  if (
+    type === 'mobile' ||
+    model.includes('iphone') ||
+    model.includes('android') ||
+    os === 'ios' ||
+    os.includes('android') ||
+    raw.includes('mobile')
+  ) {
+    return 'phone'
+  }
+  if (type === 'smarttv' || type === 'wearable' || type === 'console' || type === 'embedded') {
+    return 'unknown'
+  }
+  if (result.os.name || result.browser.name || model.includes('macintosh')) {
+    return 'pc'
+  }
+  return 'unknown'
+}
+
 export function parseUa(ua: string | undefined | null): DeviceInfo {
   if (!ua || isWeakUa(ua)) {
     return { deviceType: 'unknown', osName: null, osVersion: null, browser: null }
   }
 
   const result = new UAParser(ua).getResult()
-  const osName = result.os.name || null
-  const osVersion = result.os.version || null
-  const browser = [result.browser.name, result.browser.version].filter(Boolean).join(' ') || null
-  const model = result.device.model || null
-
-  let deviceType = result.device.type || null
-  if (!deviceType) {
-    if (model && /ipad|tablet/i.test(model)) deviceType = 'tablet'
-    else if (model && /iphone|android|mobile/i.test(model)) deviceType = 'mobile'
-    else if (osName || browser || model) deviceType = 'desktop'
-    else deviceType = 'unknown'
-  }
-
-  // Keep a readable label for Apple desktops etc.
-  if (deviceType === 'desktop' && model) {
-    return {
-      deviceType: `${deviceType}/${model}`,
-      osName,
-      osVersion,
-      browser,
-    }
-  }
+  const deviceType = detectDeviceClass(result, ua)
+  let osName = normalizeOs(result.os.name)
+  if (deviceType === 'tablet' && osName === 'iOS') osName = 'iPadOS'
 
   return {
     deviceType,
     osName,
-    osVersion,
-    browser,
+    osVersion: result.os.version || null,
+    browser: normalizeBrowser(result.browser.name),
   }
 }

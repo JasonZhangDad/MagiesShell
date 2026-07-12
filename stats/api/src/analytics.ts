@@ -164,21 +164,55 @@ export async function getGeo(type: 'visit' | 'download') {
 }
 
 export async function getDevices() {
-  const [os, device, browser] = await Promise.all([
+  const [device, pcOs, browser, pcBrowser] = await Promise.all([
     query<{ name: string; count: string }>(
-      `SELECT COALESCE(os_name, 'Unknown') AS name, COUNT(*)::text AS count
-       FROM shell_events WHERE event_type = 'page_view'
-       GROUP BY 1 ORDER BY COUNT(*) DESC LIMIT 12`,
+      `SELECT CASE
+          WHEN device_type IN ('phone', 'mobile') THEN 'phone'
+          WHEN device_type = 'tablet' THEN 'tablet'
+          WHEN device_type IN ('pc', 'desktop') OR device_type LIKE 'desktop/%' THEN 'pc'
+          ELSE 'unknown'
+        END AS name,
+        COUNT(*)::text AS count
+       FROM shell_events
+       WHERE event_type = 'page_view'
+       GROUP BY 1
+       ORDER BY COUNT(*) DESC`,
     ),
     query<{ name: string; count: string }>(
-      `SELECT COALESCE(device_type, 'unknown') AS name, COUNT(*)::text AS count
-       FROM shell_events WHERE event_type = 'page_view'
-       GROUP BY 1 ORDER BY COUNT(*) DESC LIMIT 12`,
+      `SELECT COALESCE(os_name, 'Unknown') AS name, COUNT(*)::text AS count
+       FROM shell_events
+       WHERE event_type = 'page_view'
+         AND (
+           device_type IN ('pc', 'desktop')
+           OR device_type LIKE 'desktop/%'
+           OR os_name IN ('macOS', 'Windows', 'Linux', 'ChromeOS')
+         )
+         AND COALESCE(os_name, '') NOT IN ('iOS', 'iPadOS', 'Android')
+       GROUP BY 1
+       ORDER BY COUNT(*) DESC
+       LIMIT 12`,
     ),
     query<{ name: string; count: string }>(
       `SELECT COALESCE(browser, 'Unknown') AS name, COUNT(*)::text AS count
-       FROM shell_events WHERE event_type = 'page_view'
-       GROUP BY 1 ORDER BY COUNT(*) DESC LIMIT 12`,
+       FROM shell_events
+       WHERE event_type = 'page_view'
+       GROUP BY 1
+       ORDER BY COUNT(*) DESC
+       LIMIT 12`,
+    ),
+    query<{ name: string; count: string }>(
+      `SELECT COALESCE(browser, 'Unknown') AS name, COUNT(*)::text AS count
+       FROM shell_events
+       WHERE event_type = 'page_view'
+         AND (
+           device_type IN ('pc', 'desktop')
+           OR device_type LIKE 'desktop/%'
+           OR os_name IN ('macOS', 'Windows', 'Linux', 'ChromeOS')
+         )
+         AND COALESCE(device_type, '') NOT IN ('phone', 'mobile', 'tablet')
+       GROUP BY 1
+       ORDER BY COUNT(*) DESC
+       LIMIT 12`,
     ),
   ])
 
@@ -186,9 +220,12 @@ export async function getDevices() {
     rows.map((row) => ({ name: row.name, count: Number(row.count) }))
 
   return {
-    os: mapRows(os.rows),
     device: mapRows(device.rows),
+    pcOs: mapRows(pcOs.rows),
     browser: mapRows(browser.rows),
+    pcBrowser: mapRows(pcBrowser.rows),
+    // backward compatible aliases
+    os: mapRows(pcOs.rows),
   }
 }
 

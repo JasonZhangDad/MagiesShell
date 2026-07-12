@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
-    "migrate": "tsx src/migrate.ts"
+    "migrate": "tsx src/migrate.ts",
+    "backfill:ua": "tsx src/backfill-ua.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
