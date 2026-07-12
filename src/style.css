@@ -615,38 +615,18 @@ button {
   margin: 0 auto;
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem 1.5rem;
-  align-items: flex-end;
-  justify-content: space-between;
+  gap: 0.65rem 1.25rem;
+  align-items: center;
+  justify-content: center;
   color: var(--muted);
   font-size: 0.9rem;
-}
-
-.footer-brand {
-  display: grid;
-  gap: 0.35rem;
-}
-
-.footer-company {
-  color: var(--ink);
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  text-align: center;
 }
 
 .footer-copyright {
   font-family: var(--font-mono);
   font-size: 0.78rem;
   opacity: 0.85;
-}
-
-.footer-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.footer-links a:hover {
-  color: var(--ink);
 }
 
 @keyframes rise {
