@@ -36,7 +36,7 @@ type RecentRow = {
 }
 
 const TOKEN_KEY = 'magies-shell-stats-token'
-const API_BASE = ''
+const API_BASE = '/stats-api'
 
 let token = localStorage.getItem(TOKEN_KEY) || ''
 const charts: echarts.ECharts[] = []
@@ -199,7 +199,7 @@ async function renderDashboard(): Promise<void> {
         <header class="dash-header">
           <div>
             <h1>MagiesShell 数据运营大屏</h1>
-            <div class="meta">shell-stats.magies.top · 自动刷新 60s</div>
+            <div class="meta">shell.magies.top/stats · 自动刷新 60s</div>
           </div>
           <button type="button" class="ghost-btn" data-logout>退出</button>
         </header>
