@@ -144,6 +144,24 @@ const copy = {
     changeOs: '重新选择系统',
     recommended: '推荐',
     unavailable: '暂无该资源',
+    unsignedTitle: '未签名版本注意事项',
+    unsignedMac: {
+      lead: '当前 macOS 安装包尚未公证签名，首次打开可能被系统拦截，可按以下任一方式授权：',
+      steps: [
+        '在「访达」中右键点击 App → 选择「打开」→ 再点「打开」。',
+        '或打开「系统设置 → 隐私与安全性」，在被拦截提示处点击「仍要打开」。',
+        '或在终端执行（将路径换成实际位置）：',
+      ],
+      command: 'xattr -cr /Applications/MagiesTerminal.app',
+    },
+    unsignedWin: {
+      lead: '当前 Windows 安装包尚未代码签名，SmartScreen 可能提示“未知发布者”，可按以下方式继续：',
+      steps: [
+        '在 SmartScreen 提示中点击「更多信息」→「仍要运行」。',
+        '或右键安装包 →「属性」→ 勾选「解除锁定」→「应用」后再运行。',
+        '若被 Defender 隔离，可在「病毒和威胁防护 → 保护历史记录」中允许该文件。',
+      ],
+    },
     footerNote: 'MagiesShell · AI-Powered SSH Workspace',
     footerCopyright: '© 2026 Magies Technology All rights reserved.',
   },
@@ -189,6 +207,24 @@ const copy = {
     changeOs: 'Change OS',
     recommended: 'Recommended',
     unavailable: 'Unavailable',
+    unsignedTitle: 'Unsigned build notice',
+    unsignedMac: {
+      lead: 'The macOS build is not notarized yet. Gatekeeper may block the first launch — authorize it with any of these steps:',
+      steps: [
+        'In Finder, Control-click the app → Open → Open again.',
+        'Or go to System Settings → Privacy & Security, then click Open Anyway.',
+        'Or run this in Terminal (adjust the path if needed):',
+      ],
+      command: 'xattr -cr /Applications/MagiesTerminal.app',
+    },
+    unsignedWin: {
+      lead: 'The Windows build is not code-signed yet. SmartScreen may warn about an unknown publisher — continue with:',
+      steps: [
+        'In SmartScreen, click More info → Run anyway.',
+        'Or right-click the installer → Properties → check Unblock → Apply, then run again.',
+        'If Defender quarantined it, allow the file under Virus & threat protection → Protection history.',
+      ],
+    },
     footerNote: 'MagiesShell · AI-Powered SSH Workspace',
     footerCopyright: '© 2026 Magies Technology All rights reserved.',
   },
@@ -279,6 +315,26 @@ function renderOsPicker(lang: Lang): string {
   }).join('')
 }
 
+function renderUnsignedNotice(lang: Lang, os: OsId): string {
+  if (os !== 'mac' && os !== 'win') return ''
+  const t = copy[lang]
+  const notice = os === 'mac' ? t.unsignedMac : t.unsignedWin
+  const command =
+    'command' in notice
+      ? `<pre class="unsigned-command"><code>${notice.command}</code></pre>`
+      : ''
+
+  return `
+    <aside class="unsigned-notice" data-reveal>
+      <p class="unsigned-title">${t.unsignedTitle}</p>
+      <p class="unsigned-lead">${notice.lead}</p>
+      <ol class="unsigned-steps">
+        ${notice.steps.map((step) => `<li>${step}</li>`).join('')}
+      </ol>
+      ${command}
+    </aside>`
+}
+
 function renderVersionList(lang: Lang, os: OsId): string {
   const t = copy[lang]
   const recommendedId = detectRecommendedId(os)
@@ -323,6 +379,7 @@ function renderVersionList(lang: Lang, os: OsId): string {
           })
           .join('')}
       </div>
+      ${renderUnsignedNotice(lang, os)}
     </div>`
 }
 

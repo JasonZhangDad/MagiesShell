@@ -644,6 +644,59 @@ button {
   padding: 0.45rem 0.95rem;
 }
 
+.unsigned-notice {
+  margin-top: 1.25rem;
+  padding: 1.1rem 1.15rem;
+  border: 1px solid rgba(198, 255, 77, 0.28);
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(198, 255, 77, 0.07), rgba(42, 212, 200, 0.05));
+  text-align: left;
+}
+
+.unsigned-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--lime);
+}
+
+.unsigned-lead {
+  margin: 0.55rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.unsigned-steps {
+  margin: 0.75rem 0 0;
+  padding-left: 1.15rem;
+  color: var(--ink);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.unsigned-steps li + li {
+  margin-top: 0.4rem;
+}
+
+.unsigned-command {
+  margin: 0.75rem 0 0;
+  padding: 0.75rem 0.9rem;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.unsigned-command code {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--cyan);
+  white-space: nowrap;
+}
+
 .site-footer {
   border-top: 1px solid var(--line);
   padding: 1.75rem 1.5rem 2rem;
