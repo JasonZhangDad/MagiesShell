@@ -86,10 +86,23 @@ function renderLogin(error = ''): void {
         <p>输入用户名和密码进入运营大屏</p>
         <p class="login-error">${error}</p>
         <input type="text" name="username" placeholder="Username" autocomplete="username" required />
-        <input type="password" name="password" placeholder="Password" autocomplete="current-password" required />
+        <div class="password-field">
+          <input type="password" name="password" placeholder="Password" autocomplete="current-password" required data-password />
+          <button type="button" class="toggle-password" data-toggle-password aria-label="显示密码">显示</button>
+        </div>
         <button type="submit">进入大屏</button>
       </form>
     </div>`
+
+  const passwordInput = app.querySelector<HTMLInputElement>('[data-password]')
+  const toggleBtn = app.querySelector<HTMLButtonElement>('[data-toggle-password]')
+  toggleBtn?.addEventListener('click', () => {
+    if (!passwordInput || !toggleBtn) return
+    const show = passwordInput.type === 'password'
+    passwordInput.type = show ? 'text' : 'password'
+    toggleBtn.textContent = show ? '隐藏' : '显示'
+    toggleBtn.setAttribute('aria-label', show ? '隐藏密码' : '显示密码')
+  })
 
   app.querySelector('[data-login]')?.addEventListener('submit', async (event) => {
     event.preventDefault()

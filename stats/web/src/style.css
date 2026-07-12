@@ -72,6 +72,36 @@ input {
   background: rgba(255, 255, 255, 0.03);
 }
 
+.password-field {
+  position: relative;
+  margin-bottom: 0.9rem;
+}
+
+.password-field input {
+  margin-bottom: 0;
+  padding-right: 4.2rem;
+}
+
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 0.45rem;
+  transform: translateY(-50%);
+  min-width: 3.2rem;
+  padding: 0.35rem 0.55rem !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--muted) !important;
+  font-size: 0.78rem !important;
+  font-weight: 500 !important;
+}
+
+.toggle-password:hover {
+  color: var(--ink) !important;
+  border-color: rgba(42, 212, 200, 0.45) !important;
+}
+
 .login-card button,
 .ghost-btn {
   border: none;
