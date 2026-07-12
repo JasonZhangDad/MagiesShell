@@ -32,6 +32,8 @@ type ReleaseInfo = {
 
 const REPO = 'JasonZhangDad/MgTerminal'
 const FALLBACK_VERSION = '0.2.3'
+const TRACK_API = 'https://stats.shell.magies.top/api/track'
+const SESSION_KEY = 'magies-shell-session-id'
 
 const OS_OPTIONS: OsOption[] = [
   {
@@ -366,7 +368,7 @@ function renderVersionList(lang: Lang, os: OsId): string {
               : 'a'
             const attrs = disabled
               ? `class="download-card is-disabled${recommended ? ' is-recommended' : ''}" aria-disabled="true"`
-              : `class="download-card${recommended ? ' is-recommended' : ''}" href="${href}" download`
+              : `class="download-card${recommended ? ' is-recommended' : ''}" href="${href}" download data-track-download="${item.id}" data-download-file="${item.id}"`
 
             return `
               <${tag} ${attrs}>
@@ -524,6 +526,46 @@ function refreshDownload(lang: Lang): void {
   root.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('is-visible'))
 }
 
+function getSessionId(): string {
+  const existing = sessionStorage.getItem(SESSION_KEY)
+  if (existing) return existing
+  const id =
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `s-${Date.now()}-${Math.random().toString(16).slice(2)}`
+  sessionStorage.setItem(SESSION_KEY, id)
+  return id
+}
+
+function trackEvent(
+  eventType: 'page_view' | 'download',
+  extra: {
+    downloadOs?: string | null
+    downloadArch?: string | null
+    downloadFile?: string | null
+  } = {},
+): void {
+  const payload = {
+    eventType,
+    path: location.pathname + location.hash,
+    referrer: document.referrer || null,
+    ua: navigator.userAgent,
+    sessionId: getSessionId(),
+    downloadOs: extra.downloadOs || null,
+    downloadArch: extra.downloadArch || null,
+    downloadFile: extra.downloadFile || null,
+  }
+
+  const body = JSON.stringify(payload)
+  void fetch(TRACK_API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body,
+    keepalive: true,
+    mode: 'cors',
+  }).catch(() => undefined)
+}
+
 function bindDownload(root: HTMLElement, lang: Lang): void {
   root.querySelectorAll<HTMLButtonElement>('[data-select-os]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -536,6 +578,20 @@ function bindDownload(root: HTMLElement, lang: Lang): void {
     btn.addEventListener('click', () => {
       selectedOs = null
       refreshDownload(lang)
+    })
+  })
+
+  root.querySelectorAll<HTMLAnchorElement>('[data-track-download]').forEach((link) => {
+    link.addEventListener('click', () => {
+      const id = link.dataset.trackDownload || ''
+      const item = DOWNLOADS.find((entry) => entry.id === id)
+      const [os, arch] = id.split('-')
+      const asset = item ? findAsset(item) : undefined
+      trackEvent('download', {
+        downloadOs: os || null,
+        downloadArch: arch || null,
+        downloadFile: asset?.name || link.getAttribute('href') || id,
+      })
     })
   })
 }
@@ -624,4 +680,5 @@ async function fetchLatestRelease(): Promise<void> {
 
 currentLang = initialLang()
 setLang(currentLang)
+trackEvent('page_view')
 void fetchLatestRelease()

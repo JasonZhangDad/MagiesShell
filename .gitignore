@@ -2,3 +2,9 @@ node_modules
 dist
 .DS_Store
 *.local
+stats/api/node_modules
+stats/web/node_modules
+stats/api/dist
+stats/web/dist
+stats/api/.env
+**/.env
