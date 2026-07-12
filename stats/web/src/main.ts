@@ -1,5 +1,6 @@
 import './style.css'
 import * as echarts from 'echarts'
+import { renderRecentRows, type RecentRow } from './recentRows'
 
 type Overview = {
   visits: MetricBlock
@@ -20,21 +21,6 @@ type SeriesPoint = { bucket: string; count: number }
 type NamedCount = { name: string; count: number }
 type GeoRow = { country: string; region: string; city: string; count: number }
 type Breakdown = { os: string; arch: string; count: number }
-type RecentRow = {
-  ts: string
-  event_type: string
-  ip: string
-  country: string | null
-  region: string | null
-  city: string | null
-  device_type: string | null
-  os_name: string | null
-  browser: string | null
-  download_os: string | null
-  download_arch: string | null
-  download_file: string | null
-}
-
 const TOKEN_KEY = 'magies-shell-stats-token'
 const API_BASE = '/stats-api'
 
@@ -195,20 +181,6 @@ function pieOption(rows: NamedCount[]): echarts.EChartsOption {
   }
 }
 
-function formatDeviceRow(deviceType: string | null, osName: string | null, browser: string | null): string {
-  const deviceMap: Record<string, string> = {
-    phone: '手机',
-    mobile: '手机',
-    tablet: '平板',
-    pc: 'PC',
-    desktop: 'PC',
-    unknown: '未知',
-  }
-  const raw = deviceType || 'unknown'
-  const device = deviceMap[raw] || (raw.startsWith('desktop') ? 'PC' : raw)
-  return [device, osName, browser].filter(Boolean).join(' · ') || '未知'
-}
-
 async function renderDashboard(): Promise<void> {
   const app = document.getElementById('app')
   if (!app) return
@@ -319,24 +291,7 @@ async function renderDashboard(): Promise<void> {
                   </tr>
                 </thead>
                 <tbody>
-                  ${recent
-                    .map((row) => {
-                      const place = [row.country, row.region, row.city].filter(Boolean).join(' / ') || '-'
-                      const deviceLabel = formatDeviceRow(row.device_type, row.os_name, row.browser)
-                      const detail =
-                        row.event_type === 'download'
-                          ? `${row.download_os || '-'}/${row.download_arch || '-'} ${row.download_file || ''}`
-                          : row.browser || '-'
-                      return `<tr>
-                        <td>${new Date(row.ts).toLocaleString()}</td>
-                        <td><span class="badge ${row.event_type === 'download' ? 'download' : ''}">${row.event_type}</span></td>
-                        <td>${row.ip}</td>
-                        <td>${place}</td>
-                        <td>${deviceLabel}</td>
-                        <td>${detail}</td>
-                      </tr>`
-                    })
-                    .join('')}
+                  ${renderRecentRows(recent)}
                 </tbody>
               </table>
             </div>

@@ -5,6 +5,7 @@ import { query } from './db.js'
 import { requireAuth, signToken } from './auth.js'
 import { lookupGeo, maskIp, resolveClientIp } from './geo.js'
 import { parseUa, pickBestUa } from './ua.js'
+import { normalizeTrackInput } from './trackInput.js'
 import {
   getDownloadBreakdown,
   getDevices,
@@ -65,9 +66,9 @@ app.post('/api/track', async (req, res) => {
       return
     }
 
-    const eventType = req.body?.eventType === 'download' ? 'download' : 'page_view'
+    const input = normalizeTrackInput(req.body)
     const ua = pickBestUa(
-      typeof req.body?.ua === 'string' ? req.body.ua : null,
+      input.ua,
       typeof req.headers['user-agent'] === 'string' ? req.headers['user-agent'] : null,
     )
     const device = parseUa(ua)
@@ -86,7 +87,7 @@ app.post('/api/track', async (req, res) => {
         $15,$16,$17
       )`,
       [
-        eventType,
+        input.eventType,
         ip,
         geo.country,
         geo.region,
@@ -97,12 +98,12 @@ app.post('/api/track', async (req, res) => {
         device.osName,
         device.osVersion,
         device.browser,
-        typeof req.body?.downloadOs === 'string' ? req.body.downloadOs : null,
-        typeof req.body?.downloadArch === 'string' ? req.body.downloadArch : null,
-        typeof req.body?.downloadFile === 'string' ? req.body.downloadFile : null,
-        typeof req.body?.path === 'string' ? req.body.path.slice(0, 300) : '/',
-        typeof req.body?.referrer === 'string' ? req.body.referrer.slice(0, 500) : null,
-        typeof req.body?.sessionId === 'string' ? req.body.sessionId.slice(0, 80) : null,
+        input.downloadOs,
+        input.downloadArch,
+        input.downloadFile,
+        input.path,
+        input.referrer,
+        input.sessionId,
       ],
     )
 
