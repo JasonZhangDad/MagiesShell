@@ -32,7 +32,7 @@ type ReleaseInfo = {
 
 const REPO = 'JasonZhangDad/MgTerminal'
 const FALLBACK_VERSION = '0.2.3'
-const TRACK_API = 'https://stats.shell.magies.top/api/track'
+const TRACK_API = 'https://shell-stats.magies.top/api/track'
 const SESSION_KEY = 'magies-shell-session-id'
 
 const OS_OPTIONS: OsOption[] = [

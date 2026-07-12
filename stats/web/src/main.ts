@@ -199,7 +199,7 @@ async function renderDashboard(): Promise<void> {
         <header class="dash-header">
           <div>
             <h1>MagiesShell 数据运营大屏</h1>
-            <div class="meta">stats.shell.magies.top · 自动刷新 60s</div>
+            <div class="meta">shell-stats.magies.top · 自动刷新 60s</div>
           </div>
           <button type="button" class="ghost-btn" data-logout>退出</button>
         </header>

@@ -16,7 +16,7 @@ export const env = {
   ),
   statsPassword: required('STATS_PASSWORD', 'MagiesStats2026!'),
   jwtSecret: required('JWT_SECRET', 'magies-shell-stats-jwt-change-me'),
-  corsOrigins: (process.env.CORS_ORIGINS || 'https://shell.magies.top,https://stats.shell.magies.top,http://localhost:5174,http://localhost:5175')
+  corsOrigins: (process.env.CORS_ORIGINS || 'https://shell.magies.top,https://shell-stats.magies.top,http://localhost:5174,http://localhost:5175')
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean),
