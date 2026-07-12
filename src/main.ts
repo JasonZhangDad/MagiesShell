@@ -374,7 +374,7 @@ function render(lang: Lang): string {
           </div>
         </div>
         <div class="hero-stage" aria-hidden="true">
-          <img src="/screenshots/hero.png" alt="" width="3142" height="1764" />
+          <img src="/screenshots/hero.png" alt="" width="1672" height="941" />
         </div>
       </section>
 
