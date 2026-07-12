@@ -1,4 +1,5 @@
 import { query } from './db.js'
+import { fillTimeseriesBuckets } from './timeseriesBuckets.js'
 
 function pctChange(current: number, previous: number): number | null {
   if (previous === 0) return current === 0 ? 0 : null
@@ -127,7 +128,11 @@ export async function getTimeseries(metric: 'visits' | 'downloads', grain: 'day'
        ORDER BY 1`,
       [eventType, String(days)],
     )
-    return result.rows.map((row) => ({ bucket: row.bucket, count: Number(row.count) }))
+    return fillTimeseriesBuckets(
+      result.rows.map((row) => ({ bucket: row.bucket, count: Number(row.count) })),
+      'day',
+      days,
+    )
   }
 
   const result = await query<{ bucket: string; count: string }>(
@@ -138,7 +143,10 @@ export async function getTimeseries(metric: 'visits' | 'downloads', grain: 'day'
      ORDER BY 1`,
     [eventType],
   )
-  return result.rows.map((row) => ({ bucket: row.bucket, count: Number(row.count) }))
+  return fillTimeseriesBuckets(
+    result.rows.map((row) => ({ bucket: row.bucket, count: Number(row.count) })),
+    'month',
+  )
 }
 
 export async function getGeo(type: 'visit' | 'download') {

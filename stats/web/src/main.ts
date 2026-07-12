@@ -29,17 +29,38 @@ const charts: echarts.ECharts[] = []
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers)
   if (!(init?.body instanceof FormData)) headers.set('Content-Type', 'application/json')
-  const response = await fetch(`${API_BASE}${path}`, { ...init, headers, credentials: 'same-origin' })
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE}${path}`, {
+      ...init,
+      headers,
+      credentials: 'same-origin',
+      redirect: 'manual',
+    })
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : '网络请求失败')
+  }
+  // Cloudflare Access 会把未授权请求 302 到 magies-cloud.cloudflareaccess.com
+  if (response.type === 'opaqueredirect' || (response.status >= 300 && response.status < 400)) {
+    throw new Error('CLOUDFLARE_ACCESS')
+  }
   if (response.status === 401) {
     signedIn = false
     renderLogin('登录已过期，请重新登录')
     throw new Error('Unauthorized')
   }
+  const contentType = response.headers.get('content-type') || ''
+  const text = await response.text()
   if (!response.ok) {
-    const text = await response.text()
     throw new Error(text || `HTTP ${response.status}`)
   }
-  return response.json() as Promise<T>
+  if (!contentType.includes('application/json')) {
+    if (text.includes('cloudflare') || text.includes('Cloudflare Access')) {
+      throw new Error('CLOUDFLARE_ACCESS')
+    }
+    throw new Error(`Unexpected response (${contentType || 'unknown'})`)
+  }
+  return JSON.parse(text) as T
 }
 
 function formatDelta(value: number | null, label: string): string {
@@ -107,7 +128,12 @@ function renderLogin(error = ''): void {
       await renderDashboard()
     } catch (error) {
       console.error(error)
-      renderLogin('用户名或密码错误')
+      const message = error instanceof Error ? error.message : ''
+      if (message === 'CLOUDFLARE_ACCESS') {
+        renderLogin('登录接口被 Cloudflare Access 拦截。请在 Zero Trust 中对 /stats-api/* 设置 Bypass，或关闭 /stats 相关 Access 应用后重试。')
+      } else {
+        renderLogin('用户名或密码错误')
+      }
     }
   })
 }
@@ -122,20 +148,60 @@ function mountChart(el: HTMLElement, option: echarts.EChartsOption): void {
   charts.push(chart)
 }
 
+function formatAxisTooltip(
+  params: unknown,
+  formatLabel: (bucket: string) => string,
+): string {
+  const items = (Array.isArray(params) ? params : [params]) as Array<{
+    axisValue?: string | number
+    marker?: string
+    seriesName?: string
+    value?: string | number
+  }>
+  const axis = String(items[0]?.axisValue ?? '')
+  const head = formatLabel(axis)
+  const lines = items.map((item) => `${item.marker ?? ''}${item.seriesName ?? ''}: ${item.value ?? 0}`)
+  return [head, ...lines].join('<br/>')
+}
+
+function formatDayLabel(bucket: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(bucket)
+  if (!match) return bucket
+  return `${Number(match[2])}月${Number(match[3])}日`
+}
+
+function formatMonthLabel(bucket: string): string {
+  const match = /^(\d{4})-(\d{2})$/.exec(bucket)
+  if (!match) return bucket
+  return `${match[1]}年${Number(match[2])}月`
+}
+
 function lineOption(title: string, visits: SeriesPoint[], downloads: SeriesPoint[]): echarts.EChartsOption {
   const buckets = Array.from(new Set([...visits.map((i) => i.bucket), ...downloads.map((i) => i.bucket)])).sort()
   const visitMap = new Map(visits.map((i) => [i.bucket, i.count]))
   const downloadMap = new Map(downloads.map((i) => [i.bucket, i.count]))
   return {
     color: ['#2ad4c8', '#c6ff4d'],
-    tooltip: { trigger: 'axis' },
+    tooltip: {
+      trigger: 'axis',
+      formatter: (params) => formatAxisTooltip(params, formatDayLabel),
+    },
     legend: { data: ['访问', '下载'], textStyle: { color: '#8aa0b5' } },
-    grid: { left: 40, right: 20, top: 40, bottom: 30 },
-    xAxis: { type: 'category', data: buckets, axisLabel: { color: '#8aa0b5' } },
+    grid: { left: 40, right: 20, top: 40, bottom: 48 },
+    xAxis: {
+      type: 'category',
+      data: buckets,
+      axisLabel: {
+        color: '#8aa0b5',
+        hideOverlap: true,
+        rotate: buckets.length > 14 ? 40 : 0,
+        formatter: (value: string) => formatDayLabel(value),
+      },
+    },
     yAxis: { type: 'value', axisLabel: { color: '#8aa0b5' }, splitLine: { lineStyle: { color: 'rgba(142,186,210,0.12)' } } },
     series: [
-      { name: '访问', type: 'line', smooth: true, data: buckets.map((b) => visitMap.get(b) || 0) },
-      { name: '下载', type: 'line', smooth: true, data: buckets.map((b) => downloadMap.get(b) || 0) },
+      { name: '访问', type: 'line', smooth: true, showSymbol: buckets.length <= 2, data: buckets.map((b) => visitMap.get(b) || 0) },
+      { name: '下载', type: 'line', smooth: true, showSymbol: buckets.length <= 2, data: buckets.map((b) => downloadMap.get(b) || 0) },
     ],
   }
 }
@@ -322,33 +388,40 @@ async function renderDashboard(): Promise<void> {
     }
 
     mountChart(dayEl, lineOption('day', visitDay, downloadDay))
+    const monthBuckets = Array.from(
+      new Set([...visitMonth.map((i) => i.bucket), ...downloadMonth.map((i) => i.bucket)]),
+    ).sort()
     mountChart(
       monthEl,
       {
         color: ['#2ad4c8', '#c6ff4d'],
-        tooltip: { trigger: 'axis' },
+        tooltip: {
+          trigger: 'axis',
+          formatter: (params) => formatAxisTooltip(params, formatMonthLabel),
+        },
         legend: { data: ['访问', '下载'], textStyle: { color: '#8aa0b5' } },
-        grid: { left: 40, right: 20, top: 40, bottom: 30 },
+        grid: { left: 40, right: 20, top: 40, bottom: 48 },
         xAxis: {
           type: 'category',
-          data: Array.from(new Set([...visitMonth.map((i) => i.bucket), ...downloadMonth.map((i) => i.bucket)])).sort(),
-          axisLabel: { color: '#8aa0b5' },
+          data: monthBuckets,
+          axisLabel: {
+            color: '#8aa0b5',
+            hideOverlap: true,
+            rotate: 35,
+            formatter: (value: string) => formatMonthLabel(value),
+          },
         },
         yAxis: { type: 'value', axisLabel: { color: '#8aa0b5' }, splitLine: { lineStyle: { color: 'rgba(142,186,210,0.12)' } } },
         series: [
           {
             name: '访问',
             type: 'bar',
-            data: Array.from(new Set([...visitMonth.map((i) => i.bucket), ...downloadMonth.map((i) => i.bucket)]))
-              .sort()
-              .map((b) => visitMonth.find((i) => i.bucket === b)?.count || 0),
+            data: monthBuckets.map((b) => visitMonth.find((i) => i.bucket === b)?.count || 0),
           },
           {
             name: '下载',
             type: 'bar',
-            data: Array.from(new Set([...visitMonth.map((i) => i.bucket), ...downloadMonth.map((i) => i.bucket)]))
-              .sort()
-              .map((b) => downloadMonth.find((i) => i.bucket === b)?.count || 0),
+            data: monthBuckets.map((b) => downloadMonth.find((i) => i.bucket === b)?.count || 0),
           },
         ],
       },
@@ -407,7 +480,12 @@ async function boot(): Promise<void> {
     window.setInterval(() => {
       if (signedIn) void renderDashboard()
     }, 60_000)
-  } catch {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : ''
+    if (message === 'CLOUDFLARE_ACCESS') {
+      renderLogin('页面 API 被 Cloudflare Access 拦截。请先在 Zero Trust 放行 /stats-api/*，否则无法进入大屏。')
+      return
+    }
     renderLogin()
   }
 }
