@@ -32,6 +32,20 @@ type ReleaseInfo = {
 
 const REPO = 'JasonZhangDad/MgTerminal'
 const FALLBACK_VERSION = '0.2.7'
+// R2 download mirror for mainland-China visitors, who cannot reach
+// github.com / api.github.com. CI publishes every release there.
+const MIRROR_BASE = 'https://dl.magies.top/stable'
+const CN_TIMEZONES = ['Asia/Shanghai', 'Asia/Urumqi', 'Asia/Chongqing', 'Asia/Harbin']
+
+function preferMirror(): boolean {
+  try {
+    if (/^zh-CN/i.test(navigator.language)) return true
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    return CN_TIMEZONES.includes(timeZone)
+  } catch {
+    return false
+  }
+}
 
 function escapeHtml(value: string): string {
   return value
@@ -281,6 +295,9 @@ function fallbackDownloadUrl(item: DownloadItem): string {
     'win-x64-zip': `MagiesTerminal-${version}-win-x64.zip`,
     'linux-x64': `MagiesTerminal-${version}-linux-x86_64.AppImage`,
     'linux-arm64': `MagiesTerminal-${version}-linux-arm64.AppImage`,
+  }
+  if (preferMirror()) {
+    return `${MIRROR_BASE}/${fileMap[item.id]}`
   }
   return `https://github.com/${REPO}/releases/download/${tag}/${fileMap[item.id]}`
 }
@@ -702,26 +719,58 @@ function initialLang(): Lang {
   return navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en'
 }
 
+async function fetchJsonWithTimeout(url: string, headers?: Record<string, string>): Promise<unknown> {
+  const response = await fetch(url, { headers, signal: AbortSignal.timeout(6000) })
+  if (!response.ok) throw new Error(`${url} ${response.status}`)
+  return response.json()
+}
+
+async function fetchReleaseFromGithub(): Promise<ReleaseInfo> {
+  const data = (await fetchJsonWithTimeout(`https://api.github.com/repos/${REPO}/releases/latest`, {
+    Accept: 'application/vnd.github+json',
+  })) as { tag_name?: string; assets?: ReleaseAsset[] }
+  const tag = sanitizeReleaseTag(data.tag_name || '')
+  if (!tag) throw new Error('Missing or invalid tag_name')
+  return {
+    tag,
+    version: normalizeVersion(tag),
+    assets: Array.isArray(data.assets) ? data.assets : [],
+  }
+}
+
+async function fetchReleaseFromMirror(): Promise<ReleaseInfo> {
+  const data = (await fetchJsonWithTimeout(`${MIRROR_BASE}/release.json`)) as {
+    tag?: string
+    files?: Array<{ name: string; url: string }>
+  }
+  const tag = sanitizeReleaseTag(data.tag || '')
+  if (!tag) throw new Error('Missing or invalid tag in mirror manifest')
+  return {
+    tag,
+    version: normalizeVersion(tag),
+    assets: (data.files || []).map((file) => ({
+      name: file.name,
+      browser_download_url: file.url,
+    })),
+  }
+}
+
 async function fetchLatestRelease(): Promise<void> {
   releaseLoading = true
+  // Mainland-China visitors query the mirror first; everyone else GitHub
+  // first. Either source falls back to the other on failure.
+  const sources = preferMirror()
+    ? [fetchReleaseFromMirror, fetchReleaseFromGithub]
+    : [fetchReleaseFromGithub, fetchReleaseFromMirror]
   try {
-    const response = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, {
-      headers: { Accept: 'application/vnd.github+json' },
-    })
-    if (!response.ok) throw new Error(`GitHub API ${response.status}`)
-    const data = (await response.json()) as {
-      tag_name?: string
-      assets?: ReleaseAsset[]
+    for (const fetchRelease of sources) {
+      try {
+        releaseInfo = await fetchRelease()
+        return
+      } catch (error) {
+        console.warn('Failed to fetch latest MagiesTerminal release from source', error)
+      }
     }
-    const tag = sanitizeReleaseTag(data.tag_name || '')
-    if (!tag) throw new Error('Missing or invalid tag_name')
-    releaseInfo = {
-      tag,
-      version: normalizeVersion(tag),
-      assets: Array.isArray(data.assets) ? data.assets : [],
-    }
-  } catch (error) {
-    console.warn('Failed to fetch latest MagiesTerminal release', error)
     if (!releaseInfo) {
       releaseInfo = {
         tag: `v${FALLBACK_VERSION}`,
