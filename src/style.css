@@ -499,47 +499,6 @@ button {
   margin-top: 0.75rem;
 }
 
-.source-picker {
-  margin-top: 1.5rem;
-}
-
-.source-picker .download-step {
-  margin-top: 0;
-}
-
-.source-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.15rem;
-  margin-top: 0.75rem;
-  padding: 0.2rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.source-toggle button {
-  min-height: 2.2rem;
-  padding: 0.4rem 0.95rem;
-  border-radius: 999px;
-  color: var(--muted);
-  transition: color 0.2s, background 0.2s;
-}
-
-.source-toggle button.is-active {
-  color: #061018;
-  background: var(--gradient);
-}
-
-.source-hint {
-  margin: 0.7rem 0 0;
-  color: var(--muted);
-  font-size: 0.85rem;
-  line-height: 1.5;
-}
-
 .os-grid,
 .version-grid {
   display: grid;
