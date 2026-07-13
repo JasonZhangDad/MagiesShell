@@ -6,6 +6,10 @@ const nginxConfig = readFileSync(
   new URL('../deploy/shell.magies.top.conf', import.meta.url),
   'utf8',
 )
+const releaseSyncScript = readFileSync(
+  new URL('../../scripts/sync-github-releases.sh', import.meta.url),
+  'utf8',
+)
 
 test('website nginx config sends browser security headers', () => {
   assert.match(nginxConfig, /Strict-Transport-Security/)
@@ -14,6 +18,23 @@ test('website nginx config sends browser security headers', () => {
   assert.match(nginxConfig, /Referrer-Policy/)
   assert.match(nginxConfig, /Permissions-Policy/)
   assert.match(nginxConfig, /frame-ancestors 'none'/)
+})
+
+test('website nginx config exposes official release mirror without SPA fallback', () => {
+  assert.match(nginxConfig, /location \^~ \/releases\//)
+  assert.match(nginxConfig, /alias \/var\/www\/shell\.magies\.top\/releases\//)
+  assert.match(nginxConfig, /default_type application\/octet-stream/)
+})
+
+test('release mirror sync includes electron-updater metadata assets', () => {
+  assert.match(releaseSyncScript, /for asset in data\.get\('assets'\) or \[\]/)
+  assert.doesNotMatch(releaseSyncScript, /name\.startswith\(prefix\)/)
+})
+
+test('release mirror sync skips unchanged releases and stores assets once', () => {
+  assert.match(releaseSyncScript, /already synced/)
+  assert.match(releaseSyncScript, /ln -s "\$\{tag\}"/)
+  assert.doesNotMatch(releaseSyncScript, /cp -a "\$\{version_dir\}\/\."/)
 })
 
 test('obsolete standalone stats domain config is removed', () => {

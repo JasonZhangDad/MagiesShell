@@ -1,0 +1,12 @@
+[Unit]
+Description=Periodically sync MagiesTerminal releases to the official mirror
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=15min
+AccuracySec=1min
+Persistent=true
+Unit=magies-shell-release-sync.service
+
+[Install]
+WantedBy=timers.target

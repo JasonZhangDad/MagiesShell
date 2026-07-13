@@ -2,6 +2,7 @@ import './style.css'
 
 type Lang = 'zh' | 'en'
 type OsId = 'mac' | 'win' | 'linux'
+type DownloadSource = 'mirror' | 'github'
 
 type DownloadItem = {
   id: string
@@ -31,7 +32,9 @@ type ReleaseInfo = {
 }
 
 const REPO = 'JasonZhangDad/MgTerminal'
-const FALLBACK_VERSION = '0.2.6'
+const FALLBACK_VERSION = '0.2.7'
+const MIRROR_BASE = 'https://shell.magies.top/releases'
+const SOURCE_KEY = 'magies-shell-download-source'
 
 function escapeHtml(value: string): string {
   return value
@@ -157,6 +160,10 @@ const copy = {
     downloadTitle: '下载 MagiesShell',
     downloadLead: (version: string) => `当前版本 ${version} · 先选择系统，再下载对应版本`,
     downloadLeadLoading: '正在获取最新版本…',
+    selectSource: '下载源',
+    sourceMirror: '官方服务器',
+    sourceGithub: 'GitHub',
+    sourceHint: '网络访问 GitHub 不稳定时可选用官方服务器',
     selectOs: '选择系统',
     pickVersion: '选择版本下载',
     changeOs: '重新选择系统',
@@ -218,6 +225,10 @@ const copy = {
     downloadTitle: 'Download MagiesShell',
     downloadLead: (version: string) => `Version ${version} · Choose your OS, then pick a build`,
     downloadLeadLoading: 'Fetching the latest release…',
+    selectSource: 'Download source',
+    sourceMirror: 'Official mirror',
+    sourceGithub: 'GitHub',
+    sourceHint: 'Prefer the official mirror if GitHub is slow or blocked',
     selectOs: 'Choose your OS',
     pickVersion: 'Choose a build to download',
     changeOs: 'Change OS',
@@ -251,6 +262,7 @@ const OS_ICONS: Record<OsId, string> = {
 }
 
 let selectedOs: OsId | null = null
+let downloadSource: DownloadSource = 'mirror'
 let releaseInfo: ReleaseInfo | null = null
 let releaseLoading = true
 let currentLang: Lang = 'zh'
@@ -259,13 +271,8 @@ function normalizeVersion(tag: string): string {
   return tag.replace(/^v/i, '')
 }
 
-function findAsset(item: DownloadItem): ReleaseAsset | undefined {
-  return releaseInfo?.assets.find((asset) => item.match.test(asset.name))
-}
-
-function fallbackDownloadUrl(item: DownloadItem): string {
+function assetFileName(item: DownloadItem): string {
   const version = releaseInfo?.version ?? FALLBACK_VERSION
-  const tag = releaseInfo?.tag ?? `v${version}`
   const fileMap: Record<string, string> = {
     'mac-arm64': `MagiesTerminal-${version}-mac-arm64.dmg`,
     'mac-x64': `MagiesTerminal-${version}-mac-x64.dmg`,
@@ -274,14 +281,37 @@ function fallbackDownloadUrl(item: DownloadItem): string {
     'linux-x64': `MagiesTerminal-${version}-linux-x86_64.AppImage`,
     'linux-arm64': `MagiesTerminal-${version}-linux-arm64.AppImage`,
   }
-  return `https://github.com/${REPO}/releases/download/${tag}/${fileMap[item.id]}`
+  return fileMap[item.id]
+}
+
+function findAsset(item: DownloadItem): ReleaseAsset | undefined {
+  return releaseInfo?.assets.find((asset) => item.match.test(asset.name))
+}
+
+function githubDownloadUrl(item: DownloadItem): string {
+  const asset = findAsset(item)
+  if (asset?.browser_download_url) return asset.browser_download_url
+  const version = releaseInfo?.version ?? FALLBACK_VERSION
+  const tag = releaseInfo?.tag ?? `v${version}`
+  return `https://github.com/${REPO}/releases/download/${tag}/${assetFileName(item)}`
+}
+
+function mirrorDownloadUrl(item: DownloadItem): string {
+  const asset = findAsset(item)
+  const fileName = asset?.name || assetFileName(item)
+  return `${MIRROR_BASE}/latest/${encodeURIComponent(fileName)}`
 }
 
 function downloadUrl(item: DownloadItem): string | null {
-  const asset = findAsset(item)
-  if (asset) return asset.browser_download_url
-  if (!releaseLoading) return fallbackDownloadUrl(item)
-  return null
+  if (releaseLoading && !releaseInfo) return null
+  return downloadSource === 'mirror' ? mirrorDownloadUrl(item) : githubDownloadUrl(item)
+}
+
+function initialDownloadSource(): DownloadSource {
+  const saved = localStorage.getItem(SOURCE_KEY)
+  if (saved === 'mirror' || saved === 'github') return saved
+  // 默认走官方镜像，降低国内访问 GitHub 失败率
+  return 'mirror'
 }
 
 function displayVersion(): string {
@@ -305,6 +335,27 @@ function detectRecommendedId(os: OsId): string {
   if (os === 'mac') return 'mac-arm64'
   if (os === 'win') return isArm ? 'win-arm64' : 'win-x64'
   return isArm ? 'linux-arm64' : 'linux-x64'
+}
+
+function renderSourcePicker(lang: Lang): string {
+  const t = copy[lang]
+  return `
+    <div class="source-picker" data-reveal>
+      <p class="download-step">${t.selectSource}</p>
+      <div class="source-toggle" role="group" aria-label="${t.selectSource}">
+        <button
+          type="button"
+          data-download-source="mirror"
+          class="${downloadSource === 'mirror' ? 'is-active' : ''}"
+        >${t.sourceMirror}</button>
+        <button
+          type="button"
+          data-download-source="github"
+          class="${downloadSource === 'github' ? 'is-active' : ''}"
+        >${t.sourceGithub}</button>
+      </div>
+      <p class="source-hint">${t.sourceHint}</p>
+    </div>`
 }
 
 function renderOsPicker(lang: Lang): string {
@@ -410,12 +461,15 @@ function renderDownloadSection(lang: Lang): string {
   const t = copy[lang]
   if (!selectedOs) {
     return `
+      ${renderSourcePicker(lang)}
       <p class="download-step">${t.selectOs}</p>
       <div class="os-grid" data-reveal>
         ${renderOsPicker(lang)}
       </div>`
   }
-  return renderVersionList(lang, selectedOs)
+  return `
+    ${renderSourcePicker(lang)}
+    ${renderVersionList(lang, selectedOs)}`
 }
 
 function renderDownloadLead(lang: Lang): string {
@@ -588,6 +642,16 @@ function trackEvent(
 }
 
 function bindDownload(root: HTMLElement, lang: Lang): void {
+  root.querySelectorAll<HTMLButtonElement>('[data-download-source]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const next = btn.dataset.downloadSource
+      if (next !== 'mirror' && next !== 'github') return
+      downloadSource = next
+      localStorage.setItem(SOURCE_KEY, next)
+      refreshDownload(lang)
+    })
+  })
+
   root.querySelectorAll<HTMLButtonElement>('[data-select-os]').forEach((btn) => {
     btn.addEventListener('click', () => {
       selectedOs = btn.dataset.selectOs as OsId
@@ -694,23 +758,56 @@ function initialLang(): Lang {
   return navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en'
 }
 
+async function fetchReleaseFromMirror(): Promise<ReleaseInfo | null> {
+  const response = await fetch(`${MIRROR_BASE}/latest.json`, {
+    headers: { Accept: 'application/json' },
+  })
+  if (!response.ok) throw new Error(`Mirror latest.json ${response.status}`)
+  const data = (await response.json()) as {
+    tag?: string
+    version?: string
+    assets?: ReleaseAsset[]
+  }
+  const tag = sanitizeReleaseTag(data.tag || '')
+  if (!tag) throw new Error('Missing or invalid mirror tag')
+  const versionFromPayload = data.version?.trim() || ''
+  const version = sanitizeReleaseTag(versionFromPayload)
+    ? normalizeVersion(versionFromPayload)
+    : normalizeVersion(tag)
+  return {
+    tag,
+    version,
+    assets: Array.isArray(data.assets) ? data.assets : [],
+  }
+}
+
+async function fetchReleaseFromGithub(): Promise<ReleaseInfo> {
+  const response = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, {
+    headers: { Accept: 'application/vnd.github+json' },
+  })
+  if (!response.ok) throw new Error(`GitHub API ${response.status}`)
+  const data = (await response.json()) as {
+    tag_name?: string
+    assets?: ReleaseAsset[]
+  }
+  const tag = sanitizeReleaseTag(data.tag_name || '')
+  if (!tag) throw new Error('Missing or invalid tag_name')
+  return {
+    tag,
+    version: normalizeVersion(tag),
+    assets: Array.isArray(data.assets) ? data.assets : [],
+  }
+}
+
 async function fetchLatestRelease(): Promise<void> {
   releaseLoading = true
   try {
-    const response = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, {
-      headers: { Accept: 'application/vnd.github+json' },
-    })
-    if (!response.ok) throw new Error(`GitHub API ${response.status}`)
-    const data = (await response.json()) as {
-      tag_name?: string
-      assets?: ReleaseAsset[]
-    }
-    const tag = sanitizeReleaseTag(data.tag_name || '')
-    if (!tag) throw new Error('Missing or invalid tag_name')
-    releaseInfo = {
-      tag,
-      version: normalizeVersion(tag),
-      assets: Array.isArray(data.assets) ? data.assets : [],
+    // 优先读官方镜像清单，GitHub API 不可达时仍能拿到版本与文件名
+    try {
+      releaseInfo = await fetchReleaseFromMirror()
+    } catch (mirrorError) {
+      console.warn('Failed to fetch release manifest from mirror', mirrorError)
+      releaseInfo = await fetchReleaseFromGithub()
     }
   } catch (error) {
     console.warn('Failed to fetch latest MagiesTerminal release', error)
@@ -727,6 +824,7 @@ async function fetchLatestRelease(): Promise<void> {
   }
 }
 
+downloadSource = initialDownloadSource()
 currentLang = initialLang()
 setLang(currentLang)
 trackEvent('page_view')
