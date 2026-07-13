@@ -31,7 +31,7 @@ type ReleaseInfo = {
 }
 
 const REPO = 'JasonZhangDad/MgTerminal'
-const FALLBACK_VERSION = '0.2.6'
+const FALLBACK_VERSION = '0.2.7'
 
 function escapeHtml(value: string): string {
   return value
@@ -63,8 +63,8 @@ const OS_OPTIONS: OsOption[] = [
     id: 'win',
     labelZh: 'Windows',
     labelEn: 'Windows',
-    hintZh: 'x64 / ARM64',
-    hintEn: 'x64 / ARM64',
+    hintZh: 'x64 · 安装版 / 便携版 / ZIP',
+    hintEn: 'x64 · Installer / Portable / ZIP',
   },
   {
     id: 'linux',
@@ -93,16 +93,23 @@ const DOWNLOADS: DownloadItem[] = [
   {
     id: 'win-x64',
     os: 'win',
-    detailZh: 'x64 · Setup',
-    detailEn: 'x64 · Setup',
+    detailZh: 'x64 · 安装版',
+    detailEn: 'x64 · Installer',
     match: /^MagiesTerminal-[\d.]+-win-x64\.exe$/i,
   },
   {
-    id: 'win-arm64',
+    id: 'win-x64-portable',
     os: 'win',
-    detailZh: 'ARM64 · Setup',
-    detailEn: 'ARM64 · Setup',
-    match: /^MagiesTerminal-[\d.]+-win-arm64\.exe$/i,
+    detailZh: 'x64 · 便携版',
+    detailEn: 'x64 · Portable',
+    match: /^MagiesTerminal-[\d.]+-portable-win-x64\.exe$/i,
+  },
+  {
+    id: 'win-x64-zip',
+    os: 'win',
+    detailZh: 'x64 · ZIP 压缩包',
+    detailEn: 'x64 · ZIP archive',
+    match: /^MagiesTerminal-[\d.]+-win-x64\.zip$/i,
   },
   {
     id: 'linux-x64',
@@ -270,7 +277,8 @@ function fallbackDownloadUrl(item: DownloadItem): string {
     'mac-arm64': `MagiesTerminal-${version}-mac-arm64.dmg`,
     'mac-x64': `MagiesTerminal-${version}-mac-x64.dmg`,
     'win-x64': `MagiesTerminal-${version}-win-x64.exe`,
-    'win-arm64': `MagiesTerminal-${version}-win-arm64.exe`,
+    'win-x64-portable': `MagiesTerminal-${version}-portable-win-x64.exe`,
+    'win-x64-zip': `MagiesTerminal-${version}-win-x64.zip`,
     'linux-x64': `MagiesTerminal-${version}-linux-x86_64.AppImage`,
     'linux-arm64': `MagiesTerminal-${version}-linux-arm64.AppImage`,
   }
@@ -303,7 +311,7 @@ function detectRecommendedId(os: OsId): string {
   const platform = navigator.platform || ''
   const isArm = /arm|aarch64/i.test(`${ua} ${platform}`)
   if (os === 'mac') return 'mac-arm64'
-  if (os === 'win') return isArm ? 'win-arm64' : 'win-x64'
+  if (os === 'win') return 'win-x64'
   return isArm ? 'linux-arm64' : 'linux-x64'
 }
 
