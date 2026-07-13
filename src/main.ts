@@ -431,6 +431,18 @@ function renderVersionList(lang: Lang, os: OsId): string {
     </div>`
 }
 
+function renderCnSpeedHint(lang: Lang): string {
+  // Only mainland-China visitors download through the mirror, whose
+  // single-thread speed is limited; a multi-threaded downloader helps a lot
+  // (the mirror supports Range requests for exactly this).
+  if (!preferMirror()) return ''
+  const text =
+    lang === 'zh'
+      ? '提示：下载速度较慢时，可复制下载链接到支持多线程的下载工具（如 IDM、NDM、迅雷）加速。'
+      : 'Tip: if the download is slow, copy the link into a multi-threaded download manager (IDM, NDM, etc.) for much faster speeds.'
+  return `<p class="download-cn-hint">${text}</p>`
+}
+
 function renderDownloadSection(lang: Lang): string {
   const t = copy[lang]
   if (!selectedOs) {
@@ -440,7 +452,7 @@ function renderDownloadSection(lang: Lang): string {
         ${renderOsPicker(lang)}
       </div>`
   }
-  return renderVersionList(lang, selectedOs)
+  return renderVersionList(lang, selectedOs) + renderCnSpeedHint(lang)
 }
 
 function renderDownloadLead(lang: Lang): string {

@@ -21,6 +21,13 @@ test('release lookup tries both GitHub and the mirror manifest', () => {
   assert.match(source, /preferMirror\(\)\s*\?\s*\[fetchReleaseFromMirror,\s*fetchReleaseFromGithub\]\s*:\s*\[fetchReleaseFromGithub,\s*fetchReleaseFromMirror\]/)
 })
 
+test('mainland-China visitors see the multi-threaded downloader hint', () => {
+  assert.match(source, /function renderCnSpeedHint\(lang: Lang\)/)
+  assert.match(source, /if \(!preferMirror\(\)\) return ''/)
+  assert.match(source, /多线程的下载工具/)
+  assert.match(source, /renderVersionList\(lang, selectedOs\) \+ renderCnSpeedHint\(lang\)/)
+})
+
 test('download fallback URLs follow the preferred source', () => {
   assert.match(source, /preferMirror\(\)[\s\S]{0,120}\$\{MIRROR_BASE\}\/\$\{fileMap\[item\.id\]\}/)
   assert.match(source, /github\.com\/\$\{REPO\}\/releases\/download/)
