@@ -1,5 +1,5 @@
 [Unit]
-Description=MagiesShell Stats API
+Description=MagiesTerminal Stats API
 After=network.target postgresql.service
 
 [Service]

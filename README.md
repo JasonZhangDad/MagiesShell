@@ -1,6 +1,6 @@
-# MagiesShell Website
+# MagiesTerminal Website (MagiesShell)
 
-MagiesShell 官方落地页（对应桌面客户端 [MagiesTerminal](https://github.com/JasonZhangDad/MagiesTerminal)）。
+MagiesTerminal 官方落地页（桌面客户端仓库 [MagiesTerminal](https://github.com/JasonZhangDad/MagiesTerminal)）。
 
 ## 开发
 

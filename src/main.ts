@@ -143,9 +143,9 @@ const DOWNLOADS: DownloadItem[] = [
 
 const copy = {
   zh: {
-    metaTitle: 'MagiesShell — AI 驱动的 SSH 工作空间',
+    metaTitle: 'MagiesTerminal — AI 驱动的 SSH 工作空间',
     metaDesc:
-      'MagiesShell 是现代化的跨平台 SSH 客户端、SFTP 浏览器与终端工作空间。内置 AI Agent，让运维与多主机协作更高效。',
+      'MagiesTerminal 是现代化的跨平台 SSH 客户端、SFTP 浏览器与终端工作空间。内置 AI Agent，让运维与多主机协作更高效。',
     headline: '把服务器舰队装进一个工作空间',
     sub: 'AI 驱动的 SSH 客户端、SFTP 浏览器与终端管理器。分屏、Vault、多主机编排，为日常运维而生。',
     ctaDownload: '立即下载',
@@ -166,7 +166,7 @@ const copy = {
         body: '拖拽上传下载，内置编辑器就地改文件，文件流与终端流在同一处。',
       },
     ],
-    agentLabel: 'MagiesShell Agent',
+    agentLabel: 'Magies Agent',
     agentTitle: '用自然语言指挥服务器',
     agentLead: '内置 AI 搭档理解你的环境，执行命令、诊断问题，并跨多台主机协同操作。',
     agentPoints: [
@@ -175,7 +175,7 @@ const copy = {
       { title: '多主机编排', body: '一次对话完成集群初始化、部署与节点协同。' },
     ],
     downloadLabel: '开始使用',
-    downloadTitle: '下载 MagiesShell',
+    downloadTitle: '下载 MagiesTerminal',
     downloadLead: (version: string) => `当前版本 ${version} · 先选择系统，再下载对应版本`,
     downloadLeadLoading: '正在获取最新版本…',
     selectOs: '选择系统',
@@ -199,13 +199,13 @@ const copy = {
         '若被 Defender 隔离，可在「病毒和威胁防护 → 保护历史记录」中允许该文件。',
       ],
     },
-    footerNote: 'MagiesShell · AI-Powered SSH Workspace',
+    footerNote: 'MagiesTerminal · AI-Powered SSH Workspace',
     footerCopyright: '© 2026 Magies Technology All rights reserved.',
   },
   en: {
-    metaTitle: 'MagiesShell — AI-Powered SSH Workspace',
+    metaTitle: 'MagiesTerminal — AI-Powered SSH Workspace',
     metaDesc:
-      'MagiesShell is a modern cross-platform SSH client, SFTP browser, and terminal workspace with a built-in AI agent for multi-host ops.',
+      'MagiesTerminal is a modern cross-platform SSH client, SFTP browser, and terminal workspace with a built-in AI agent for multi-host ops.',
     headline: 'Your server fleet, in one workspace',
     sub: 'An AI-powered SSH client, SFTP browser, and terminal manager. Splits, Vault, and multi-host orchestration built for daily ops.',
     ctaDownload: 'Download',
@@ -226,7 +226,7 @@ const copy = {
         body: 'Drag-and-drop transfers and an in-app editor so files and shells share one surface.',
       },
     ],
-    agentLabel: 'MagiesShell Agent',
+    agentLabel: 'Magies Agent',
     agentTitle: 'Talk to your servers',
     agentLead:
       'A built-in AI partner that understands your environment, runs commands, diagnoses issues, and coordinates across hosts.',
@@ -236,7 +236,7 @@ const copy = {
       { title: 'Multi-host orchestration', body: 'Spin up clusters and deployments in one conversation.' },
     ],
     downloadLabel: 'Get started',
-    downloadTitle: 'Download MagiesShell',
+    downloadTitle: 'Download MagiesTerminal',
     downloadLead: (version: string) => `Version ${version} · Choose your OS, then pick a build`,
     downloadLeadLoading: 'Fetching the latest release…',
     selectOs: 'Choose your OS',
@@ -260,7 +260,7 @@ const copy = {
         'If Defender quarantined it, allow the file under Virus & threat protection → Protection history.',
       ],
     },
-    footerNote: 'MagiesShell · AI-Powered SSH Workspace',
+    footerNote: 'MagiesTerminal · AI-Powered SSH Workspace',
     footerCopyright: '© 2026 Magies Technology All rights reserved.',
   },
 } as const
@@ -465,9 +465,9 @@ function render(lang: Lang): string {
   const t = copy[lang]
   return `
     <header class="site-header" data-header>
-      <a class="brand-mark" href="#top" aria-label="MagiesShell">
+      <a class="brand-mark" href="#top" aria-label="MagiesTerminal">
         <img src="/icon.png" alt="" width="28" height="28" />
-        <span>MagiesShell</span>
+        <span>MagiesTerminal</span>
       </a>
       <div class="nav-actions">
         <div class="lang-toggle" role="group" aria-label="Language">
@@ -478,9 +478,9 @@ function render(lang: Lang): string {
     </header>
 
     <main id="top">
-      <section class="hero" aria-label="MagiesShell">
+      <section class="hero" aria-label="MagiesTerminal">
         <div class="hero-copy">
-          <h1 class="brand-hero">MagiesShell<span class="cursor-blink" aria-hidden="true"></span></h1>
+          <h1 class="brand-hero">MagiesTerminal<span class="cursor-blink" aria-hidden="true"></span></h1>
           <p class="hero-headline">${t.headline}</p>
           <p class="hero-sub">${t.sub}</p>
           <div class="hero-cta">
@@ -492,7 +492,7 @@ function render(lang: Lang): string {
         </div>
       </section>
 
-      <section class="section gallery" id="gallery" aria-label="MagiesShell gallery">
+      <section class="section gallery" id="gallery" aria-label="MagiesTerminal gallery">
         <div class="gallery-grid">
           <figure class="gallery-card" data-reveal>
             <img src="/screenshots/gallery-1.png" alt="" width="1448" height="1086" loading="lazy" />

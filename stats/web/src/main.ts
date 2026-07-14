@@ -86,7 +86,7 @@ function renderLogin(error = ''): void {
   app.innerHTML = `
     <div class="login-page">
       <form class="login-card" data-login>
-        <h1>MagiesShell Stats</h1>
+        <h1>MagiesTerminal Stats</h1>
         <p>输入用户名和密码进入运营大屏</p>
         <p class="login-error">${error}</p>
         <input type="text" name="username" placeholder="Username" autocomplete="username" required />
@@ -281,7 +281,7 @@ async function renderDashboard(): Promise<void> {
       <div class="dashboard">
         <header class="dash-header">
           <div>
-            <h1>MagiesShell 数据运营大屏</h1>
+            <h1>MagiesTerminal 数据运营大屏</h1>
             <div class="meta">自动刷新 60s</div>
           </div>
           <button type="button" class="ghost-btn" data-logout>退出</button>

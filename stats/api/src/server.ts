@@ -182,5 +182,5 @@ app.get('/api/recent', requireAuth, async (_req, res) => {
 })
 
 app.listen(env.port, '127.0.0.1', () => {
-  console.log(`MagiesShell stats API on 127.0.0.1:${env.port}`)
+  console.log(`MagiesTerminal stats API on 127.0.0.1:${env.port}`)
 })
