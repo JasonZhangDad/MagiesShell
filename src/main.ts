@@ -506,10 +506,10 @@ function render(lang: Lang): string {
         </ul>
         <figure class="shot-frame" data-reveal>
           <img
-            src="/screenshots/agent-settings.webp"
+            src="/screenshots/agent-live-v1.webp"
             alt="${t.agentShotAlt}"
-            width="1400"
-            height="875"
+            width="1600"
+            height="916"
             loading="lazy"
             decoding="async"
           />
