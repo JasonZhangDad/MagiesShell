@@ -975,6 +975,14 @@ body.changelog-open {
   color: var(--cyan);
 }
 
+/* Changelog is in-app only — never present as external navigation. */
+.changelog-body a {
+  color: inherit;
+  text-decoration: none;
+  pointer-events: none;
+  cursor: text;
+}
+
 .changelog-status {
   margin: 0.5rem 0;
   color: var(--muted);

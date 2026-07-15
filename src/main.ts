@@ -34,6 +34,9 @@ type ReleaseInfo = {
 const REPO = 'JasonZhangDad/MgTerminal'
 const SITE_URL = 'https://shell.magies.top'
 const FALLBACK_VERSION = '0.4.6'
+/** Same-origin snapshot first — never navigates the user off-site. */
+const CHANGELOG_LOCAL = '/changelog.md'
+/** Optional refresh source (API only; content is rendered in-page, no repo links). */
 const CHANGELOG_API = `https://api.github.com/repos/${REPO}/contents/CHANGELOG.md`
 // R2 download mirror for mainland-China visitors, who cannot reach
 // github.com / api.github.com. CI publishes every release there.
@@ -761,12 +764,14 @@ function renderChangelogMarkdown(md: string): string {
   }
 
   const formatInline = (text: string): string => {
-    let s = escapeHtml(text)
-    // Strip bare GitHub URLs from display (no external repo links on the marketing site)
-    s = s.replace(/https?:\/\/github\.com\/[^\s)<]+/g, '')
+    let s = text
+    // Markdown links → label only (never emit <a href>)
+    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')
+    // Drop any remaining URLs (github or otherwise)
+    s = s.replace(/https?:\/\/[^\s)<\]>]+/g, '')
+    s = escapeHtml(s)
     s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     s = s.replace(/`([^`]+)`/g, '<code>$1</code>')
-    // Clean leftover "by @user in" tails after URL strip
     s = s.replace(/\s+by\s+@[\w-]+\s+in\s*$/i, '')
     s = s.replace(/\s{2,}/g, ' ').trim()
     return s
@@ -811,20 +816,33 @@ function renderChangelogMarkdown(md: string): string {
 let changelogCache: string | null = null
 let changelogLoading = false
 
-async function fetchChangelogMarkdown(): Promise<string> {
-  if (changelogCache) return changelogCache
-  const response = await fetch(CHANGELOG_API, {
-    headers: {
-      Accept: 'application/vnd.github.raw+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-    },
+async function fetchTextWithTimeout(url: string, headers?: Record<string, string>): Promise<string> {
+  const response = await fetch(url, {
+    headers,
     signal: AbortSignal.timeout(8000),
   })
-  if (!response.ok) throw new Error(`changelog ${response.status}`)
+  if (!response.ok) throw new Error(`${url} ${response.status}`)
   const text = (await response.text()).trim()
-  if (!text) throw new Error('empty changelog')
-  changelogCache = text
+  if (!text) throw new Error(`empty ${url}`)
   return text
+}
+
+async function fetchChangelogMarkdown(): Promise<string> {
+  if (changelogCache) return changelogCache
+
+  // Prefer same-origin copy so the UI never depends on opening GitHub in a tab.
+  try {
+    changelogCache = await fetchTextWithTimeout(CHANGELOG_LOCAL)
+    return changelogCache
+  } catch {
+    // fall through
+  }
+
+  changelogCache = await fetchTextWithTimeout(CHANGELOG_API, {
+    Accept: 'application/vnd.github.raw+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  })
+  return changelogCache
 }
 
 function setChangelogBody(html: string): void {
@@ -873,13 +891,28 @@ function closeChangelogModal(): void {
 
 function bindChangelog(root: HTMLElement, lang: Lang): void {
   root.querySelectorAll('[data-open-changelog]').forEach((el) => {
-    el.addEventListener('click', () => openChangelogModal(lang))
+    el.addEventListener('click', (event) => {
+      event.preventDefault()
+      openChangelogModal(lang)
+    })
   })
   root.querySelectorAll('[data-close-changelog]').forEach((el) => {
     el.addEventListener('click', () => closeChangelogModal())
   })
   const dialog = root.querySelector('.changelog-dialog')
   dialog?.addEventListener('click', (event) => event.stopPropagation())
+
+  // Never navigate away from the site from inside the modal (no repo links).
+  const body = root.querySelector('[data-changelog-body]')
+  body?.addEventListener('click', (event) => {
+    const target = event.target
+    if (!(target instanceof Element)) return
+    const anchor = target.closest('a')
+    if (anchor) {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+  })
 
   // Escape to close (single listener via property flag)
   if (!root.dataset.changelogEscBound) {
