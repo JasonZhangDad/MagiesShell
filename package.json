@@ -5,8 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "sync:changelog": "node scripts/sync-changelog.mjs",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "build:release": "npm run sync:changelog && npm run build",
+    "preview": "vite preview",
+    "test": "node --test tests/*.mjs"
   },
   "devDependencies": {
     "typescript": "~5.8.3",

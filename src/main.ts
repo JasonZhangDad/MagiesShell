@@ -34,10 +34,10 @@ type ReleaseInfo = {
 const REPO = 'JasonZhangDad/MgTerminal'
 const SITE_URL = 'https://shell.magies.top'
 const FALLBACK_VERSION = '0.4.6'
-/** Same-origin snapshot first — never navigates the user off-site. */
+/** Same-origin only — never opens or depends on a public repo page. */
 const CHANGELOG_LOCAL = '/changelog.md'
-/** Optional refresh source (API only; content is rendered in-page, no repo links). */
-const CHANGELOG_API = `https://api.github.com/repos/${REPO}/contents/CHANGELOG.md`
+/** Same support address as the desktop app “问题咨询” entry. */
+const SUPPORT_EMAIL = 'hibake888@outlook.com'
 // R2 download mirror for mainland-China visitors, who cannot reach
 // github.com / api.github.com. CI publishes every release there.
 const MIRROR_BASE = 'https://dl.magies.top/stable'
@@ -183,6 +183,8 @@ const copy = {
     changelogLoading: '正在加载更新日志…',
     changelogError: '暂时无法获取更新日志，请稍后再试。',
     changelogEmpty: '暂无更新记录。',
+    contactLabel: '问题咨询',
+    contactCopied: '邮箱已复制',
     featuresLabel: '工作空间',
     featuresTitle: '为长期运维流设计',
     featuresLead: '不是单一终端窗口，而是可持续驻留的服务器工作台。',
@@ -257,6 +259,8 @@ const copy = {
     changelogLoading: 'Loading changelog…',
     changelogError: 'Could not load the changelog. Please try again later.',
     changelogEmpty: 'No release notes yet.',
+    contactLabel: 'Contact',
+    contactCopied: 'Email copied',
     featuresLabel: 'Workspace',
     featuresTitle: 'Built for long-running ops',
     featuresLead: 'Not a single terminal window — a workspace you stay in all day.',
@@ -577,16 +581,16 @@ function render(lang: Lang): string {
       <section class="section gallery" id="gallery" aria-label="MagiesTerminal gallery">
         <div class="gallery-grid">
           <figure class="gallery-card" data-reveal>
-            <img src="/screenshots/gallery-1-v3.webp" alt="${t.galleryAlt1}" width="1200" height="900" loading="lazy" decoding="async" />
+            <img src="/screenshots/gallery-1-v4.webp" alt="${t.galleryAlt1}" width="1200" height="900" loading="lazy" decoding="async" />
           </figure>
           <figure class="gallery-card" data-reveal>
-            <img src="/screenshots/gallery-2-v3.webp" alt="${t.galleryAlt2}" width="1200" height="900" loading="lazy" decoding="async" />
+            <img src="/screenshots/gallery-2-v4.webp" alt="${t.galleryAlt2}" width="1200" height="900" loading="lazy" decoding="async" />
           </figure>
           <figure class="gallery-card" data-reveal>
-            <img src="/screenshots/gallery-3-v3.webp" alt="${t.galleryAlt3}" width="1200" height="900" loading="lazy" decoding="async" />
+            <img src="/screenshots/gallery-3-v4.webp" alt="${t.galleryAlt3}" width="1200" height="900" loading="lazy" decoding="async" />
           </figure>
           <figure class="gallery-card" data-reveal>
-            <img src="/screenshots/gallery-4-v3.webp" alt="${t.galleryAlt4}" width="1200" height="900" loading="lazy" decoding="async" />
+            <img src="/screenshots/gallery-4-v4.webp" alt="${t.galleryAlt4}" width="1200" height="900" loading="lazy" decoding="async" />
           </figure>
         </div>
       </section>
@@ -650,6 +654,7 @@ function render(lang: Lang): string {
         <span>${t.footerNote}</span>
         <nav class="footer-links" aria-label="Footer">
           <button type="button" class="footer-link-btn" data-open-changelog>${t.releasesLabel}</button>
+          <button type="button" class="footer-link-btn" data-copy-contact>${t.contactLabel}</button>
         </nav>
         <span class="footer-copyright">${t.footerCopyright}</span>
       </div>
@@ -704,6 +709,7 @@ function applyMeta(lang: Lang): void {
   upsertMeta('property', 'og:description', t.metaDesc)
   upsertMeta('property', 'og:image', ogImage)
   upsertMeta('property', 'og:locale', ogLocale)
+  upsertMeta('property', 'og:locale:alternate', lang === 'zh' ? 'en_US' : 'zh_CN')
   upsertMeta('name', 'twitter:card', 'summary_large_image')
   upsertMeta('name', 'twitter:title', t.metaTitle)
   upsertMeta('name', 'twitter:description', t.metaDesc)
@@ -716,6 +722,22 @@ function applyMeta(lang: Lang): void {
     document.head.appendChild(canonical)
   }
   canonical.setAttribute('href', `${SITE_URL}/`)
+
+  // Single-page site: both hreflang variants point at the same URL (language is client-side).
+  for (const { hreflang, href } of [
+    { hreflang: 'zh-CN', href: `${SITE_URL}/` },
+    { hreflang: 'en', href: `${SITE_URL}/` },
+    { hreflang: 'x-default', href: `${SITE_URL}/` },
+  ]) {
+    let link = document.head.querySelector(`link[rel="alternate"][hreflang="${hreflang}"]`)
+    if (!link) {
+      link = document.createElement('link')
+      link.setAttribute('rel', 'alternate')
+      link.setAttribute('hreflang', hreflang)
+      document.head.appendChild(link)
+    }
+    link.setAttribute('href', href)
+  }
 
   const jsonLd = document.getElementById('json-ld')
   if (jsonLd) {
@@ -735,6 +757,14 @@ function applyMeta(lang: Lang): void {
       description: t.metaDesc,
       image: ogImage,
       softwareVersion: releaseInfo?.version ?? FALLBACK_VERSION,
+      inLanguage: [htmlLang, lang === 'zh' ? 'en' : 'zh-CN'],
+      email: SUPPORT_EMAIL,
+      publisher: {
+        '@type': 'Organization',
+        name: 'Magies Technology',
+        url: SITE_URL,
+        email: SUPPORT_EMAIL,
+      },
     })
   }
 }
@@ -832,19 +862,8 @@ async function fetchTextWithTimeout(url: string, headers?: Record<string, string
 
 async function fetchChangelogMarkdown(): Promise<string> {
   if (changelogCache) return changelogCache
-
-  // Prefer same-origin copy so the UI never depends on opening GitHub in a tab.
-  try {
-    changelogCache = await fetchTextWithTimeout(CHANGELOG_LOCAL)
-    return changelogCache
-  } catch {
-    // fall through
-  }
-
-  changelogCache = await fetchTextWithTimeout(CHANGELOG_API, {
-    Accept: 'application/vnd.github.raw+json',
-    'X-GitHub-Api-Version': '2022-11-28',
-  })
+  // Same-origin snapshot only (synced via `npm run sync:changelog`).
+  changelogCache = await fetchTextWithTimeout(CHANGELOG_LOCAL)
   return changelogCache
 }
 
@@ -924,6 +943,36 @@ function bindChangelog(root: HTMLElement, lang: Lang): void {
       if (event.key === 'Escape') closeChangelogModal()
     })
   }
+}
+
+async function copySupportEmail(btn: HTMLButtonElement, lang: Lang): Promise<void> {
+  const t = copy[lang]
+  try {
+    await navigator.clipboard.writeText(SUPPORT_EMAIL)
+  } catch {
+    const area = document.createElement('textarea')
+    area.value = SUPPORT_EMAIL
+    area.setAttribute('readonly', '')
+    area.style.position = 'fixed'
+    area.style.left = '-9999px'
+    document.body.appendChild(area)
+    area.select()
+    document.execCommand('copy')
+    document.body.removeChild(area)
+  }
+  const prev = btn.textContent
+  btn.textContent = t.contactCopied
+  window.setTimeout(() => {
+    btn.textContent = prev || t.contactLabel
+  }, 1600)
+}
+
+function bindContact(root: HTMLElement, lang: Lang): void {
+  root.querySelectorAll<HTMLButtonElement>('[data-copy-contact]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      void copySupportEmail(btn, lang)
+    })
+  })
 }
 
 function getSessionId(): string {
@@ -1057,6 +1106,7 @@ function bindInteractions(root: HTMLElement, lang: Lang): void {
   if (downloadRoot instanceof HTMLElement) bindDownload(downloadRoot, lang)
 
   bindChangelog(root, lang)
+  bindContact(root, lang)
 }
 
 function setLang(lang: Lang): void {
