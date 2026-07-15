@@ -1,6 +1,6 @@
-# MagiesTerminal Website (MagiesShell)
+# MagiesTerminal Website
 
-MagiesTerminal 官方落地页（桌面客户端仓库 [MagiesTerminal](https://github.com/JasonZhangDad/MagiesTerminal)）。
+MagiesTerminal 官方落地页（域名 [shell.magies.top](https://shell.magies.top)，桌面客户端仓库 [MgTerminal](https://github.com/JasonZhangDad/MgTerminal)）。
 
 ## 开发
 

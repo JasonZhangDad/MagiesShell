@@ -22,6 +22,7 @@ type OsOption = {
 type ReleaseAsset = {
   name: string
   browser_download_url: string
+  size?: number
 }
 
 type ReleaseInfo = {
@@ -31,7 +32,10 @@ type ReleaseInfo = {
 }
 
 const REPO = 'JasonZhangDad/MgTerminal'
-const FALLBACK_VERSION = '0.2.7'
+const SITE_URL = 'https://shell.magies.top'
+const GITHUB_REPO_URL = `https://github.com/${REPO}`
+const GITHUB_RELEASES_URL = `${GITHUB_REPO_URL}/releases`
+const FALLBACK_VERSION = '0.4.6'
 // R2 download mirror for mainland-China visitors, who cannot reach
 // github.com / api.github.com. CI publishes every release there.
 const MIRROR_BASE = 'https://dl.magies.top/stable'
@@ -84,8 +88,8 @@ const OS_OPTIONS: OsOption[] = [
     id: 'linux',
     labelZh: 'Linux',
     labelEn: 'Linux',
-    hintZh: 'AppImage x64 / ARM64',
-    hintEn: 'AppImage x64 / ARM64',
+    hintZh: 'AppImage / deb · x64 / ARM64',
+    hintEn: 'AppImage / deb · x64 / ARM64',
   },
 ]
 
@@ -139,6 +143,20 @@ const DOWNLOADS: DownloadItem[] = [
     detailEn: 'ARM64 · AppImage',
     match: /^MagiesTerminal-[\d.]+-linux-arm64\.AppImage$/i,
   },
+  {
+    id: 'linux-x64-deb',
+    os: 'linux',
+    detailZh: 'x64 · deb',
+    detailEn: 'x64 · deb',
+    match: /^MagiesTerminal-[\d.]+-linux-amd64\.deb$/i,
+  },
+  {
+    id: 'linux-arm64-deb',
+    os: 'linux',
+    detailZh: 'ARM64 · deb',
+    detailEn: 'ARM64 · deb',
+    match: /^MagiesTerminal-[\d.]+-linux-arm64\.deb$/i,
+  },
 ]
 
 const copy = {
@@ -149,6 +167,17 @@ const copy = {
     headline: '把服务器舰队装进一个工作空间',
     sub: 'AI 驱动的 SSH 客户端、SFTP 浏览器与终端管理器。分屏、Vault、多主机编排，为日常运维而生。',
     ctaDownload: '立即下载',
+    navFeatures: '功能',
+    navAgent: 'Agent',
+    navDownload: '下载',
+    galleryAlt1: 'MagiesTerminal 工作区界面截图',
+    galleryAlt2: 'MagiesTerminal 分屏与会话界面截图',
+    galleryAlt3: 'MagiesTerminal SFTP 与文件管理截图',
+    galleryAlt4: 'MagiesTerminal 主机库与连接管理截图',
+    agentShotAlt: 'Magies Agent 设置界面截图',
+    macIntelHint: 'Intel Mac 请选择「Intel · DMG」。',
+    githubLabel: 'GitHub',
+    releasesLabel: '更新日志',
     featuresLabel: '工作空间',
     featuresTitle: '为长期运维流设计',
     featuresLead: '不是单一终端窗口，而是可持续驻留的服务器工作台。',
@@ -209,6 +238,17 @@ const copy = {
     headline: 'Your server fleet, in one workspace',
     sub: 'An AI-powered SSH client, SFTP browser, and terminal manager. Splits, Vault, and multi-host orchestration built for daily ops.',
     ctaDownload: 'Download',
+    navFeatures: 'Features',
+    navAgent: 'Agent',
+    navDownload: 'Download',
+    galleryAlt1: 'MagiesTerminal workspace screenshot',
+    galleryAlt2: 'MagiesTerminal split terminal screenshot',
+    galleryAlt3: 'MagiesTerminal SFTP and file manager screenshot',
+    galleryAlt4: 'MagiesTerminal host vault screenshot',
+    agentShotAlt: 'Magies Agent settings screenshot',
+    macIntelHint: 'On Intel Macs, choose Intel · DMG.',
+    githubLabel: 'GitHub',
+    releasesLabel: 'Changelog',
     featuresLabel: 'Workspace',
     featuresTitle: 'Built for long-running ops',
     featuresLead: 'Not a single terminal window — a workspace you stay in all day.',
@@ -244,7 +284,7 @@ const copy = {
     changeOs: 'Change OS',
     recommended: 'Recommended',
     unavailable: 'Unavailable',
-    unsignedTitle: 'After installing on macOS',
+    unsignedTitle: 'After installing',
     unsignedMac: {
       lead: 'After dragging into Applications, run this one command in Terminal (newer macOS often has no Open Anyway):',
       command:
@@ -295,6 +335,8 @@ function fallbackDownloadUrl(item: DownloadItem): string {
     'win-x64-zip': `MagiesTerminal-${version}-win-x64.zip`,
     'linux-x64': `MagiesTerminal-${version}-linux-x86_64.AppImage`,
     'linux-arm64': `MagiesTerminal-${version}-linux-arm64.AppImage`,
+    'linux-x64-deb': `MagiesTerminal-${version}-linux-amd64.deb`,
+    'linux-arm64-deb': `MagiesTerminal-${version}-linux-arm64.deb`,
   }
   if (preferMirror()) {
     return `${MIRROR_BASE}/${fileMap[item.id]}`
@@ -312,6 +354,18 @@ function downloadUrl(item: DownloadItem): string | null {
 function displayVersion(): string {
   if (releaseLoading && !releaseInfo) return '…'
   return escapeHtml(releaseInfo?.version ?? FALLBACK_VERSION)
+}
+
+function formatFileSize(bytes: number | undefined): string {
+  if (bytes == null || !Number.isFinite(bytes) || bytes <= 0) return ''
+  const mb = bytes / (1024 * 1024)
+  if (mb >= 100) return `${Math.round(mb)} MB`
+  if (mb >= 10) return `${mb.toFixed(0)} MB`
+  return `${mb.toFixed(1)} MB`
+}
+
+function assetSizeLabel(item: DownloadItem): string {
+  return formatFileSize(findAsset(item)?.size)
 }
 
 function detectOs(): OsId {
@@ -416,17 +470,25 @@ function renderVersionList(lang: Lang, os: OsId): string {
               ? `class="download-card is-disabled${recommended ? ' is-recommended' : ''}" aria-disabled="true"`
               : `class="download-card${recommended ? ' is-recommended' : ''}" href="${href}" download data-track-download="${item.id}" data-download-file="${item.id}"`
 
+            const sizeLabel = assetSizeLabel(item)
+            const detailLine = disabled
+              ? t.unavailable
+              : sizeLabel
+                ? `v${version} · ${sizeLabel}`
+                : `v${version}`
+
             return `
               <${tag} ${attrs}>
                 <span class="download-meta">
                   <span class="download-os">${detail}</span>
-                  <span class="download-detail">${disabled ? t.unavailable : `v${version}`}</span>
+                  <span class="download-detail">${detailLine}</span>
                 </span>
                 ${recommended ? `<span class="download-badge">${t.recommended}</span>` : ''}
               </${tag}>`
           })
           .join('')}
       </div>
+      ${os === 'mac' ? `<p class="download-arch-hint">${t.macIntelHint}</p>` : ''}
       ${renderUnsignedNotice(lang, os)}
     </div>`
 }
@@ -466,9 +528,14 @@ function render(lang: Lang): string {
   return `
     <header class="site-header" data-header>
       <a class="brand-mark" href="#top" aria-label="MagiesTerminal">
-        <img src="/icon.png" alt="" width="28" height="28" />
+        <img src="/icon.png" alt="MagiesTerminal" width="28" height="28" />
         <span>MagiesTerminal</span>
       </a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="#features">${t.navFeatures}</a>
+        <a href="#agent">${t.navAgent}</a>
+        <a href="#download">${t.navDownload}</a>
+      </nav>
       <div class="nav-actions">
         <div class="lang-toggle" role="group" aria-label="Language">
           <button type="button" data-lang="zh" class="${lang === 'zh' ? 'is-active' : ''}">中文</button>
@@ -488,23 +555,30 @@ function render(lang: Lang): string {
           </div>
         </div>
         <div class="hero-stage" aria-hidden="true">
-          <img src="/screenshots/hero-workspace.png" alt="" width="1672" height="941" />
+          <img
+            src="/screenshots/hero-workspace.webp"
+            alt=""
+            width="1600"
+            height="900"
+            fetchpriority="high"
+            decoding="async"
+          />
         </div>
       </section>
 
       <section class="section gallery" id="gallery" aria-label="MagiesTerminal gallery">
         <div class="gallery-grid">
           <figure class="gallery-card" data-reveal>
-            <img src="/screenshots/gallery-1.png" alt="" width="1448" height="1086" loading="lazy" />
+            <img src="/screenshots/gallery-1.webp" alt="${t.galleryAlt1}" width="1200" height="900" loading="lazy" decoding="async" />
           </figure>
           <figure class="gallery-card" data-reveal>
-            <img src="/screenshots/gallery-2.png" alt="" width="1448" height="1086" loading="lazy" />
+            <img src="/screenshots/gallery-2.webp" alt="${t.galleryAlt2}" width="1200" height="900" loading="lazy" decoding="async" />
           </figure>
           <figure class="gallery-card" data-reveal>
-            <img src="/screenshots/gallery-3.png" alt="" width="1448" height="1086" loading="lazy" />
+            <img src="/screenshots/gallery-3.webp" alt="${t.galleryAlt3}" width="1200" height="900" loading="lazy" decoding="async" />
           </figure>
           <figure class="gallery-card" data-reveal>
-            <img src="/screenshots/gallery-4.png" alt="" width="1448" height="1086" loading="lazy" />
+            <img src="/screenshots/gallery-4.webp" alt="${t.galleryAlt4}" width="1200" height="900" loading="lazy" decoding="async" />
           </figure>
         </div>
       </section>
@@ -542,7 +616,14 @@ function render(lang: Lang): string {
             .join('')}
         </ul>
         <figure class="shot-frame" data-reveal>
-          <img src="/screenshots/agent-settings.png" alt="" width="1586" height="992" loading="lazy" />
+          <img
+            src="/screenshots/agent-settings.webp"
+            alt="${t.agentShotAlt}"
+            width="1400"
+            height="875"
+            loading="lazy"
+            decoding="async"
+          />
         </figure>
       </section>
 
@@ -559,18 +640,76 @@ function render(lang: Lang): string {
     <footer class="site-footer">
       <div class="footer-inner">
         <span>${t.footerNote}</span>
+        <nav class="footer-links" aria-label="Footer">
+          <a href="${GITHUB_REPO_URL}" target="_blank" rel="noopener noreferrer">${t.githubLabel}</a>
+          <a href="${GITHUB_RELEASES_URL}" target="_blank" rel="noopener noreferrer">${t.releasesLabel}</a>
+        </nav>
         <span class="footer-copyright">${t.footerCopyright}</span>
       </div>
     </footer>
   `
 }
 
+function upsertMeta(attr: 'name' | 'property', key: string, content: string): void {
+  let el = document.head.querySelector(`meta[${attr}="${key}"]`)
+  if (!el) {
+    el = document.createElement('meta')
+    el.setAttribute(attr, key)
+    document.head.appendChild(el)
+  }
+  el.setAttribute('content', content)
+}
+
 function applyMeta(lang: Lang): void {
   const t = copy[lang]
-  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en'
+  const htmlLang = lang === 'zh' ? 'zh-CN' : 'en'
+  const ogLocale = lang === 'zh' ? 'zh_CN' : 'en_US'
+  const ogImage = `${SITE_URL}/screenshots/hero-workspace.webp`
+
+  document.documentElement.lang = htmlLang
   document.title = t.metaTitle
-  const desc = document.querySelector('meta[name="description"]')
-  if (desc) desc.setAttribute('content', t.metaDesc)
+  upsertMeta('name', 'description', t.metaDesc)
+  upsertMeta('name', 'theme-color', '#071018')
+  upsertMeta('property', 'og:type', 'website')
+  upsertMeta('property', 'og:site_name', 'MagiesTerminal')
+  upsertMeta('property', 'og:url', `${SITE_URL}/`)
+  upsertMeta('property', 'og:title', t.metaTitle)
+  upsertMeta('property', 'og:description', t.metaDesc)
+  upsertMeta('property', 'og:image', ogImage)
+  upsertMeta('property', 'og:locale', ogLocale)
+  upsertMeta('name', 'twitter:card', 'summary_large_image')
+  upsertMeta('name', 'twitter:title', t.metaTitle)
+  upsertMeta('name', 'twitter:description', t.metaDesc)
+  upsertMeta('name', 'twitter:image', ogImage)
+
+  let canonical = document.head.querySelector('link[rel="canonical"]')
+  if (!canonical) {
+    canonical = document.createElement('link')
+    canonical.setAttribute('rel', 'canonical')
+    document.head.appendChild(canonical)
+  }
+  canonical.setAttribute('href', `${SITE_URL}/`)
+
+  const jsonLd = document.getElementById('json-ld')
+  if (jsonLd) {
+    jsonLd.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'MagiesTerminal',
+      applicationCategory: 'DeveloperApplication',
+      operatingSystem: 'macOS, Windows, Linux',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'USD',
+      },
+      url: `${SITE_URL}/`,
+      downloadUrl: `${SITE_URL}/#download`,
+      description: t.metaDesc,
+      image: ogImage,
+      softwareVersion: releaseInfo?.version ?? FALLBACK_VERSION,
+    })
+  }
 }
 
 function refreshDownload(lang: Lang): void {
@@ -740,20 +879,31 @@ async function fetchJsonWithTimeout(url: string, headers?: Record<string, string
 async function fetchReleaseFromGithub(): Promise<ReleaseInfo> {
   const data = (await fetchJsonWithTimeout(`https://api.github.com/repos/${REPO}/releases/latest`, {
     Accept: 'application/vnd.github+json',
-  })) as { tag_name?: string; assets?: ReleaseAsset[] }
+  })) as {
+    tag_name?: string
+    assets?: Array<{ name?: string; browser_download_url?: string; size?: number }>
+  }
   const tag = sanitizeReleaseTag(data.tag_name || '')
   if (!tag) throw new Error('Missing or invalid tag_name')
   return {
     tag,
     version: normalizeVersion(tag),
-    assets: Array.isArray(data.assets) ? data.assets : [],
+    assets: (Array.isArray(data.assets) ? data.assets : [])
+      .filter((asset): asset is { name: string; browser_download_url: string; size?: number } =>
+        Boolean(asset?.name && asset?.browser_download_url),
+      )
+      .map((asset) => ({
+        name: asset.name,
+        browser_download_url: asset.browser_download_url,
+        size: typeof asset.size === 'number' ? asset.size : undefined,
+      })),
   }
 }
 
 async function fetchReleaseFromMirror(): Promise<ReleaseInfo> {
   const data = (await fetchJsonWithTimeout(`${MIRROR_BASE}/release.json`)) as {
     tag?: string
-    files?: Array<{ name: string; url: string }>
+    files?: Array<{ name: string; url: string; size?: number }>
   }
   const tag = sanitizeReleaseTag(data.tag || '')
   if (!tag) throw new Error('Missing or invalid tag in mirror manifest')
@@ -763,6 +913,7 @@ async function fetchReleaseFromMirror(): Promise<ReleaseInfo> {
     assets: (data.files || []).map((file) => ({
       name: file.name,
       browser_download_url: file.url,
+      size: typeof file.size === 'number' ? file.size : undefined,
     })),
   }
 }
@@ -792,6 +943,7 @@ async function fetchLatestRelease(): Promise<void> {
     }
   } finally {
     releaseLoading = false
+    applyMeta(currentLang)
     refreshDownload(currentLang)
   }
 }

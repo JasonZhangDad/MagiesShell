@@ -11,8 +11,5 @@
   "devDependencies": {
     "typescript": "~5.8.3",
     "vite": "^6.3.5"
-  },
-  "dependencies": {
-    "echarts": "^6.1.0"
   }
 }

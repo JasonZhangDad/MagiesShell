@@ -1,3 +1,51 @@
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-600.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-700.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-500.woff2') format('woff2');
+}
+
 :root {
   --bg: #071018;
   --bg-elevated: #0c1622;
@@ -8,8 +56,8 @@
   --cyan: #2ad4c8;
   --blue: #3d7bff;
   --gradient: linear-gradient(120deg, var(--lime) 0%, var(--cyan) 48%, var(--blue) 100%);
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --max: 1120px;
 }
@@ -111,6 +159,36 @@ button {
   width: 28px;
   height: 28px;
   border-radius: 7px;
+}
+
+.site-nav {
+  display: none;
+  align-items: center;
+  gap: 0.35rem 1rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.site-nav a {
+  padding: 0.25rem 0;
+  transition: color 0.2s;
+}
+
+.site-nav a:hover {
+  color: var(--ink);
+}
+
+@media (min-width: 720px) {
+  .site-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+  }
+
+  .site-nav {
+    display: inline-flex;
+    justify-content: center;
+  }
 }
 
 .nav-actions {
@@ -499,12 +577,17 @@ button {
   margin-top: 0.75rem;
 }
 
-.download-cn-hint {
+.download-cn-hint,
+.download-arch-hint {
   margin: 1.25rem auto 0;
   max-width: 40rem;
   font-size: 0.85rem;
   line-height: 1.6;
   color: var(--text-muted, rgba(255, 255, 255, 0.55));
+}
+
+.download-arch-hint {
+  text-align: left;
 }
 
 .os-grid,
@@ -739,6 +822,22 @@ button {
   color: var(--muted);
   font-size: 0.9rem;
   text-align: center;
+}
+
+.footer-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.1rem;
+  align-items: center;
+}
+
+.footer-links a {
+  color: var(--muted);
+  transition: color 0.2s;
+}
+
+.footer-links a:hover {
+  color: var(--cyan);
 }
 
 .footer-copyright {
