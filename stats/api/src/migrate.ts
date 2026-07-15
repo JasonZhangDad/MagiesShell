@@ -27,6 +27,11 @@ CREATE INDEX IF NOT EXISTS idx_shell_events_ts ON shell_events (ts DESC);
 CREATE INDEX IF NOT EXISTS idx_shell_events_type_ts ON shell_events (event_type, ts DESC);
 CREATE INDEX IF NOT EXISTS idx_shell_events_ip ON shell_events (ip);
 CREATE INDEX IF NOT EXISTS idx_shell_events_session ON shell_events (session_id);
+CREATE INDEX IF NOT EXISTS idx_shell_events_referrer_ts ON shell_events (referrer, ts DESC)
+  WHERE event_type = 'page_view';
+CREATE INDEX IF NOT EXISTS idx_shell_events_dl_file_ts ON shell_events (download_file, ts DESC)
+  WHERE event_type = 'download';
+CREATE INDEX IF NOT EXISTS idx_shell_events_country_ts ON shell_events (country, ts DESC);
 `
 
 async function main() {

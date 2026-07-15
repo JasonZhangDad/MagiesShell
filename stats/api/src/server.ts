@@ -9,12 +9,20 @@ import { normalizeTrackInput } from './trackInput.js'
 import { FixedWindowRateLimiter } from './rateLimit.js'
 import { buildSessionCookie, clearSessionCookie } from './sessionCookie.js'
 import {
+  clampRangeDays,
+  getConversion,
+  getDashboard,
   getDownloadBreakdown,
+  getDownloadFiles,
   getDevices,
   getGeo,
+  getHourly,
+  getHourOfDay,
   getOverview,
   getRecent,
+  getReferrers,
   getTimeseries,
+  type RecentFilter,
 } from './analytics.js'
 
 const app = express()
@@ -46,8 +54,19 @@ function enforceRateLimit(limiter: FixedWindowRateLimiter) {
   }
 }
 
-app.get('/api/health', (_req, res) => {
-  res.json({ ok: true })
+function parseRecentFilter(raw: unknown): RecentFilter {
+  if (raw === 'page_view' || raw === 'download') return raw
+  return 'all'
+}
+
+app.get('/api/health', async (_req, res) => {
+  try {
+    await query('SELECT 1')
+    res.json({ ok: true, db: true })
+  } catch (error) {
+    console.error('health db error', error)
+    res.status(503).json({ ok: false, db: false })
+  }
 })
 
 app.post('/api/login', enforceRateLimit(loginLimiter), (req, res) => {
@@ -117,6 +136,23 @@ app.post('/api/track', enforceRateLimit(trackLimiter), async (req, res) => {
   }
 })
 
+app.get('/api/dashboard', requireAuth, async (req, res) => {
+  try {
+    const days = clampRangeDays(req.query.days)
+    const data = await getDashboard(days)
+    res.json({
+      ...data,
+      recent: data.recent.map((row) => ({
+        ...row,
+        ip: maskIp(row.ip),
+      })),
+    })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Failed to load dashboard' })
+  }
+})
+
 app.get('/api/overview', requireAuth, async (_req, res) => {
   try {
     res.json(await getOverview())
@@ -126,49 +162,107 @@ app.get('/api/overview', requireAuth, async (_req, res) => {
   }
 })
 
+app.get('/api/conversion', requireAuth, async (req, res) => {
+  try {
+    const days = clampRangeDays(req.query.days)
+    res.json(await getConversion(days))
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Failed to load conversion' })
+  }
+})
+
 app.get('/api/timeseries', requireAuth, async (req, res) => {
   try {
     const metric = req.query.metric === 'downloads' ? 'downloads' : 'visits'
     const grain = req.query.grain === 'month' ? 'month' : 'day'
-    const days = Number(req.query.days || 30)
-    res.json(await getTimeseries(metric, grain, Number.isFinite(days) ? days : 30))
+    const days = clampRangeDays(req.query.days, 30)
+    res.json(await getTimeseries(metric, grain, days))
   } catch (error) {
     console.error(error)
     res.status(500).json({ error: 'Failed to load timeseries' })
   }
 })
 
+app.get('/api/hourly', requireAuth, async (_req, res) => {
+  try {
+    res.json(await getHourly())
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Failed to load hourly' })
+  }
+})
+
+app.get('/api/hour-of-day', requireAuth, async (req, res) => {
+  try {
+    const days = clampRangeDays(req.query.days)
+    res.json(await getHourOfDay(days))
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Failed to load hour-of-day' })
+  }
+})
+
 app.get('/api/geo', requireAuth, async (req, res) => {
   try {
     const type = req.query.type === 'download' ? 'download' : 'visit'
-    res.json(await getGeo(type))
+    const days = clampRangeDays(req.query.days)
+    res.json(await getGeo(type, days))
   } catch (error) {
     console.error(error)
     res.status(500).json({ error: 'Failed to load geo' })
   }
 })
 
-app.get('/api/devices', requireAuth, async (_req, res) => {
+app.get('/api/devices', requireAuth, async (req, res) => {
   try {
-    res.json(await getDevices())
+    const days = clampRangeDays(req.query.days)
+    res.json(await getDevices(days))
   } catch (error) {
     console.error(error)
     res.status(500).json({ error: 'Failed to load devices' })
   }
 })
 
-app.get('/api/downloads/breakdown', requireAuth, async (_req, res) => {
+app.get('/api/downloads/breakdown', requireAuth, async (req, res) => {
   try {
-    res.json(await getDownloadBreakdown())
+    const days = clampRangeDays(req.query.days)
+    res.json(await getDownloadBreakdown(days))
   } catch (error) {
     console.error(error)
     res.status(500).json({ error: 'Failed to load download breakdown' })
   }
 })
 
-app.get('/api/recent', requireAuth, async (_req, res) => {
+app.get('/api/downloads/files', requireAuth, async (req, res) => {
   try {
-    const rows = await getRecent(50)
+    const days = clampRangeDays(req.query.days)
+    res.json(await getDownloadFiles(days))
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Failed to load download files' })
+  }
+})
+
+app.get('/api/referrers', requireAuth, async (req, res) => {
+  try {
+    const days = clampRangeDays(req.query.days)
+    res.json(await getReferrers(days))
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Failed to load referrers' })
+  }
+})
+
+app.get('/api/recent', requireAuth, async (req, res) => {
+  try {
+    const limit = Number(req.query.limit || 50)
+    const offset = Number(req.query.offset || 0)
+    const eventType = parseRecentFilter(req.query.type)
+    const rows = await getRecent(Number.isFinite(limit) ? limit : 50, {
+      offset: Number.isFinite(offset) ? offset : 0,
+      eventType,
+    })
     res.json(
       rows.map((row) => ({
         ...row,
