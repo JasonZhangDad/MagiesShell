@@ -31,6 +31,7 @@ test('site exposes nav anchors, changelog modal, and OG helpers', () => {
   assert.match(source, /CHANGELOG_LOCAL = '\/changelog\.md'/)
   assert.match(source, /CHANGELOG\.md/)
   assert.match(source, /closest\('a'\)/)
+  assert.match(source, /github\/i\.test\(line\)/)
   assert.match(source, /function formatFileSize/)
   assert.match(source, /macIntelHint/)
   assert.match(source, /upsertMeta/)

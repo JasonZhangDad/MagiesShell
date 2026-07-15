@@ -783,6 +783,9 @@ function renderChangelogMarkdown(md: string): string {
       closeList()
       continue
     }
+    // Do not surface GitHub / external-repo wording in the public changelog UI.
+    if (/github/i.test(line)) continue
+
     if (/^#\s+/.test(line)) {
       closeList()
       html.push(`<h2>${formatInline(line.replace(/^#\s+/, ''))}</h2>`)
