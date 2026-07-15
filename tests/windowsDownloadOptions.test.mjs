@@ -35,9 +35,23 @@ test('site exposes nav anchors, changelog modal, contact, and OG helpers', () =>
   assert.match(source, /closest\('a'\)/)
   assert.match(source, /github\/i\.test\(line\)/)
   assert.match(source, /function formatFileSize/)
-  assert.match(source, /macIntelHint/)
+  assert.match(source, /data-lang-select/)
+  assert.match(source, /detectLangFromNavigator/)
   assert.match(source, /upsertMeta/)
   assert.match(source, /hreflang/)
+})
+
+test('i18n packs cover multi-country locales', () => {
+  const i18n = readFileSync(new URL('../src/i18n.ts', import.meta.url), 'utf8')
+  for (const id of ['zh', 'zh-TW', 'en', 'ja', 'ko', 'de', 'fr', 'es', 'pt', 'ru']) {
+    assert.match(i18n, new RegExp(`id: '${id}'`))
+  }
+  assert.match(i18n, /'zh-TW':\s*\{/)
+  assert.match(i18n, /\ben:\s*\{/)
+  assert.match(i18n, /\bja:\s*\{/)
+  assert.match(i18n, /\bru:\s*\{/)
+  assert.match(i18n, /function detectLangFromNavigator/)
+  assert.match(i18n, /cnSpeedHint/)
 })
 
 test('Windows download fallbacks target the published fallback-version x64 assets', () => {

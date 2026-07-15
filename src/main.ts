@@ -1,6 +1,13 @@
 import './style.css'
+import {
+  type Lang,
+  LANGS,
+  copy,
+  detectLangFromNavigator,
+  isLang,
+  langMeta,
+} from './i18n'
 
-type Lang = 'zh' | 'en'
 type OsId = 'mac' | 'win' | 'linux'
 
 type DownloadItem = {
@@ -161,161 +168,6 @@ const DOWNLOADS: DownloadItem[] = [
   },
 ]
 
-const copy = {
-  zh: {
-    metaTitle: 'MagiesTerminal — AI 驱动的 SSH 工作空间',
-    metaDesc:
-      'MagiesTerminal 是现代化的跨平台 SSH 客户端、SFTP 浏览器与终端工作空间。内置 AI Agent，让运维与多主机协作更高效。',
-    headline: '把服务器舰队装进一个工作空间',
-    sub: 'AI 驱动的 SSH 客户端、SFTP 浏览器与终端管理器。分屏、Vault、多主机编排，为日常运维而生。',
-    ctaDownload: '立即下载',
-    navFeatures: '功能',
-    navAgent: 'Agent',
-    navDownload: '下载',
-    galleryAlt1: 'MagiesTerminal 工作区界面截图',
-    galleryAlt2: 'MagiesTerminal 分屏与会话界面截图',
-    galleryAlt3: 'MagiesTerminal SFTP 与文件管理截图',
-    galleryAlt4: 'MagiesTerminal 主机库与连接管理截图',
-    agentShotAlt: 'Magies Agent 设置界面截图',
-    macIntelHint: 'Intel Mac 请选择「Intel · DMG」。',
-    releasesLabel: '更新日志',
-    changelogClose: '关闭',
-    changelogLoading: '正在加载更新日志…',
-    changelogError: '暂时无法获取更新日志，请稍后再试。',
-    changelogEmpty: '暂无更新记录。',
-    contactLabel: '问题咨询',
-    contactCopied: '邮箱已复制',
-    featuresLabel: '工作空间',
-    featuresTitle: '为长期运维流设计',
-    featuresLead: '不是单一终端窗口，而是可持续驻留的服务器工作台。',
-    features: [
-      {
-        title: 'Vault 主机库',
-        body: '网格 / 列表 / 树形视图，快速搜索与分组，让成百上千台主机仍然好找。',
-      },
-      {
-        title: '分屏终端',
-        body: '水平与垂直分割、标签页与会话恢复，多连接并排推进任务。',
-      },
-      {
-        title: 'SFTP + 编辑器',
-        body: '拖拽上传下载，内置编辑器就地改文件，文件流与终端流在同一处。',
-      },
-    ],
-    agentLabel: 'Magies Agent',
-    agentTitle: '用自然语言指挥服务器',
-    agentLead: '内置 AI 搭档理解你的环境，执行命令、诊断问题，并跨多台主机协同操作。',
-    agentPoints: [
-      { title: '自然语言运维', body: '直接说出需求，不再死记命令与参数。' },
-      { title: '实时诊断', body: '检查状态、翻日志、盯资源，几秒给出清晰结论。' },
-      { title: '多主机编排', body: '一次对话完成集群初始化、部署与节点协同。' },
-    ],
-    downloadLabel: '开始使用',
-    downloadTitle: '下载 MagiesTerminal',
-    downloadLead: (version: string) => `当前版本 ${version} · 先选择系统，再下载对应版本`,
-    downloadLeadLoading: '正在获取最新版本…',
-    selectOs: '选择系统',
-    pickVersion: '选择版本下载',
-    changeOs: '重新选择系统',
-    recommended: '推荐',
-    unavailable: '暂无该资源',
-    unsignedTitle: '安装后首次打开',
-    unsignedMac: {
-      lead: '拖入「应用程序」后，在「终端」执行下面这一条即可（新系统通常没有「仍要打开」）：',
-      command:
-        'sudo xattr -cr /Applications/MagiesTerminal.app && open /Applications/MagiesTerminal.app',
-      copyLabel: '复制命令',
-      copiedLabel: '已复制',
-    },
-    unsignedWin: {
-      lead: '当前 Windows 安装包尚未代码签名，SmartScreen 可能提示“未知发布者”，可按以下方式继续：',
-      steps: [
-        '在 SmartScreen 提示中点击「更多信息」→「仍要运行」。',
-        '或右键安装包 →「属性」→ 勾选「解除锁定」→「应用」后再运行。',
-        '若被 Defender 隔离，可在「病毒和威胁防护 → 保护历史记录」中允许该文件。',
-      ],
-    },
-    footerNote: 'MagiesTerminal · AI-Powered SSH Workspace',
-    footerCopyright: '© 2026 Magies Technology All rights reserved.',
-  },
-  en: {
-    metaTitle: 'MagiesTerminal — AI-Powered SSH Workspace',
-    metaDesc:
-      'MagiesTerminal is a modern cross-platform SSH client, SFTP browser, and terminal workspace with a built-in AI agent for multi-host ops.',
-    headline: 'Your server fleet, in one workspace',
-    sub: 'An AI-powered SSH client, SFTP browser, and terminal manager. Splits, Vault, and multi-host orchestration built for daily ops.',
-    ctaDownload: 'Download',
-    navFeatures: 'Features',
-    navAgent: 'Agent',
-    navDownload: 'Download',
-    galleryAlt1: 'MagiesTerminal workspace screenshot',
-    galleryAlt2: 'MagiesTerminal split terminal screenshot',
-    galleryAlt3: 'MagiesTerminal SFTP and file manager screenshot',
-    galleryAlt4: 'MagiesTerminal host vault screenshot',
-    agentShotAlt: 'Magies Agent settings screenshot',
-    macIntelHint: 'On Intel Macs, choose Intel · DMG.',
-    releasesLabel: 'Changelog',
-    changelogClose: 'Close',
-    changelogLoading: 'Loading changelog…',
-    changelogError: 'Could not load the changelog. Please try again later.',
-    changelogEmpty: 'No release notes yet.',
-    contactLabel: 'Contact',
-    contactCopied: 'Email copied',
-    featuresLabel: 'Workspace',
-    featuresTitle: 'Built for long-running ops',
-    featuresLead: 'Not a single terminal window — a workspace you stay in all day.',
-    features: [
-      {
-        title: 'Host Vault',
-        body: 'Grid, list, and tree views with fast search and grouping — even when you manage hundreds of hosts.',
-      },
-      {
-        title: 'Split terminals',
-        body: 'Horizontal and vertical splits, tabs, and session restore for side-by-side workflows.',
-      },
-      {
-        title: 'SFTP + editor',
-        body: 'Drag-and-drop transfers and an in-app editor so files and shells share one surface.',
-      },
-    ],
-    agentLabel: 'Magies Agent',
-    agentTitle: 'Talk to your servers',
-    agentLead:
-      'A built-in AI partner that understands your environment, runs commands, diagnoses issues, and coordinates across hosts.',
-    agentPoints: [
-      { title: 'Natural-language ops', body: 'Say what you need — stop memorizing flags.' },
-      { title: 'Live diagnostics', body: 'Check health, inspect logs, and summarize resources in seconds.' },
-      { title: 'Multi-host orchestration', body: 'Spin up clusters and deployments in one conversation.' },
-    ],
-    downloadLabel: 'Get started',
-    downloadTitle: 'Download MagiesTerminal',
-    downloadLead: (version: string) => `Version ${version} · Choose your OS, then pick a build`,
-    downloadLeadLoading: 'Fetching the latest release…',
-    selectOs: 'Choose your OS',
-    pickVersion: 'Choose a build to download',
-    changeOs: 'Change OS',
-    recommended: 'Recommended',
-    unavailable: 'Unavailable',
-    unsignedTitle: 'After installing',
-    unsignedMac: {
-      lead: 'After dragging into Applications, run this one command in Terminal (newer macOS often has no Open Anyway):',
-      command:
-        'sudo xattr -cr /Applications/MagiesTerminal.app && open /Applications/MagiesTerminal.app',
-      copyLabel: 'Copy command',
-      copiedLabel: 'Copied',
-    },
-    unsignedWin: {
-      lead: 'The Windows build is not code-signed yet. SmartScreen may warn about an unknown publisher — continue with:',
-      steps: [
-        'In SmartScreen, click More info → Run anyway.',
-        'Or right-click the installer → Properties → check Unblock → Apply, then run again.',
-        'If Defender quarantined it, allow the file under Virus & threat protection → Protection history.',
-      ],
-    },
-    footerNote: 'MagiesTerminal · AI-Powered SSH Workspace',
-    footerCopyright: '© 2026 Magies Technology All rights reserved.',
-  },
-} as const
 
 const OS_ICONS: Record<OsId, string> = {
   mac: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.7 12.6c0-2.2 1.8-3.3 1.9-3.4-1-1.5-2.6-1.7-3.2-1.7-1.3-.1-2.6.8-3.3.8-.7 0-1.8-.8-3-.8-1.5 0-2.9.9-3.7 2.3-1.6 2.7-.4 6.7 1.1 8.9.8 1.1 1.7 2.3 2.9 2.2 1.2-.1 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.2.9-1.3 1.3-2.5 1.3-2.6-.1 0-2.4-.9-2.4-3.5zm-2.2-6.4c.6-.8 1.1-1.9.9-3-.9 0-2 .6-2.6 1.4-.6.7-1.1 1.9-.9 3 1 .1 2-.5 2.6-1.4z"/></svg>`,
@@ -401,8 +253,8 @@ function detectRecommendedId(os: OsId): string {
 function renderOsPicker(lang: Lang): string {
   const detected = detectOs()
   return OS_OPTIONS.map((os) => {
-    const label = lang === 'zh' ? os.labelZh : os.labelEn
-    const hint = lang === 'zh' ? os.hintZh : os.hintEn
+    const label = os.labelEn
+    const hint = lang === 'zh' || lang === 'zh-TW' ? os.hintZh : os.hintEn
     const recommended = os.id === detected
     return `
       <button
@@ -453,8 +305,9 @@ function renderVersionList(lang: Lang, os: OsId): string {
   const t = copy[lang]
   const recommendedId = detectRecommendedId(os)
   const osLabel = OS_OPTIONS.find((item) => item.id === os)
-  const title = lang === 'zh' ? osLabel?.labelZh : osLabel?.labelEn
+  const title = osLabel?.labelEn
   const version = displayVersion()
+  const useZhDetail = lang === 'zh' || lang === 'zh-TW'
 
   return `
     <div class="version-panel" data-reveal>
@@ -471,7 +324,7 @@ function renderVersionList(lang: Lang, os: OsId): string {
       <div class="version-grid">
         ${DOWNLOADS.filter((item) => item.os === os)
           .map((item) => {
-            const detail = lang === 'zh' ? item.detailZh : item.detailEn
+            const detail = useZhDetail ? item.detailZh : item.detailEn
             const recommended = item.id === recommendedId
             const href = downloadUrl(item)
             const disabled = !href
@@ -510,11 +363,7 @@ function renderCnSpeedHint(lang: Lang): string {
   // single-thread speed is limited; a multi-threaded downloader helps a lot
   // (the mirror supports Range requests for exactly this).
   if (!preferMirror()) return ''
-  const text =
-    lang === 'zh'
-      ? '提示：下载速度较慢时，可复制下载链接到支持多线程的下载工具（如 IDM、NDM、迅雷）加速。'
-      : 'Tip: if the download is slow, copy the link into a multi-threaded download manager (IDM, NDM, etc.) for much faster speeds.'
-  return `<p class="download-cn-hint">${text}</p>`
+  return `<p class="download-cn-hint">${copy[lang].cnSpeedHint}</p>`
 }
 
 function renderDownloadSection(lang: Lang): string {
@@ -549,10 +398,15 @@ function render(lang: Lang): string {
         <a href="#download">${t.navDownload}</a>
       </nav>
       <div class="nav-actions">
-        <div class="lang-toggle" role="group" aria-label="Language">
-          <button type="button" data-lang="zh" class="${lang === 'zh' ? 'is-active' : ''}">中文</button>
-          <button type="button" data-lang="en" class="${lang === 'en' ? 'is-active' : ''}">EN</button>
-        </div>
+        <label class="lang-select-wrap">
+          <span class="visually-hidden">${t.langAria}</span>
+          <select class="lang-select" data-lang-select aria-label="${t.langAria}">
+            ${LANGS.map(
+              (item) =>
+                `<option value="${item.id}"${item.id === lang ? ' selected' : ''}>${item.label}</option>`,
+            ).join('')}
+          </select>
+        </label>
       </div>
     </header>
 
@@ -694,9 +548,11 @@ function upsertMeta(attr: 'name' | 'property', key: string, content: string): vo
 
 function applyMeta(lang: Lang): void {
   const t = copy[lang]
-  const htmlLang = lang === 'zh' ? 'zh-CN' : 'en'
-  const ogLocale = lang === 'zh' ? 'zh_CN' : 'en_US'
+  const meta = langMeta(lang)
+  const htmlLang = meta.htmlLang
+  const ogLocale = meta.ogLocale
   const ogImage = `${SITE_URL}/screenshots/hero-workspace.webp`
+  const alternateLocales = LANGS.filter((l) => l.id !== lang).map((l) => l.ogLocale)
 
   document.documentElement.lang = htmlLang
   document.title = t.metaTitle
@@ -709,7 +565,10 @@ function applyMeta(lang: Lang): void {
   upsertMeta('property', 'og:description', t.metaDesc)
   upsertMeta('property', 'og:image', ogImage)
   upsertMeta('property', 'og:locale', ogLocale)
-  upsertMeta('property', 'og:locale:alternate', lang === 'zh' ? 'en_US' : 'zh_CN')
+  // Keep one alternate tag updated; full set is in hreflang links below.
+  if (alternateLocales[0]) {
+    upsertMeta('property', 'og:locale:alternate', alternateLocales[0])
+  }
   upsertMeta('name', 'twitter:card', 'summary_large_image')
   upsertMeta('name', 'twitter:title', t.metaTitle)
   upsertMeta('name', 'twitter:description', t.metaDesc)
@@ -723,12 +582,12 @@ function applyMeta(lang: Lang): void {
   }
   canonical.setAttribute('href', `${SITE_URL}/`)
 
-  // Single-page site: both hreflang variants point at the same URL (language is client-side).
-  for (const { hreflang, href } of [
-    { hreflang: 'zh-CN', href: `${SITE_URL}/` },
-    { hreflang: 'en', href: `${SITE_URL}/` },
+  // Single-page site: all hreflang variants share the same URL (language is client-side).
+  const hreflangs = [
+    ...LANGS.map((l) => ({ hreflang: l.htmlLang, href: `${SITE_URL}/` })),
     { hreflang: 'x-default', href: `${SITE_URL}/` },
-  ]) {
+  ]
+  for (const { hreflang, href } of hreflangs) {
     let link = document.head.querySelector(`link[rel="alternate"][hreflang="${hreflang}"]`)
     if (!link) {
       link = document.createElement('link')
@@ -757,7 +616,7 @@ function applyMeta(lang: Lang): void {
       description: t.metaDesc,
       image: ogImage,
       softwareVersion: releaseInfo?.version ?? FALLBACK_VERSION,
-      inLanguage: [htmlLang, lang === 'zh' ? 'en' : 'zh-CN'],
+      inLanguage: LANGS.map((l) => l.htmlLang),
       email: SUPPORT_EMAIL,
       publisher: {
         '@type': 'Organization',
@@ -1081,10 +940,10 @@ function bindInteractions(root: HTMLElement, lang: Lang): void {
   onScroll()
   window.addEventListener('scroll', onScroll, { passive: true })
 
-  root.querySelectorAll<HTMLButtonElement>('[data-lang]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const next = btn.dataset.lang as Lang
-      setLang(next)
+  root.querySelectorAll<HTMLSelectElement>('[data-lang-select]').forEach((select) => {
+    select.addEventListener('change', () => {
+      const next = select.value
+      if (isLang(next)) setLang(next)
     })
   })
 
@@ -1121,8 +980,14 @@ function setLang(lang: Lang): void {
 
 function initialLang(): Lang {
   const saved = localStorage.getItem('magies-shell-lang')
-  if (saved === 'zh' || saved === 'en') return saved
-  return navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en'
+  if (isLang(saved)) return saved
+  // Legacy value from two-language era
+  if (saved === 'zh') return 'zh'
+  try {
+    return detectLangFromNavigator(navigator.language || 'en')
+  } catch {
+    return 'en'
+  }
 }
 
 async function fetchJsonWithTimeout(url: string, headers?: Record<string, string>): Promise<unknown> {
