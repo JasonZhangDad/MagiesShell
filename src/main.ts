@@ -33,9 +33,8 @@ type ReleaseInfo = {
 
 const REPO = 'JasonZhangDad/MgTerminal'
 const SITE_URL = 'https://shell.magies.top'
-const GITHUB_REPO_URL = `https://github.com/${REPO}`
-const GITHUB_RELEASES_URL = `${GITHUB_REPO_URL}/releases`
 const FALLBACK_VERSION = '0.4.6'
+const CHANGELOG_API = `https://api.github.com/repos/${REPO}/contents/CHANGELOG.md`
 // R2 download mirror for mainland-China visitors, who cannot reach
 // github.com / api.github.com. CI publishes every release there.
 const MIRROR_BASE = 'https://dl.magies.top/stable'
@@ -176,8 +175,11 @@ const copy = {
     galleryAlt4: 'MagiesTerminal 主机库与连接管理截图',
     agentShotAlt: 'Magies Agent 设置界面截图',
     macIntelHint: 'Intel Mac 请选择「Intel · DMG」。',
-    githubLabel: 'GitHub',
     releasesLabel: '更新日志',
+    changelogClose: '关闭',
+    changelogLoading: '正在加载更新日志…',
+    changelogError: '暂时无法获取更新日志，请稍后再试。',
+    changelogEmpty: '暂无更新记录。',
     featuresLabel: '工作空间',
     featuresTitle: '为长期运维流设计',
     featuresLead: '不是单一终端窗口，而是可持续驻留的服务器工作台。',
@@ -247,8 +249,11 @@ const copy = {
     galleryAlt4: 'MagiesTerminal host vault screenshot',
     agentShotAlt: 'Magies Agent settings screenshot',
     macIntelHint: 'On Intel Macs, choose Intel · DMG.',
-    githubLabel: 'GitHub',
     releasesLabel: 'Changelog',
+    changelogClose: 'Close',
+    changelogLoading: 'Loading changelog…',
+    changelogError: 'Could not load the changelog. Please try again later.',
+    changelogEmpty: 'No release notes yet.',
     featuresLabel: 'Workspace',
     featuresTitle: 'Built for long-running ops',
     featuresLead: 'Not a single terminal window — a workspace you stay in all day.',
@@ -641,12 +646,31 @@ function render(lang: Lang): string {
       <div class="footer-inner">
         <span>${t.footerNote}</span>
         <nav class="footer-links" aria-label="Footer">
-          <a href="${GITHUB_REPO_URL}" target="_blank" rel="noopener noreferrer">${t.githubLabel}</a>
-          <a href="${GITHUB_RELEASES_URL}" target="_blank" rel="noopener noreferrer">${t.releasesLabel}</a>
+          <button type="button" class="footer-link-btn" data-open-changelog>${t.releasesLabel}</button>
         </nav>
         <span class="footer-copyright">${t.footerCopyright}</span>
       </div>
     </footer>
+
+    <div class="changelog-modal" data-changelog-modal hidden>
+      <div class="changelog-backdrop" data-close-changelog tabindex="-1"></div>
+      <div
+        class="changelog-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="changelog-title"
+      >
+        <header class="changelog-header">
+          <h2 id="changelog-title">${t.releasesLabel}</h2>
+          <button type="button" class="changelog-close" data-close-changelog aria-label="${t.changelogClose}">
+            ×
+          </button>
+        </header>
+        <div class="changelog-body" data-changelog-body>
+          <p class="changelog-status">${t.changelogLoading}</p>
+        </div>
+      </div>
+    </div>
   `
 }
 
@@ -721,6 +745,149 @@ function refreshDownload(lang: Lang): void {
   root.innerHTML = renderDownloadSection(lang)
   bindDownload(root, lang)
   root.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('is-visible'))
+}
+
+/** Minimal safe markdown for CHANGELOG.md (no raw HTML). */
+function renderChangelogMarkdown(md: string): string {
+  const lines = md.replace(/\r\n/g, '\n').split('\n')
+  const html: string[] = []
+  let inList = false
+
+  const closeList = () => {
+    if (inList) {
+      html.push('</ul>')
+      inList = false
+    }
+  }
+
+  const formatInline = (text: string): string => {
+    let s = escapeHtml(text)
+    // Strip bare GitHub URLs from display (no external repo links on the marketing site)
+    s = s.replace(/https?:\/\/github\.com\/[^\s)<]+/g, '')
+    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    s = s.replace(/`([^`]+)`/g, '<code>$1</code>')
+    // Clean leftover "by @user in" tails after URL strip
+    s = s.replace(/\s+by\s+@[\w-]+\s+in\s*$/i, '')
+    s = s.replace(/\s{2,}/g, ' ').trim()
+    return s
+  }
+
+  for (const raw of lines) {
+    const line = raw.trimEnd()
+    if (!line.trim()) {
+      closeList()
+      continue
+    }
+    if (/^#\s+/.test(line)) {
+      closeList()
+      html.push(`<h2>${formatInline(line.replace(/^#\s+/, ''))}</h2>`)
+      continue
+    }
+    if (/^##\s+/.test(line)) {
+      closeList()
+      html.push(`<h3>${formatInline(line.replace(/^##\s+/, ''))}</h3>`)
+      continue
+    }
+    if (/^###\s+/.test(line)) {
+      closeList()
+      html.push(`<h4>${formatInline(line.replace(/^###\s+/, ''))}</h4>`)
+      continue
+    }
+    if (/^[-*]\s+/.test(line)) {
+      if (!inList) {
+        html.push('<ul>')
+        inList = true
+      }
+      html.push(`<li>${formatInline(line.replace(/^[-*]\s+/, ''))}</li>`)
+      continue
+    }
+    closeList()
+    html.push(`<p>${formatInline(line)}</p>`)
+  }
+  closeList()
+  return html.join('\n')
+}
+
+let changelogCache: string | null = null
+let changelogLoading = false
+
+async function fetchChangelogMarkdown(): Promise<string> {
+  if (changelogCache) return changelogCache
+  const response = await fetch(CHANGELOG_API, {
+    headers: {
+      Accept: 'application/vnd.github.raw+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    },
+    signal: AbortSignal.timeout(8000),
+  })
+  if (!response.ok) throw new Error(`changelog ${response.status}`)
+  const text = (await response.text()).trim()
+  if (!text) throw new Error('empty changelog')
+  changelogCache = text
+  return text
+}
+
+function setChangelogBody(html: string): void {
+  const body = document.querySelector('[data-changelog-body]')
+  if (body instanceof HTMLElement) body.innerHTML = html
+}
+
+function openChangelogModal(lang: Lang): void {
+  const modal = document.querySelector('[data-changelog-modal]')
+  if (!(modal instanceof HTMLElement)) return
+  modal.hidden = false
+  document.body.classList.add('changelog-open')
+  const t = copy[lang]
+
+  if (changelogCache) {
+    const rendered = renderChangelogMarkdown(changelogCache)
+    setChangelogBody(rendered || `<p class="changelog-status">${t.changelogEmpty}</p>`)
+  } else {
+    setChangelogBody(`<p class="changelog-status">${t.changelogLoading}</p>`)
+    if (!changelogLoading) {
+      changelogLoading = true
+      void fetchChangelogMarkdown()
+        .then((md) => {
+          const rendered = renderChangelogMarkdown(md)
+          setChangelogBody(rendered || `<p class="changelog-status">${t.changelogEmpty}</p>`)
+        })
+        .catch(() => {
+          setChangelogBody(`<p class="changelog-status is-error">${t.changelogError}</p>`)
+        })
+        .finally(() => {
+          changelogLoading = false
+        })
+    }
+  }
+
+  const closeBtn = modal.querySelector<HTMLButtonElement>('.changelog-close')
+  closeBtn?.focus()
+}
+
+function closeChangelogModal(): void {
+  const modal = document.querySelector('[data-changelog-modal]')
+  if (!(modal instanceof HTMLElement)) return
+  modal.hidden = true
+  document.body.classList.remove('changelog-open')
+}
+
+function bindChangelog(root: HTMLElement, lang: Lang): void {
+  root.querySelectorAll('[data-open-changelog]').forEach((el) => {
+    el.addEventListener('click', () => openChangelogModal(lang))
+  })
+  root.querySelectorAll('[data-close-changelog]').forEach((el) => {
+    el.addEventListener('click', () => closeChangelogModal())
+  })
+  const dialog = root.querySelector('.changelog-dialog')
+  dialog?.addEventListener('click', (event) => event.stopPropagation())
+
+  // Escape to close (single listener via property flag)
+  if (!root.dataset.changelogEscBound) {
+    root.dataset.changelogEscBound = '1'
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeChangelogModal()
+    })
+  }
 }
 
 function getSessionId(): string {
@@ -852,6 +1019,8 @@ function bindInteractions(root: HTMLElement, lang: Lang): void {
 
   const downloadRoot = root.querySelector('[data-download-root]')
   if (downloadRoot instanceof HTMLElement) bindDownload(downloadRoot, lang)
+
+  bindChangelog(root, lang)
 }
 
 function setLang(lang: Lang): void {

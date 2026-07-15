@@ -831,12 +831,14 @@ button {
   align-items: center;
 }
 
-.footer-links a {
+.footer-link-btn {
+  padding: 0;
   color: var(--muted);
+  font: inherit;
   transition: color 0.2s;
 }
 
-.footer-links a:hover {
+.footer-link-btn:hover {
   color: var(--cyan);
 }
 
@@ -844,6 +846,143 @@ button {
   font-family: var(--font-mono);
   font-size: 0.78rem;
   opacity: 0.85;
+}
+
+body.changelog-open {
+  overflow: hidden;
+}
+
+.changelog-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+}
+
+.changelog-modal[hidden] {
+  display: none;
+}
+
+.changelog-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 8, 14, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.changelog-dialog {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(640px, 100%);
+  max-height: min(78vh, 720px);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #0c1622 0%, #071018 100%);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+
+.changelog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.15rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.changelog-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: -0.02em;
+}
+
+.changelog-close {
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 1.25rem;
+  line-height: 1;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.changelog-close:hover {
+  color: var(--ink);
+  border-color: rgba(42, 212, 200, 0.4);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.changelog-body {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 1.1rem 1.2rem 1.4rem;
+  text-align: left;
+  overscroll-behavior: contain;
+}
+
+.changelog-body h2 {
+  margin: 0 0 0.85rem;
+  font-size: 1.05rem;
+}
+
+.changelog-body h3 {
+  margin: 1.35rem 0 0.55rem;
+  font-size: 1rem;
+  color: var(--cyan);
+  letter-spacing: -0.02em;
+}
+
+.changelog-body h3:first-child {
+  margin-top: 0;
+}
+
+.changelog-body h4 {
+  margin: 0.9rem 0 0.4rem;
+  font-size: 0.92rem;
+  color: var(--lime);
+}
+
+.changelog-body p {
+  margin: 0.45rem 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.changelog-body ul {
+  margin: 0.35rem 0 0.65rem;
+  padding-left: 1.15rem;
+  color: var(--ink);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.changelog-body li + li {
+  margin-top: 0.35rem;
+}
+
+.changelog-body code {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  color: var(--cyan);
+}
+
+.changelog-status {
+  margin: 0.5rem 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.changelog-status.is-error {
+  color: #ff8f8f;
 }
 
 @keyframes rise {

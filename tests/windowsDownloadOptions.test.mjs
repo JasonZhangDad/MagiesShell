@@ -19,12 +19,16 @@ test('Linux users can choose AppImage and deb packages', () => {
   assert.match(source, /'linux-x64-deb': `MagiesTerminal-\$\{version\}-linux-amd64\.deb`/)
 })
 
-test('site exposes nav anchors, GitHub links, and OG helpers', () => {
+test('site exposes nav anchors, changelog modal, and OG helpers', () => {
   assert.match(source, /href="#features"/)
   assert.match(source, /href="#agent"/)
   assert.match(source, /href="#download"/)
-  assert.match(source, /GITHUB_REPO_URL/)
-  assert.match(source, /GITHUB_RELEASES_URL/)
+  assert.doesNotMatch(source, /GITHUB_REPO_URL/)
+  assert.doesNotMatch(source, /GITHUB_RELEASES_URL/)
+  assert.match(source, /data-open-changelog/)
+  assert.match(source, /function openChangelogModal/)
+  assert.match(source, /function fetchChangelogMarkdown/)
+  assert.match(source, /CHANGELOG\.md/)
   assert.match(source, /function formatFileSize/)
   assert.match(source, /macIntelHint/)
   assert.match(source, /upsertMeta/)
