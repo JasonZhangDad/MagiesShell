@@ -1,0 +1,29 @@
+name: Sync changelog
+
+on:
+  schedule:
+    # Daily 06:00 UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Sync changelog from upstream
+        run: npm run sync:changelog
+
+      - name: Commit if changed
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore(site): sync changelog from upstream'
+          file_pattern: 'public/changelog.md public/changelog.en.md'

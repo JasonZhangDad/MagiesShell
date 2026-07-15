@@ -29,7 +29,8 @@ test('site exposes nav anchors, changelog modal, contact, and OG helpers', () =>
   assert.match(source, /data-open-changelog/)
   assert.match(source, /function openChangelogModal/)
   assert.match(source, /function fetchChangelogMarkdown/)
-  assert.match(source, /CHANGELOG_LOCAL = '\/changelog\.md'/)
+  assert.match(source, /CHANGELOG_LOCAL_ZH = '\/changelog\.md'/)
+  assert.match(source, /CHANGELOG_LOCAL_EN = '\/changelog\.en\.md'/)
   assert.match(source, /SUPPORT_EMAIL/)
   assert.match(source, /data-copy-contact/)
   assert.match(source, /closest\('a'\)/)
@@ -39,6 +40,11 @@ test('site exposes nav anchors, changelog modal, contact, and OG helpers', () =>
   assert.match(source, /detectLangFromNavigator/)
   assert.match(source, /upsertMeta/)
   assert.match(source, /hreflang/)
+  assert.match(source, /id="why"/)
+  assert.match(source, /skip-link/)
+  assert.match(source, /privacy\.html/)
+  assert.match(source, /terms\.html/)
+  assert.match(source, /hero-workspace-v2\.webp/)
 })
 
 test('i18n packs cover multi-country locales', () => {

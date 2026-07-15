@@ -41,8 +41,9 @@ type ReleaseInfo = {
 const REPO = 'JasonZhangDad/MgTerminal'
 const SITE_URL = 'https://shell.magies.top'
 const FALLBACK_VERSION = '0.4.6'
-/** Same-origin only — never opens or depends on a public repo page. */
-const CHANGELOG_LOCAL = '/changelog.md'
+/** Same-origin snapshots only — never opens a public repo page. */
+const CHANGELOG_LOCAL_ZH = '/changelog.md'
+const CHANGELOG_LOCAL_EN = '/changelog.en.md'
 /** Same support address as the desktop app “问题咨询” entry. */
 const SUPPORT_EMAIL = 'hibake888@outlook.com'
 // R2 download mirror for mainland-China visitors, who cannot reach
@@ -387,12 +388,14 @@ function renderDownloadLead(lang: Lang): string {
 function render(lang: Lang): string {
   const t = copy[lang]
   return `
+    <a class="skip-link" href="#main">${t.skipToContent}</a>
     <header class="site-header" data-header>
       <a class="brand-mark" href="#top" aria-label="MagiesTerminal">
         <img src="/icon.png" alt="MagiesTerminal" width="28" height="28" />
         <span>MagiesTerminal</span>
       </a>
       <nav class="site-nav" aria-label="Primary">
+        <a href="#why">${t.navWhy}</a>
         <a href="#features">${t.navFeatures}</a>
         <a href="#agent">${t.navAgent}</a>
         <a href="#download">${t.navDownload}</a>
@@ -410,8 +413,8 @@ function render(lang: Lang): string {
       </div>
     </header>
 
-    <main id="top">
-      <section class="hero" aria-label="MagiesTerminal">
+    <main id="main">
+      <section class="hero" id="top" aria-label="MagiesTerminal">
         <div class="hero-copy">
           <h1 class="brand-hero">MagiesTerminal<span class="cursor-blink" aria-hidden="true"></span></h1>
           <p class="hero-headline">${t.headline}</p>
@@ -419,13 +422,16 @@ function render(lang: Lang): string {
           <div class="hero-cta">
             <a class="btn btn-primary" href="#download">${t.ctaDownload}</a>
           </div>
+          <ul class="trust-row" data-reveal>
+            ${t.trustItems.map((item) => `<li>${item}</li>`).join('')}
+          </ul>
         </div>
         <div class="hero-stage" aria-hidden="true">
           <img
-            src="/screenshots/hero-workspace.webp"
+            src="/screenshots/hero-workspace-v2.webp"
             alt=""
-            width="1600"
-            height="900"
+            width="1360"
+            height="752"
             fetchpriority="high"
             decoding="async"
           />
@@ -446,6 +452,23 @@ function render(lang: Lang): string {
           <figure class="gallery-card" data-reveal>
             <img src="/screenshots/gallery-4-v4.webp" alt="${t.galleryAlt4}" width="1200" height="900" loading="lazy" decoding="async" />
           </figure>
+        </div>
+      </section>
+
+      <section class="section why" id="why">
+        <p class="section-label">${t.whyLabel}</p>
+        <h2 class="section-title">${t.whyTitle}</h2>
+        <p class="section-lead">${t.whyLead}</p>
+        <div class="why-grid">
+          ${t.whyItems
+            .map(
+              (item) => `
+            <article class="why-card" data-reveal>
+              <h3>${item.title}</h3>
+              <p>${item.body}</p>
+            </article>`,
+            )
+            .join('')}
         </div>
       </section>
 
@@ -509,6 +532,8 @@ function render(lang: Lang): string {
         <nav class="footer-links" aria-label="Footer">
           <button type="button" class="footer-link-btn" data-open-changelog>${t.releasesLabel}</button>
           <button type="button" class="footer-link-btn" data-copy-contact>${t.contactLabel}</button>
+          <a class="footer-link-btn" href="/privacy.html">${t.legalPrivacy}</a>
+          <a class="footer-link-btn" href="/terms.html">${t.legalTerms}</a>
         </nav>
         <span class="footer-copyright">${t.footerCopyright}</span>
       </div>
@@ -551,7 +576,7 @@ function applyMeta(lang: Lang): void {
   const meta = langMeta(lang)
   const htmlLang = meta.htmlLang
   const ogLocale = meta.ogLocale
-  const ogImage = `${SITE_URL}/screenshots/hero-workspace.webp`
+  const ogImage = `${SITE_URL}/screenshots/hero-workspace-v2.webp`
   const alternateLocales = LANGS.filter((l) => l.id !== lang).map((l) => l.ogLocale)
 
   document.documentElement.lang = htmlLang
@@ -705,8 +730,17 @@ function renderChangelogMarkdown(md: string): string {
   return html.join('\n')
 }
 
-let changelogCache: string | null = null
-let changelogLoading = false
+type ChangelogLocale = 'zh' | 'en'
+const changelogCache: Partial<Record<ChangelogLocale, string>> = {}
+let changelogLoading: ChangelogLocale | null = null
+
+function changelogLocale(lang: Lang): ChangelogLocale {
+  return lang === 'zh' || lang === 'zh-TW' ? 'zh' : 'en'
+}
+
+function changelogPath(locale: ChangelogLocale): string {
+  return locale === 'zh' ? CHANGELOG_LOCAL_ZH : CHANGELOG_LOCAL_EN
+}
 
 async function fetchTextWithTimeout(url: string, headers?: Record<string, string>): Promise<string> {
   const response = await fetch(url, {
@@ -719,11 +753,14 @@ async function fetchTextWithTimeout(url: string, headers?: Record<string, string
   return text
 }
 
-async function fetchChangelogMarkdown(): Promise<string> {
-  if (changelogCache) return changelogCache
-  // Same-origin snapshot only (synced via `npm run sync:changelog`).
-  changelogCache = await fetchTextWithTimeout(CHANGELOG_LOCAL)
-  return changelogCache
+async function fetchChangelogMarkdown(lang: Lang): Promise<string> {
+  const locale = changelogLocale(lang)
+  const cached = changelogCache[locale]
+  if (cached) return cached
+  // Same-origin snapshots only (zh via sync:changelog; en maintained as changelog.en.md).
+  const text = await fetchTextWithTimeout(changelogPath(locale))
+  changelogCache[locale] = text
+  return text
 }
 
 function setChangelogBody(html: string): void {
@@ -738,14 +775,16 @@ function openChangelogModal(lang: Lang): void {
   document.body.classList.add('changelog-open')
   const t = copy[lang]
 
-  if (changelogCache) {
-    const rendered = renderChangelogMarkdown(changelogCache)
+  const locale = changelogLocale(lang)
+  const cached = changelogCache[locale]
+  if (cached) {
+    const rendered = renderChangelogMarkdown(cached)
     setChangelogBody(rendered || `<p class="changelog-status">${t.changelogEmpty}</p>`)
   } else {
     setChangelogBody(`<p class="changelog-status">${t.changelogLoading}</p>`)
-    if (!changelogLoading) {
-      changelogLoading = true
-      void fetchChangelogMarkdown()
+    if (changelogLoading !== locale) {
+      changelogLoading = locale
+      void fetchChangelogMarkdown(lang)
         .then((md) => {
           const rendered = renderChangelogMarkdown(md)
           setChangelogBody(rendered || `<p class="changelog-status">${t.changelogEmpty}</p>`)
@@ -754,7 +793,7 @@ function openChangelogModal(lang: Lang): void {
           setChangelogBody(`<p class="changelog-status is-error">${t.changelogError}</p>`)
         })
         .finally(() => {
-          changelogLoading = false
+          if (changelogLoading === locale) changelogLoading = null
         })
     }
   }

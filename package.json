@@ -9,7 +9,9 @@
     "build": "tsc && vite build",
     "build:release": "npm run sync:changelog && npm run build",
     "preview": "vite preview",
-    "test": "node --test tests/*.mjs"
+    "test": "node --test tests/*.mjs",
+    "deploy": "bash scripts/deploy.sh",
+    "deploy:release": "bash scripts/deploy.sh --sync-changelog"
   },
   "devDependencies": {
     "typescript": "~5.8.3",
