@@ -569,16 +569,16 @@ function render(lang: Lang): string {
       <section class="section gallery" id="gallery" aria-label="MagiesTerminal gallery">
         <div class="gallery-grid">
           <figure class="gallery-card" data-reveal>
-            <img src="/screenshots/gallery-1.webp" alt="${t.galleryAlt1}" width="1200" height="900" loading="lazy" decoding="async" />
+            <img src="/screenshots/gallery-1-v2.webp" alt="${t.galleryAlt1}" width="1200" height="900" loading="lazy" decoding="async" />
           </figure>
           <figure class="gallery-card" data-reveal>
-            <img src="/screenshots/gallery-2.webp" alt="${t.galleryAlt2}" width="1200" height="900" loading="lazy" decoding="async" />
+            <img src="/screenshots/gallery-2-v2.webp" alt="${t.galleryAlt2}" width="1200" height="900" loading="lazy" decoding="async" />
           </figure>
           <figure class="gallery-card" data-reveal>
-            <img src="/screenshots/gallery-3.webp" alt="${t.galleryAlt3}" width="1200" height="900" loading="lazy" decoding="async" />
+            <img src="/screenshots/gallery-3-v2.webp" alt="${t.galleryAlt3}" width="1200" height="900" loading="lazy" decoding="async" />
           </figure>
           <figure class="gallery-card" data-reveal>
-            <img src="/screenshots/gallery-4.webp" alt="${t.galleryAlt4}" width="1200" height="900" loading="lazy" decoding="async" />
+            <img src="/screenshots/gallery-4-v2.webp" alt="${t.galleryAlt4}" width="1200" height="900" loading="lazy" decoding="async" />
           </figure>
         </div>
       </section>
