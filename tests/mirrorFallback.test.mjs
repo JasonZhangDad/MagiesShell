@@ -31,7 +31,9 @@ test('mainland-China visitors see the multi-threaded downloader hint', () => {
   assert.match(source, /renderVersionList\(lang, selectedOs\) \+ renderCnSpeedHint\(lang\)/)
 })
 
-test('download fallback URLs follow the preferred source', () => {
-  assert.match(source, /preferMirror\(\)[\s\S]{0,120}\$\{MIRROR_BASE\}\/\$\{fileMap\[item\.id\]\}/)
-  assert.match(source, /github\.com\/\$\{REPO\}\/releases\/download/)
+test('public download hrefs use same-origin redirect hop, never raw GitHub/mirror URLs', () => {
+  assert.match(source, /const DOWNLOAD_REDIRECT_BASE = '\/stats-api\/download'/)
+  assert.match(source, /return `\$\{DOWNLOAD_REDIRECT_BASE\}\/\$\{item\.id\}`/)
+  assert.doesNotMatch(source, /github\.com\/\$\{REPO\}\/releases\/download/)
+  assert.doesNotMatch(source, /function publicDownloadUrl/)
 })

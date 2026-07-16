@@ -8,6 +8,7 @@ import { parseUa, pickBestUa } from './ua.js'
 import { normalizeTrackInput } from './trackInput.js'
 import { FixedWindowRateLimiter } from './rateLimit.js'
 import { buildSessionCookie, clearSessionCookie } from './sessionCookie.js'
+import { resolveDownloadRedirect } from './downloadRedirect.js'
 import {
   clampRangeDays,
   getConversion,
@@ -43,6 +44,7 @@ app.use(express.json({ limit: '32kb' }))
 
 const loginLimiter = new FixedWindowRateLimiter({ limit: 5, windowMs: 15 * 60_000, maxBuckets: 5_000 })
 const trackLimiter = new FixedWindowRateLimiter({ limit: 60, windowMs: 60_000 })
+const downloadLimiter = new FixedWindowRateLimiter({ limit: 30, windowMs: 60_000 })
 
 function enforceRateLimit(limiter: FixedWindowRateLimiter) {
   return (req: express.Request, res: express.Response, next: express.NextFunction): void => {
@@ -66,6 +68,35 @@ app.get('/api/health', async (_req, res) => {
   } catch (error) {
     console.error('health db error', error)
     res.status(503).json({ ok: false, db: false })
+  }
+})
+
+/**
+ * Opaque download hop for the marketing site.
+ * Landing-page hrefs stay on shell.magies.top; this endpoint 302s to GitHub
+ * (overseas, free CDN) or the R2 mirror (CN). Origin only sends a tiny redirect.
+ */
+app.get('/api/download/:id', enforceRateLimit(downloadLimiter), async (req, res) => {
+  try {
+    const id = typeof req.params.id === 'string' ? req.params.id.trim() : ''
+    const ip = resolveClientIp(req)
+    const geo = lookupGeo(ip)
+    const acceptLanguage =
+      typeof req.headers['accept-language'] === 'string' ? req.headers['accept-language'] : null
+    const target = await resolveDownloadRedirect({
+      id,
+      country: geo.country,
+      acceptLanguage,
+    })
+    if (!target) {
+      res.status(404).json({ error: 'Unknown download' })
+      return
+    }
+    res.setHeader('Cache-Control', 'private, no-store')
+    res.redirect(302, target)
+  } catch (error) {
+    console.error('download redirect error', error)
+    res.status(500).json({ error: 'Failed to resolve download' })
   }
 })
 

@@ -16,7 +16,7 @@ test('Linux users can choose AppImage and deb packages', () => {
   assert.match(source, /id: 'linux-arm64'[\s\S]*detailZh: 'ARM64 · AppImage'/)
   assert.match(source, /id: 'linux-x64-deb'[\s\S]*detailZh: 'x64 · deb'/)
   assert.match(source, /id: 'linux-arm64-deb'[\s\S]*detailZh: 'ARM64 · deb'/)
-  assert.match(source, /'linux-x64-deb': `MagiesTerminal-\$\{version\}-linux-amd64\.deb`/)
+  assert.match(source, /match: \/\^MagiesTerminal-\[\\d\.\]\+-linux-amd64\\.deb\$\/i/)
 })
 
 test('site exposes nav anchors, changelog modal, contact, and OG helpers', () => {
@@ -60,9 +60,10 @@ test('i18n packs cover multi-country locales', () => {
   assert.match(i18n, /cnSpeedHint/)
 })
 
-test('Windows download fallbacks target the published fallback-version x64 assets', () => {
+test('Windows download cards resolve via opaque redirect ids', () => {
   assert.match(source, /const FALLBACK_VERSION = '0\.4\.6'/)
-  assert.match(source, /'win-x64': `MagiesTerminal-\$\{version\}-win-x64\.exe`/)
-  assert.match(source, /'win-x64-portable': `MagiesTerminal-\$\{version\}-portable-win-x64\.exe`/)
-  assert.match(source, /'win-x64-zip': `MagiesTerminal-\$\{version\}-win-x64\.zip`/)
+  assert.match(source, /id: 'win-x64'/)
+  assert.match(source, /id: 'win-x64-portable'/)
+  assert.match(source, /id: 'win-x64-zip'/)
+  assert.match(source, /DOWNLOAD_REDIRECT_BASE/)
 })

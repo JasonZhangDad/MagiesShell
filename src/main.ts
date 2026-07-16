@@ -46,9 +46,13 @@ const CHANGELOG_LOCAL_ZH = '/changelog.md'
 const CHANGELOG_LOCAL_EN = '/changelog.en.md'
 /** Same support address as the desktop app “问题咨询” entry. */
 const SUPPORT_EMAIL = 'hibake888@outlook.com'
-// R2 download mirror for mainland-China visitors, who cannot reach
-// github.com / api.github.com. CI publishes every release there.
+// R2 mirror for mainland-China downloads (and metadata when GitHub is blocked).
+// Public download buttons never point here or at github.com directly — they use
+// /stats-api/download/:id which 302s to GitHub (overseas, free CDN) or this
+// mirror (CN). Origin only serves a tiny redirect; file bytes stay off the VPS.
 const MIRROR_BASE = 'https://dl.magies.top/stable'
+/** Same-origin opaque download hop (proxied to stats API). */
+const DOWNLOAD_REDIRECT_BASE = '/stats-api/download'
 const CN_TIMEZONES = ['Asia/Shanghai', 'Asia/Urumqi', 'Asia/Chongqing', 'Asia/Harbin']
 
 function preferMirror(): boolean {
@@ -189,30 +193,14 @@ function findAsset(item: DownloadItem): ReleaseAsset | undefined {
   return releaseInfo?.assets.find((asset) => item.match.test(asset.name))
 }
 
-function fallbackDownloadUrl(item: DownloadItem): string {
-  const version = releaseInfo?.version ?? FALLBACK_VERSION
-  const tag = releaseInfo?.tag ?? `v${version}`
-  const fileMap: Record<string, string> = {
-    'mac-arm64': `MagiesTerminal-${version}-mac-arm64.dmg`,
-    'mac-x64': `MagiesTerminal-${version}-mac-x64.dmg`,
-    'win-x64': `MagiesTerminal-${version}-win-x64.exe`,
-    'win-x64-portable': `MagiesTerminal-${version}-portable-win-x64.exe`,
-    'win-x64-zip': `MagiesTerminal-${version}-win-x64.zip`,
-    'linux-x64': `MagiesTerminal-${version}-linux-x86_64.AppImage`,
-    'linux-arm64': `MagiesTerminal-${version}-linux-arm64.AppImage`,
-    'linux-x64-deb': `MagiesTerminal-${version}-linux-amd64.deb`,
-    'linux-arm64-deb': `MagiesTerminal-${version}-linux-arm64.deb`,
-  }
-  if (preferMirror()) {
-    return `${MIRROR_BASE}/${fileMap[item.id]}`
-  }
-  return `https://github.com/${REPO}/releases/download/${tag}/${fileMap[item.id]}`
-}
-
+/**
+ * Landing-page href only — never github.com or the raw mirror URL.
+ * Stats API 302s to GitHub (overseas) or R2 (CN) so file traffic leaves our VPS.
+ */
 function downloadUrl(item: DownloadItem): string | null {
-  const asset = findAsset(item)
-  if (asset) return asset.browser_download_url
-  if (!releaseLoading) return fallbackDownloadUrl(item)
+  if (findAsset(item) || !releaseLoading) {
+    return `${DOWNLOAD_REDIRECT_BASE}/${item.id}`
+  }
   return null
 }
 
