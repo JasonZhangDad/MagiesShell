@@ -38,7 +38,7 @@ type ReleaseInfo = {
   assets: ReleaseAsset[]
 }
 
-const REPO = 'JasonZhangDad/MgTerminal'
+const REPO = 'JasonZhangDad/MgTerminal-releases'
 const SITE_URL = 'https://shell.magies.top'
 const FALLBACK_VERSION = '0.4.6'
 /** Same-origin snapshots only — never opens a public repo page. */

@@ -1,4 +1,4 @@
-const REPO = 'JasonZhangDad/MgTerminal'
+const REPO = 'JasonZhangDad/MgTerminal-releases'
 const MIRROR_BASE = 'https://dl.magies.top/stable'
 const FALLBACK_VERSION = '0.4.6'
 const RELEASE_CACHE_MS = 5 * 60_000
