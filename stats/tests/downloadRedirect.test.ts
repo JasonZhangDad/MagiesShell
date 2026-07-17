@@ -42,9 +42,15 @@ test('overseas downloads target GitHub; CN targets the mirror', () => {
 test('redirect targets only allow GitHub release assets or the R2 mirror', () => {
   assert.equal(
     isSafeDownloadTarget(
-      'https://github.com/JasonZhangDad/MgTerminal/releases/download/v0.4.6/MagiesTerminal-0.4.6-mac-arm64.dmg',
+      'https://github.com/JasonZhangDad/MgTerminal-releases/releases/download/v0.4.6/MagiesTerminal-0.4.6-mac-arm64.dmg',
     ),
     true,
+  )
+  assert.equal(
+    isSafeDownloadTarget(
+      'https://github.com/JasonZhangDad/MgTerminal/releases/download/v0.4.6/MagiesTerminal-0.4.6-mac-arm64.dmg',
+    ),
+    false,
   )
   assert.equal(
     isSafeDownloadTarget('https://dl.magies.top/stable/MagiesTerminal-0.4.6-mac-arm64.dmg'),
