@@ -7,15 +7,15 @@ import { fileURLToPath } from 'node:url'
 const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8')
 
 test('Windows users can choose installer, portable, or ZIP x64 downloads', () => {
-  assert.match(source, /'win-x64':\s*\{[\s\S]*zh: 'x64 · 安装版'/)
-  assert.match(source, /'win-x64-portable':\s*\{[\s\S]*zh: 'x64 · 便携版'/)
-  assert.match(source, /'win-x64-zip':\s*\{[\s\S]*zh: 'x64 · ZIP 压缩包'/)
-  assert.match(source, /'win-x64':\s*\{[\s\S]*ja: 'x64 · インストーラー'/)
+  assert.match(source, /'win-x64':\s*\{[\s\S]*zh: 'x64 · 安装版\(\.exe\)'/)
+  assert.match(source, /'win-x64-portable':\s*\{[\s\S]*zh: 'x64 · 便携版\(单文件 \.exe,免安装\)'/)
+  assert.match(source, /'win-x64-zip':\s*\{[\s\S]*zh: 'x64 · ZIP\(解压即用\)'/)
+  assert.match(source, /'win-x64':\s*\{[\s\S]*ja: 'x64 · インストーラー\(\.exe\)'/)
   // 0.5.x also ships Windows ARM64 packages
   assert.match(source, /id: 'win-arm64'/)
   assert.match(source, /id: 'win-arm64-portable'/)
   assert.match(source, /id: 'win-arm64-zip'/)
-  assert.match(source, /'win-arm64':\s*\{[\s\S]*zh: 'ARM64 · 安装版'/)
+  assert.match(source, /'win-arm64':\s*\{[\s\S]*zh: 'ARM64 · 安装版\(\.exe\)'/)
 })
 
 test('Linux users can choose AppImage and deb packages', () => {
@@ -23,7 +23,14 @@ test('Linux users can choose AppImage and deb packages', () => {
   assert.match(source, /id: 'linux-arm64'/)
   assert.match(source, /id: 'linux-x64-deb'/)
   assert.match(source, /id: 'linux-arm64-deb'/)
-  assert.match(source, /'linux-x64':\s*\{[\s\S]*zh: 'x64 · AppImage'/)
+  // Labels must say what each package format is for (deb → Debian/Ubuntu,
+  // AppImage → universal no-install), not just the bare format name.
+  assert.match(source, /'linux-x64':\s*\{[\s\S]*zh: 'x64 · AppImage\(通用,免安装\)'/)
+  assert.match(source, /'linux-x64-deb':\s*\{[\s\S]*zh: 'x64 · deb\(Debian \/ Ubuntu\)'/)
+  assert.match(source, /'linux-x64-deb':\s*\{[\s\S]*en: 'x64 · deb \(Debian \/ Ubuntu\)'/)
+  assert.match(source, /'linux-arm64-deb':\s*\{[\s\S]*zh: 'ARM64 · deb\(Debian \/ Ubuntu\)'/)
+  // OS picker hint also names the deb target distros.
+  assert.match(source, /zh: 'AppImage \/ deb\(Debian、Ubuntu\) · x64 \/ ARM64'/)
   assert.match(source, /match: \/\^MagiesTerminal-\[\\d\.\]\+-linux-amd64\\.deb\$\/i/)
 })
 
