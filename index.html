@@ -1,26 +1,26 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MagiesTerminal — AI 驱动的 SSH 工作空间</title>
+    <title>MagiesTerminal — AI-Powered SSH Workspace</title>
     <meta
       name="description"
-      content="MagiesTerminal 是现代化的跨平台 SSH 客户端、SFTP 浏览器与终端工作空间。内置 AI Agent，让运维与多主机协作更高效。"
+      content="MagiesTerminal is a modern cross-platform SSH client, SFTP browser, and terminal workspace with Mosh/Telnet, port forwarding, host Vault, and a built-in AI agent for multi-host ops."
     />
     <meta name="theme-color" content="#071018" />
     <link rel="canonical" href="https://shell.magies.top/" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="MagiesTerminal" />
     <meta property="og:url" content="https://shell.magies.top/" />
-    <meta property="og:title" content="MagiesTerminal — AI 驱动的 SSH 工作空间" />
+    <meta property="og:title" content="MagiesTerminal — AI-Powered SSH Workspace" />
     <meta
       property="og:description"
-      content="MagiesTerminal 是现代化的跨平台 SSH 客户端、SFTP 浏览器与终端工作空间。内置 AI Agent，让运维与多主机协作更高效。"
+      content="MagiesTerminal is a modern cross-platform SSH client, SFTP browser, and terminal workspace with Mosh/Telnet, port forwarding, host Vault, and a built-in AI agent for multi-host ops."
     />
     <meta property="og:image" content="https://shell.magies.top/screenshots/hero-workspace-v2.webp" />
-    <meta property="og:locale" content="zh_CN" />
-    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="zh_CN" />
     <link rel="alternate" hreflang="zh-CN" href="https://shell.magies.top/" />
     <link rel="alternate" hreflang="zh-TW" href="https://shell.magies.top/" />
     <link rel="alternate" hreflang="en" href="https://shell.magies.top/" />
@@ -33,10 +33,10 @@
     <link rel="alternate" hreflang="ru" href="https://shell.magies.top/" />
     <link rel="alternate" hreflang="x-default" href="https://shell.magies.top/" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="MagiesTerminal — AI 驱动的 SSH 工作空间" />
+    <meta name="twitter:title" content="MagiesTerminal — AI-Powered SSH Workspace" />
     <meta
       name="twitter:description"
-      content="MagiesTerminal 是现代化的跨平台 SSH 客户端、SFTP 浏览器与终端工作空间。内置 AI Agent，让运维与多主机协作更高效。"
+      content="MagiesTerminal is a modern cross-platform SSH client, SFTP browser, and terminal workspace with Mosh/Telnet, port forwarding, host Vault, and a built-in AI agent for multi-host ops."
     />
     <meta name="twitter:image" content="https://shell.magies.top/screenshots/hero-workspace-v2.webp" />
     <link rel="icon" type="image/png" href="/icon.png" />
@@ -54,9 +54,9 @@
         },
         "url": "https://shell.magies.top/",
         "downloadUrl": "https://shell.magies.top/#download",
-        "description": "MagiesTerminal 是现代化的跨平台 SSH 客户端、SFTP 浏览器与终端工作空间。内置 AI Agent，让运维与多主机协作更高效。",
+        "description": "MagiesTerminal is a modern cross-platform SSH client, SFTP browser, and terminal workspace with Mosh/Telnet, port forwarding, host Vault, and a built-in AI agent for multi-host ops.",
         "image": "https://shell.magies.top/screenshots/hero-workspace-v2.webp",
-        "inLanguage": ["zh-CN", "en"],
+        "inLanguage": ["zh-CN", "zh-TW", "en", "ja", "ko", "de", "fr", "es", "pt", "ru"],
         "email": "hibake888@outlook.com",
         "publisher": {
           "@type": "Organization",
@@ -65,6 +65,67 @@
           "email": "hibake888@outlook.com"
         }
       }
+    </script>
+    <!-- Early language resolve so html lang matches before the app bundle runs. -->
+    <script>
+      (function () {
+        var KEY = 'magies-shell-lang'
+        var IDS = { zh: 1, 'zh-TW': 1, en: 1, ja: 1, ko: 1, de: 1, fr: 1, es: 1, pt: 1, ru: 1 }
+        var HTML = {
+          zh: 'zh-CN',
+          'zh-TW': 'zh-TW',
+          en: 'en',
+          ja: 'ja',
+          ko: 'ko',
+          de: 'de',
+          fr: 'fr',
+          es: 'es',
+          pt: 'pt-BR',
+          ru: 'ru',
+        }
+        function detect(nav) {
+          var r = String(nav || 'en')
+            .toLowerCase()
+            .replace('_', '-')
+          if (
+            r.indexOf('zh-tw') === 0 ||
+            r.indexOf('zh-hk') === 0 ||
+            r.indexOf('zh-mo') === 0 ||
+            r === 'zh-hant'
+          )
+            return 'zh-TW'
+          if (r.indexOf('zh') === 0) return 'zh'
+          if (r.indexOf('ja') === 0) return 'ja'
+          if (r.indexOf('ko') === 0) return 'ko'
+          if (r.indexOf('de') === 0) return 'de'
+          if (r.indexOf('fr') === 0) return 'fr'
+          if (r.indexOf('es') === 0) return 'es'
+          if (r.indexOf('pt') === 0) return 'pt'
+          if (r.indexOf('ru') === 0) return 'ru'
+          if (r.indexOf('en') === 0) return 'en'
+          return 'en'
+        }
+        var lang = null
+        try {
+          var q = new URLSearchParams(location.search).get('lang')
+          if (q && IDS[q]) lang = q
+        } catch (e) {}
+        if (!lang) {
+          try {
+            var s = localStorage.getItem(KEY)
+            if (s && IDS[s]) lang = s
+          } catch (e) {}
+        }
+        if (!lang) {
+          try {
+            lang = detect(navigator.language)
+          } catch (e) {
+            lang = 'en'
+          }
+        }
+        document.documentElement.lang = HTML[lang] || 'en'
+        document.documentElement.setAttribute('data-boot-lang', lang)
+      })()
     </script>
   </head>
   <body>

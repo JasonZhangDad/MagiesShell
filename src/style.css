@@ -577,8 +577,9 @@ select:focus:not(:focus-visible) {
 
 @media (min-width: 820px) {
   .feature-rail {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 2rem;
+    row-gap: 1.75rem;
   }
 }
 
@@ -609,6 +610,45 @@ select:focus:not(:focus-visible) {
   color: var(--muted);
   line-height: 1.55;
   font-size: 0.98rem;
+}
+
+.platform-grid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2.25rem;
+}
+
+@media (min-width: 820px) {
+  .platform-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.15rem;
+  }
+}
+
+.platform-card {
+  padding: 1.2rem 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(165deg, rgba(42, 212, 200, 0.06), rgba(255, 255, 255, 0.02));
+  transition: border-color 0.25s var(--ease), transform 0.25s var(--ease);
+}
+
+.platform-card:hover {
+  border-color: rgba(42, 212, 200, 0.45);
+  transform: translateY(-2px);
+}
+
+.platform-card h3 {
+  margin: 0;
+  font-size: 1.08rem;
+  letter-spacing: -0.02em;
+}
+
+.platform-card p {
+  margin: 0.55rem 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+  font-size: 0.95rem;
 }
 
 .agent {
@@ -1115,6 +1155,56 @@ body.changelog-open {
 
 .changelog-status.is-error {
   color: #ff8f8f;
+}
+
+.contact-dialog {
+  width: min(440px, 100%);
+  max-height: none;
+}
+
+.contact-body {
+  padding: 1.15rem 1.25rem 1.4rem;
+  text-align: left;
+}
+
+.contact-lead {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.contact-email-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.contact-email {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  word-break: break-all;
+  text-decoration: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.contact-email:hover {
+  border-color: rgba(42, 212, 200, 0.45);
+  background: rgba(42, 212, 200, 0.06);
+  text-decoration: none;
+}
+
+.contact-copy {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 @keyframes rise {

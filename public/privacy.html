@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,18 +8,19 @@
     <meta name="theme-color" content="#071018" />
     <link rel="canonical" href="https://shell.magies.top/privacy.html" />
     <link rel="icon" type="image/png" href="/icon.png" />
-    <link rel="stylesheet" href="/legal.css" />
+    <link rel="stylesheet" href="/legal.css?v=20260717" />
+    <script src="/legal.js?v=20260717" defer></script>
   </head>
-  <body>
+  <body data-legal-page="privacy">
     <header class="legal-header">
-      <a class="brand" href="/">← MagiesTerminal</a>
+      <a class="brand" data-legal-back href="/">← MagiesTerminal</a>
     </header>
     <main class="legal-main">
-      <h1>Privacy Policy / 隐私政策</h1>
-      <p class="meta">Last updated: 2026-07-15 · Magies Technology</p>
+      <h1 data-legal-h1>Privacy Policy</h1>
+      <p class="meta" data-legal-meta>Last updated: 2026-07-15 · Magies Technology</p>
 
-      <section lang="en">
-        <h2>English</h2>
+      <!-- en -->
+      <section data-legal-block="en" lang="en" class="is-active">
         <p>
           MagiesTerminal (“the App”) is a desktop SSH / SFTP / terminal workspace. This policy describes
           what we collect through the App and the website at shell.magies.top (“the Site”).
@@ -57,8 +58,8 @@
         <p>Questions: <a href="mailto:hibake888@outlook.com">hibake888@outlook.com</a></p>
       </section>
 
-      <section lang="zh-CN">
-        <h2>中文</h2>
+      <!-- zh -->
+      <section data-legal-block="zh" lang="zh-CN" hidden>
         <p>
           MagiesTerminal（「本应用」）是桌面端 SSH / SFTP / 终端工作空间。本政策说明我们通过本应用与
           shell.magies.top（「本网站」）处理哪些信息。
@@ -88,6 +89,313 @@
         </p>
         <h3>联系我们</h3>
         <p>邮箱：<a href="mailto:hibake888@outlook.com">hibake888@outlook.com</a></p>
+      </section>
+
+      <!-- zh-TW -->
+      <section data-legal-block="zh-TW" lang="zh-TW" hidden>
+        <p>
+          MagiesTerminal（「本應用」）是桌面端 SSH / SFTP / 終端工作空間。本政策說明我們透過本應用與
+          shell.magies.top（「本網站」）處理哪些資訊。
+        </p>
+        <h3>我們收集什麼</h3>
+        <ul>
+          <li>
+            <strong>網站營運資料：</strong>網站可能記錄彙總的造訪與下載事件（路徑、大致地區、UA、工作階段
+            ID 等），用於了解產品使用情況，不作廣告畫像。
+          </li>
+          <li>
+            <strong>聯絡信箱：</strong>若你透過應用內或網站「問題諮詢」等方式寄信，我們會處理你傳送的內容以便回覆。
+          </li>
+          <li>
+            <strong>應用本機資料：</strong>主機、憑證、金鑰、設定與對話紀錄保存在你的裝置（及你自行設定的同步目標）上。核心功能不強制註冊雲端帳號。
+          </li>
+        </ul>
+        <h3>我們不會做什麼</h3>
+        <ul>
+          <li>不會出售個人資料。</li>
+          <li>下載與使用本應用無需強制建立 Magies 帳號。</li>
+          <li>僅當你設定 API Key 並主動請求時，第三方 AI 供應商才會收到相關資料。</li>
+        </ul>
+        <h3>第三方</h3>
+        <p>
+          下載可能經由 CDN / 鏡像分發。託管與統計服務會處理技術紀錄。使用 Magies Agent 時，模型供應商依你設定的 Key 處理請求內容。
+        </p>
+        <h3>聯絡我們</h3>
+        <p>信箱：<a href="mailto:hibake888@outlook.com">hibake888@outlook.com</a></p>
+      </section>
+
+      <!-- ja -->
+      <section data-legal-block="ja" lang="ja" hidden>
+        <p>
+          MagiesTerminal（「本アプリ」）はデスクトップ向け SSH / SFTP / ターミナルワークスペースです。本ポリシーは、本アプリおよび
+          shell.magies.top（「本サイト」）を通じて当社がどのような情報を取り扱うかを説明します。
+        </p>
+        <h3>収集する情報</h3>
+        <ul>
+          <li>
+            <strong>サイトの運用ログ（任意の運用分析）：</strong>本サイトは、製品の利用状況を把握するために、アクセスやダウンロードの集計イベント（パス、おおよその地域、ユーザーエージェント、セッション ID など）を記録する場合があります。広告プロファイリングには使用しません。
+          </li>
+          <li>
+            <strong>連絡用メール：</strong>アプリ内または本サイトの「お問い合わせ」などからメールを送った場合、返信のためにメッセージ内容を処理します。
+          </li>
+          <li>
+            <strong>アプリのローカルデータ：</strong>ホスト、資格情報、鍵、設定、チャット履歴はお使いの端末（およびご自身で設定した同期先）に保存されます。コア機能に必須のクラウドアカウントはありません。
+          </li>
+        </ul>
+        <h3>行わないこと</h3>
+        <ul>
+          <li>個人データを販売しません。</li>
+          <li>本アプリのダウンロードや利用に Magies アカウントの作成を必須としません。</li>
+          <li>第三者の AI プロバイダは、API キーを設定しリクエストを送信した場合にのみデータを受け取ります。</li>
+        </ul>
+        <h3>第三者</h3>
+        <p>
+          ダウンロードは CDN / ミラー経由で配信される場合があります。ホスティングおよび分析プロバイダは各自の条件に基づき技術ログを処理します。Magies Agent を自身の API キーで利用する場合、モデルプロバイダがプロンプトを処理します。
+        </p>
+        <h3>お問い合わせ</h3>
+        <p>ご質問：<a href="mailto:hibake888@outlook.com">hibake888@outlook.com</a></p>
+      </section>
+
+      <!-- ko -->
+      <section data-legal-block="ko" lang="ko" hidden>
+        <p>
+          MagiesTerminal(「본 앱」)은 데스크톱 SSH / SFTP / 터미널 워크스페이스입니다. 본 방침은 본 앱과
+          shell.magies.top(「본 사이트」)을 통해 어떤 정보를 처리하는지 설명합니다.
+        </p>
+        <h3>수집하는 정보</h3>
+        <ul>
+          <li>
+            <strong>사이트 운영 로그(선택적 운영 분석):</strong> 본 사이트는 제품 사용 현황을 파악하기 위해 방문 및 다운로드 집계 이벤트(경로, 대략적 지역, 사용자 에이전트, 세션 ID 등)를 기록할 수 있습니다. 광고 프로파일링에는 사용하지 않습니다.
+          </li>
+          <li>
+            <strong>연락 이메일:</strong> 앱 내 또는 사이트의 문의 기능으로 메일을 보내면 회신을 위해 메시지 내용을 처리합니다.
+          </li>
+          <li>
+            <strong>앱 로컬 데이터:</strong> 호스트, 자격 증명, 키, 설정, 채팅 기록은 기기(및 사용자가 구성한 동기화 대상)에 저장됩니다. 핵심 기능에 필수 클라우드 계정은 없습니다.
+          </li>
+        </ul>
+        <h3>하지 않는 일</h3>
+        <ul>
+          <li>개인정보를 판매하지 않습니다.</li>
+          <li>앱 다운로드 또는 사용을 위해 Magies 계정 생성을 요구하지 않습니다.</li>
+          <li>타사 AI 제공업체는 API 키를 설정하고 요청을 보낼 때만 관련 데이터를 받습니다.</li>
+        </ul>
+        <h3>제3자</h3>
+        <p>
+          다운로드는 CDN / 미러를 통해 제공될 수 있습니다. 호스팅 및 분석 제공업체는 자체 약관에 따라 기술 로그를 처리합니다. 본인 API 키로 Magies Agent를 사용할 때 모델 제공업체가 프롬프트를 처리합니다.
+        </p>
+        <h3>문의</h3>
+        <p>문의: <a href="mailto:hibake888@outlook.com">hibake888@outlook.com</a></p>
+      </section>
+
+      <!-- de -->
+      <section data-legal-block="de" lang="de" hidden>
+        <p>
+          MagiesTerminal („die App“) ist ein Desktop-SSH-/SFTP-/Terminal-Arbeitsplatz. Diese Richtlinie beschreibt,
+          welche Daten wir über die App und die Website shell.magies.top („die Website“) verarbeiten.
+        </p>
+        <h3>Welche Daten wir erheben</h3>
+        <ul>
+          <li>
+            <strong>Website-Analytik (optionale Betriebsprotokolle):</strong> Die Website kann aggregierte
+            Besuchs- und Download-Ereignisse speichern (z. B. Pfad, ungefähre Region, User-Agent, Sitzungs-ID),
+            um die Produktnutzung zu verstehen. Sie werden nicht für Werbeprofile verwendet.
+          </li>
+          <li>
+            <strong>Kontakt-E-Mail:</strong> Wenn Sie uns per E-Mail kontaktieren (z. B. über die In-App-
+            oder Website-Kontaktfunktion), verarbeiten wir den Nachrichteninhalt, um zu antworten.
+          </li>
+          <li>
+            <strong>Lokale App-Daten:</strong> Hosts, Zugangsdaten, Schlüssel, Einstellungen und Chatverlauf
+            bleiben auf Ihrem Gerät (und einem von Ihnen konfigurierten Sync-Ziel). Für Kernfunktionen ist
+            kein Pflicht-Cloud-Konto erforderlich.
+          </li>
+        </ul>
+        <h3>Was wir nicht tun</h3>
+        <ul>
+          <li>Wir verkaufen keine personenbezogenen Daten.</li>
+          <li>Zum Download oder zur Nutzung der App ist kein Magies-Konto erforderlich.</li>
+          <li>Drittanbieter-KI erhält Daten nur, wenn Sie einen API-Schlüssel konfigurieren und Anfragen senden.</li>
+        </ul>
+        <h3>Dritte</h3>
+        <p>
+          Downloads können über CDN-/Mirror-Infrastruktur bereitgestellt werden. Hosting- und Analyseanbieter
+          verarbeiten technische Protokolle nach eigenen Bedingungen. KI-Modellanbieter verarbeiten Prompts,
+          wenn Sie Magies Agent mit Ihren eigenen API-Schlüsseln nutzen.
+        </p>
+        <h3>Kontakt</h3>
+        <p>Fragen: <a href="mailto:hibake888@outlook.com">hibake888@outlook.com</a></p>
+      </section>
+
+      <!-- fr -->
+      <section data-legal-block="fr" lang="fr" hidden>
+        <p>
+          MagiesTerminal (« l’Application ») est un espace de travail SSH / SFTP / terminal de bureau.
+          La présente politique décrit les données traitées via l’Application et le site shell.magies.top
+          (« le Site »).
+        </p>
+        <h3>Données collectées</h3>
+        <ul>
+          <li>
+            <strong>Analytique du site (journaux opérationnels optionnels) :</strong> le Site peut
+            enregistrer des événements agrégés de visite et de téléchargement (chemin, région approximative,
+            user-agent, identifiant de session, etc.) pour comprendre l’adoption du produit. Ils ne servent
+            pas à établir des profils publicitaires.
+          </li>
+          <li>
+            <strong>E-mail de contact :</strong> si vous nous écrivez (via l’application ou le Site),
+            nous traitons le contenu du message pour y répondre.
+          </li>
+          <li>
+            <strong>Données locales de l’application :</strong> hôtes, identifiants, clés, réglages et
+            historique de chat restent sur votre appareil (et toute destination de synchronisation que vous
+            configurez). Aucun compte cloud obligatoire n’est requis pour les fonctions principales.
+          </li>
+        </ul>
+        <h3>Ce que nous ne faisons pas</h3>
+        <ul>
+          <li>Nous ne vendons pas de données personnelles.</li>
+          <li>Nous n’exigeons pas de compte Magies pour télécharger ou utiliser l’Application.</li>
+          <li>
+            Les fournisseurs d’IA tiers ne reçoivent des données que lorsque vous configurez une clé API et
+            envoyez des requêtes.
+          </li>
+        </ul>
+        <h3>Tiers</h3>
+        <p>
+          Les téléchargements peuvent être servis via notre CDN / miroir. Les hébergeurs et outils d’analyse
+          traitent des journaux techniques selon leurs conditions. Les fournisseurs de modèles traitent les
+          invites lorsque vous utilisez Magies Agent avec vos propres clés API.
+        </p>
+        <h3>Contact</h3>
+        <p>Questions : <a href="mailto:hibake888@outlook.com">hibake888@outlook.com</a></p>
+      </section>
+
+      <!-- es -->
+      <section data-legal-block="es" lang="es" hidden>
+        <p>
+          MagiesTerminal («la Aplicación») es un espacio de trabajo SSH / SFTP / terminal de escritorio.
+          Esta política describe qué datos tratamos a través de la Aplicación y el sitio shell.magies.top
+          («el Sitio»).
+        </p>
+        <h3>Qué recopilamos</h3>
+        <ul>
+          <li>
+            <strong>Analítica del sitio (registros operativos opcionales):</strong> el Sitio puede registrar
+            eventos agregados de visita y descarga (ruta, región aproximada, user-agent, id de sesión, etc.)
+            para entender la adopción del producto. No se usan para perfiles publicitarios.
+          </li>
+          <li>
+            <strong>Correo de contacto:</strong> si nos escribes (por la aplicación o el Sitio), procesamos
+            el contenido del mensaje para responder.
+          </li>
+          <li>
+            <strong>Datos locales de la aplicación:</strong> hosts, credenciales, claves, ajustes e historial
+            de chat permanecen en tu dispositivo (y en el destino de sincronización que configures). No
+            exigimos una cuenta en la nube obligatoria para las funciones principales.
+          </li>
+        </ul>
+        <h3>Lo que no hacemos</h3>
+        <ul>
+          <li>No vendemos datos personales.</li>
+          <li>No exigimos crear una cuenta Magies para descargar o usar la Aplicación.</li>
+          <li>
+            Los proveedores de IA de terceros solo reciben datos cuando configuras una API key y envías
+            solicitudes.
+          </li>
+        </ul>
+        <h3>Terceros</h3>
+        <p>
+          Las descargas pueden servirse mediante CDN / espejo. Los proveedores de alojamiento y analítica
+          procesan registros técnicos según sus términos. Los proveedores de modelos procesan las indicaciones
+          cuando usas Magies Agent con tus propias API keys.
+        </p>
+        <h3>Contacto</h3>
+        <p>Consultas: <a href="mailto:hibake888@outlook.com">hibake888@outlook.com</a></p>
+      </section>
+
+      <!-- pt -->
+      <section data-legal-block="pt" lang="pt-BR" hidden>
+        <p>
+          MagiesTerminal («o App») é um espaço de trabalho SSH / SFTP / terminal para desktop. Esta política
+          descreve o que coletamos por meio do App e do site shell.magies.top («o Site»).
+        </p>
+        <h3>O que coletamos</h3>
+        <ul>
+          <li>
+            <strong>Analítica do site (logs operacionais opcionais):</strong> o Site pode registrar eventos
+            agregados de visita e download (caminho, região aproximada, user-agent, id de sessão etc.) para
+            entender a adoção do produto. Não são usados para perfis publicitários.
+          </li>
+          <li>
+            <strong>E-mail de contato:</strong> se você nos enviar e-mail (pelo app ou pelo Site), processamos
+            o conteúdo da mensagem para responder.
+          </li>
+          <li>
+            <strong>Dados locais do app:</strong> hosts, credenciais, chaves, configurações e histórico de chat
+            permanecem no seu dispositivo (e em qualquer destino de sincronização que você configurar). Não
+            exigimos conta em nuvem obrigatória para os recursos principais.
+          </li>
+        </ul>
+        <h3>O que não fazemos</h3>
+        <ul>
+          <li>Não vendemos dados pessoais.</li>
+          <li>Não exigimos criar uma conta Magies para baixar ou usar o App.</li>
+          <li>
+            Provedores de IA de terceiros só recebem dados quando você configura uma chave de API e envia
+            solicitações.
+          </li>
+        </ul>
+        <h3>Terceiros</h3>
+        <p>
+          Downloads podem ser servidos via CDN / espelho. Provedores de hospedagem e analítica processam logs
+          técnicos sob seus próprios termos. Provedores de modelos processam prompts quando você usa o Magies
+          Agent com suas próprias chaves de API.
+        </p>
+        <h3>Contato</h3>
+        <p>Dúvidas: <a href="mailto:hibake888@outlook.com">hibake888@outlook.com</a></p>
+      </section>
+
+      <!-- ru -->
+      <section data-legal-block="ru" lang="ru" hidden>
+        <p>
+          MagiesTerminal («Приложение») — настольное SSH / SFTP / терминальное рабочее место. Настоящая
+          политика описывает, какие данные мы обрабатываем через Приложение и сайт shell.magies.top
+          («Сайт»).
+        </p>
+        <h3>Что мы собираем</h3>
+        <ul>
+          <li>
+            <strong>Аналитика сайта (опциональные операционные журналы):</strong> Сайт может фиксировать
+            агрегированные события посещений и загрузок (путь, приблизительный регион, user-agent, id сессии
+            и т. п.) для понимания использования продукта. Они не используются для рекламных профилей.
+          </li>
+          <li>
+            <strong>Контактный e-mail:</strong> если вы пишете нам (из приложения или с Сайта), мы обрабатываем
+            содержание сообщения, чтобы ответить.
+          </li>
+          <li>
+            <strong>Локальные данные приложения:</strong> хосты, учётные данные, ключи, настройки и история
+            чата хранятся на вашем устройстве (и на настроенном вами целевом хранилище синхронизации). Для
+            основных функций обязательный облачный аккаунт не требуется.
+          </li>
+        </ul>
+        <h3>Чего мы не делаем</h3>
+        <ul>
+          <li>Мы не продаём персональные данные.</li>
+          <li>Мы не требуем создавать аккаунт Magies для загрузки или использования Приложения.</li>
+          <li>
+            Сторонние ИИ-провайдеры получают данные только если вы настроили API-ключ и отправляете запросы.
+          </li>
+        </ul>
+        <h3>Третьи стороны</h3>
+        <p>
+          Загрузки могут раздаваться через CDN / зеркало. Хостинг и аналитика обрабатывают технические
+          журналы по своим условиям. Провайдеры моделей обрабатывают запросы, когда вы используете Magies
+          Agent со своими API-ключами.
+        </p>
+        <h3>Контакты</h3>
+        <p>Вопросы: <a href="mailto:hibake888@outlook.com">hibake888@outlook.com</a></p>
       </section>
     </main>
   </body>

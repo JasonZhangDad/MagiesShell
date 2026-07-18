@@ -27,8 +27,14 @@ npm run build:release
 npm run sync:changelog
 ```
 
-- `public/changelog.md` — 中文（同步脚本写入）
-- `public/changelog.en.md` — 英文（需人工维护；UI 非中文界面使用）
+- `public/changelog.md` — 简体中文（同步脚本写入；UI `zh`）
+- `public/changelog.en.md` — 英文（UI `en`；其它语言缺文件时回退）
+- `public/changelog.{lang}.md` — 其它 UI 语言完整正文（`zh-TW` / `ja` / `ko` / `de` / `fr` / `es` / `pt` / `ru`）
+
+官网弹窗「更新日志」随当前界面语言加载对应 markdown；切换语言时若弹窗已打开会自动重载。
+
+法律页 `privacy.html` / `terms.html` 通过 `public/legal.js` 跟随 UI 语言（`?lang=` 或 `localStorage`），
+并提供 **10 种语言完整正文**（zh / zh-TW / en / ja / ko / de / fr / es / pt / ru）。
 
 ## 部署
 

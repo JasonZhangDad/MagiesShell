@@ -1,6 +1,6 @@
 const REPO = 'JasonZhangDad/MgTerminal-releases'
 const MIRROR_BASE = 'https://dl.magies.top/stable'
-const FALLBACK_VERSION = '0.4.6'
+const FALLBACK_VERSION = '0.5.1'
 const RELEASE_CACHE_MS = 5 * 60_000
 
 export type DownloadId =
@@ -9,6 +9,9 @@ export type DownloadId =
   | 'win-x64'
   | 'win-x64-portable'
   | 'win-x64-zip'
+  | 'win-arm64'
+  | 'win-arm64-portable'
+  | 'win-arm64-zip'
   | 'linux-x64'
   | 'linux-arm64'
   | 'linux-x64-deb'
@@ -45,6 +48,21 @@ export const DOWNLOAD_SPECS: DownloadSpec[] = [
     id: 'win-x64-zip',
     match: /^MagiesTerminal-[\d.]+-win-x64\.zip$/i,
     fileName: (v) => `MagiesTerminal-${v}-win-x64.zip`,
+  },
+  {
+    id: 'win-arm64',
+    match: /^MagiesTerminal-[\d.]+-win-arm64\.exe$/i,
+    fileName: (v) => `MagiesTerminal-${v}-win-arm64.exe`,
+  },
+  {
+    id: 'win-arm64-portable',
+    match: /^MagiesTerminal-[\d.]+-portable-win-arm64\.exe$/i,
+    fileName: (v) => `MagiesTerminal-${v}-portable-win-arm64.exe`,
+  },
+  {
+    id: 'win-arm64-zip',
+    match: /^MagiesTerminal-[\d.]+-win-arm64\.zip$/i,
+    fileName: (v) => `MagiesTerminal-${v}-win-arm64.zip`,
   },
   {
     id: 'linux-x64',

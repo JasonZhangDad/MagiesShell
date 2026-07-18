@@ -26,4 +26,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'chore(site): sync changelog from upstream'
-          file_pattern: 'public/changelog.md public/changelog.en.md'
+          file_pattern: 'public/changelog*.md'

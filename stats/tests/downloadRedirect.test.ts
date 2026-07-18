@@ -12,6 +12,9 @@ import {
 test('known download ids are accepted', () => {
   assert.equal(isDownloadId('mac-arm64'), true)
   assert.equal(isDownloadId('win-x64-zip'), true)
+  assert.equal(isDownloadId('win-arm64'), true)
+  assert.equal(isDownloadId('win-arm64-portable'), true)
+  assert.equal(isDownloadId('win-arm64-zip'), true)
   assert.equal(isDownloadId('../etc/passwd'), false)
   assert.equal(isDownloadId('mac-arm64.exe'), false)
 })
