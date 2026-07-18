@@ -16,6 +16,13 @@ test('website nginx config sends browser security headers', () => {
   assert.match(nginxConfig, /frame-ancestors 'none'/)
 })
 
+test('static asset locations still send HSTS despite re-declaring add_header', () => {
+  const assetBlock = nginxConfig.slice(nginxConfig.indexOf('location ^~ /assets/'))
+  assert.match(assetBlock, /location \^~ \/assets\/[^]*?Strict-Transport-Security/)
+  const fileExtBlock = nginxConfig.slice(nginxConfig.indexOf('location ~* \\.(js|css'))
+  assert.match(fileExtBlock, /Strict-Transport-Security/)
+})
+
 test('obsolete standalone stats domain config is removed', () => {
   assert.equal(
     existsSync(new URL('../deploy/shell-stats.magies.top.conf', import.meta.url)),

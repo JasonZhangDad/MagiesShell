@@ -365,7 +365,7 @@ function renderLogin(error = ''): void {
       <form class="login-card" data-login>
         <h1>MagiesTerminal Stats</h1>
         <p>输入用户名和密码进入运营大屏</p>
-        <p class="login-error" role="alert">${error}</p>
+        <p class="login-error" role="alert" data-login-error></p>
         <label class="sr-only" for="login-username">用户名</label>
         <input id="login-username" type="text" name="username" placeholder="Username" autocomplete="username" required />
         <div class="password-field">
@@ -376,6 +376,10 @@ function renderLogin(error = ''): void {
         <button type="submit">进入大屏</button>
       </form>
     </div>`
+
+  // textContent (never innerHTML) so an error string can never inject markup.
+  const errorEl = app.querySelector<HTMLElement>('[data-login-error]')
+  if (errorEl) errorEl.textContent = error
 
   const passwordInput = app.querySelector<HTMLInputElement>('[data-password]')
   const toggleBtn = app.querySelector<HTMLButtonElement>('[data-toggle-password]')
