@@ -13,3 +13,9 @@ test('stats web relies on HttpOnly cookies instead of browser token storage', ()
 test('stats web calls the logout endpoint', () => {
   assert.match(source, /stats-api\/logout/)
 })
+
+test('login error is rendered via textContent, not interpolated into innerHTML', () => {
+  // The error message must never be templated straight into the login markup.
+  assert.doesNotMatch(source, /login-error[^>]*>\$\{error\}/)
+  assert.match(source, /\[data-login-error\][^]*?\.textContent = error/)
+})

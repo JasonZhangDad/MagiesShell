@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from 'node:crypto'
 import express from 'express'
 import cors from 'cors'
 import { env } from './env.js'
@@ -56,6 +57,17 @@ function enforceRateLimit(limiter: FixedWindowRateLimiter) {
   }
 }
 
+/**
+ * Constant-time string compare. Hashing first keeps the comparison length-safe
+ * (timingSafeEqual throws on unequal lengths) and avoids leaking the secret
+ * length via timing.
+ */
+function safeEqual(a: string, b: string): boolean {
+  const ha = createHash('sha256').update(a).digest()
+  const hb = createHash('sha256').update(b).digest()
+  return timingSafeEqual(ha, hb)
+}
+
 function parseRecentFilter(raw: unknown): RecentFilter {
   if (raw === 'page_view' || raw === 'download') return raw
   return 'all'
@@ -103,7 +115,11 @@ app.get('/api/download/:id', enforceRateLimit(downloadLimiter), async (req, res)
 app.post('/api/login', enforceRateLimit(loginLimiter), (req, res) => {
   const username = typeof req.body?.username === 'string' ? req.body.username.trim() : ''
   const password = typeof req.body?.password === 'string' ? req.body.password : ''
-  if (username !== env.statsUsername || password !== env.statsPassword) {
+  // Evaluate both comparisons unconditionally so neither timing nor short-circuit
+  // reveals whether the username or the password was the mismatch.
+  const okUser = safeEqual(username, env.statsUsername)
+  const okPass = safeEqual(password, env.statsPassword)
+  if (!(okUser && okPass)) {
     res.status(401).json({ error: 'Invalid username or password' })
     return
   }

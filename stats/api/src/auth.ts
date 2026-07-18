@@ -8,7 +8,10 @@ export type AuthPayload = {
 }
 
 export function signToken(): string {
-  return jwt.sign({ role: 'admin' } satisfies AuthPayload, env.jwtSecret, { expiresIn: '12h' })
+  return jwt.sign({ role: 'admin' } satisfies AuthPayload, env.jwtSecret, {
+    algorithm: 'HS256',
+    expiresIn: '12h',
+  })
 }
 
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {
@@ -18,7 +21,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
     return
   }
   try {
-    const payload = jwt.verify(token, env.jwtSecret)
+    const payload = jwt.verify(token, env.jwtSecret, { algorithms: ['HS256'] })
     if (typeof payload !== 'object' || payload.role !== 'admin') throw new Error('Invalid role')
     next()
   } catch {

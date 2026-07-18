@@ -1,11 +1,17 @@
 /** Minimal CSV helpers for dashboard export. */
 
+// Cells starting with these are treated as formulas by Excel / Sheets / WPS.
+// Only string cells are guarded — numbers we generate are never formulas.
+const FORMULA_TRIGGERS = new Set(['=', '+', '-', '@', '\t', '\r'])
+
 function escapeCell(value: unknown): string {
   const text = value == null ? '' : String(value)
-  if (/[",\n\r]/.test(text)) {
-    return `"${text.replace(/"/g, '""')}"`
+  const guarded =
+    typeof value === 'string' && FORMULA_TRIGGERS.has(text[0]) ? `'${text}` : text
+  if (/[",\n\r]/.test(guarded)) {
+    return `"${guarded.replace(/"/g, '""')}"`
   }
-  return text
+  return guarded
 }
 
 export function toCsv(headers: string[], rows: Array<Array<unknown>>): string {
