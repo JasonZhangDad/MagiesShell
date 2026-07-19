@@ -1,221 +1,288 @@
 # Registro de cambios
 
-## [0.5.1] - 2026-07-18
+## [0.5.9] - 2026-07-19
 
-### Lanzamiento
-- Instaladores y metadatos de auto-actualización de la línea 0.5.x (MgTerminal-releases)
+### Correcciones
+- **No se podía cerrar el diálogo**: los diálogos abiertos en la ventana de Ajustes (p. ej., el registro de «Novedades») no se podían cerrar: la X de la esquina superior derecha se solapaba con la zona de arrastre de la barra de título, por lo que los clics se interpretaban como arrastre de la ventana. Ahora todos los diálogos quedan excluidos de esa zona y la X cierra de forma fiable
+
+## [0.5.8] - 2026-07-19
+
+### Seguridad
+- **Refuerzo del IPC de archivos locales**: los manejadores IPC de lectura/escritura/eliminación/enumeración de archivos locales ahora validan el sender del renderer que llama y rechazan contextos webview/invitado, de modo que un XSS del renderer no pueda escalar a acceso arbitrario a archivos locales (defensa en profundidad)
+- **Refuerzo de dependencias**: resueltos todos los avisos de severidad alta del árbol de dependencias de producción: fast-uri → 4.1.1, fast-xml-parser → 5.10.1, fast-xml-builder → 1.3.0, hono → 4.12.31; y, acotado al subárbol de @cursor/sdk, node-gyp → 11.4.2 y tar → 7.5.20 (con alcance limitado para no afectar las compilaciones nativas)
+
+## [0.5.7] - 2026-07-18
+
+### Funciones
+- **Informes de fallos anónimos (opcional)**: desactivado por defecto; al activarlo en Ajustes → Sistema, se envían resúmenes de fallos depurados (sin rutas, nombres de usuario, hosts ni datos de sesión) para corregir fallos más rápido
+
+## [0.5.6] - 2026-07-18
+
+### Seguridad
+- **Cabecera de autenticación de inventario HTTP cifrada**: la cabecera de autenticación (Authorization / clave de API) de las fuentes json_http ya no se almacena en texto plano; ahora usa cifrado a nivel de campo del vault, y los valores en texto plano existentes se migran en el primer inicio tras la actualización
+- **Refuerzo de dependencias**: undici → 6.27.0, DOMPurify → 3.4.12, uuid → 13.0.2, corrigiendo avisos de XSS alcanzable y request smuggling / DoS que los overrides obsoletos aún cumplían
+
+## [0.5.5] - 2026-07-18
+
+### Correcciones
+- **Toasts falsos de «Error en la actualización»**: los errores de la fase de comprobación ya no se tratan como fallos de descarga; se limpia el estado in-flight tras cada comprobación IPC
+- **Canal de actualización Windows arm64**: usar `latest-arm64.yml` para no descargar instaladores x64
+- **Ruta de comprobación/descarga más fiable**: dual-feed y máquina de estados de UI reducen errores falsos por comprobaciones concurrentes
+
+## [0.5.4] - 2026-07-18
+
+### Seguridad
+- **Límite de desbloqueo del Vault**: desactivar/cambiar PIN y WebAuthn requieren desbloqueo o PIN actual; límite de intentos
+- **Diagnóstico/salud SSH**: abortar antes de autenticar si la clave del host es unknown/changed para no ofrecer contraseñas a un MITM
+- **Seguimiento de sesión**: sellado AES-GCM E2E con token de invitación; relay opaco; rechazo de wss/ws falsos
+- **IPC de credenciales**: validar el sender en desbloqueo del vault y en encrypt/decrypt
+- **Temp / RDP / deep links / logs / adjuntos de IA**: 0700+symlink-safe, limpieza inmediata de cmdkey si falla RDP, confirmación Telnet/JMS, sin logs de respuestas kbd-int, límites de tamaño de adjuntos
+
+### Correcciones
+- Health con keyboard-interactive; notas con scroll
+- Envío de IA solo con adjuntos; SFTP/port-forward honran verifyHostKeys
+
+### Ingeniería
+- Añadir `npm run typecheck`; primera tanda de errores de tipos de producción (vault/WebAuthn/update/SFTP)
+
+## [0.5.3] - 2026-07-18
+
+### Correcciones
+- **Desplazamiento del diálogo de novedades**: las notas largas se pueden desplazar dentro del diálogo
+
+### Mejoras
+- Texto del recuento de cambios de la última versión corregido; cadenas de «Novedades» completadas en los 10 idiomas de la interfaz
+
+## [0.5.2] - 2026-07-18
+
+### Funciones
+- **Vault de equipo local-first**: paquetes de inventario solo con metadatos, roles (owner/editor/viewer) y auditoría firmada HMAC; contraseñas y claves privadas no salen del dispositivo
+- **Seguimiento de sesión por relé WAN**: relé TCP NDJSON apto para NAT; relé local embebido o `scripts/follow-relay.cjs` autoalojado
+- **Desbloqueo del Vault con passkey del dispositivo**: autenticadores WebAuthn (Touch ID / Windows Hello / llave de seguridad) verificados en el proceso principal; no es sync multi-dispositivo en la nube
+- **KEX poscuántico híbrido ssh2 integrado**: prefiere `mlkem768x25519-sha256` y vuelve a algoritmos clásicos si no hay soporte
+- **Soporte de hosts RDP**: lanza el cliente de escritorio remoto del sistema desde el Vault (Windows mstsc, macOS Windows App, Linux xfreerdp)
+- **Salto y proxy OpenSSH del sistema**: cadenas de jump y proxies HTTP/SOCKS en sesiones OpenSSH del sistema
+
+### Mejoras
+- **Actualización global de componentes UI**: radios, sombras suaves y anillos de foco unificados en botones, entradas, popovers, paneles laterales, estados vacíos y toasts
+- **Panel lateral de IA pulido**: diseño de Q&A, controles de modelo/permiso, spinner de pensamiento cuadrado y tipografía de entrada
+- **Diálogo de changelog rediseñado**: versiones plegables, color por sección y notas según el idioma de la UI
 
 ## [0.5.0] - 2026-07-17
 
 ### Funciones
-- **Panel de diagnóstico Hex/Raw del terminal**: I/O de sesión por bytes (opcional)
-- **Fuente de hosts JSON**: inventarios desde JSON local o HTTP(S); solo metadatos; cabeceras de auth HTTP
-- **Compartir e importar inventario**: export solo metadatos (YAML Ansible); import desde portapapeles
-- **Plantillas de espacio de trabajo con nombre**: enlaces de hosts, splits, cwd/comando de inicio opcionales
-- **Marcadores del registro de conexión**: posiciones + notas + búsqueda
-- **Vista en vivo de canales de reenvío de puertos**: origen, destino y bytes por conexión
-- **Acciones onOutput de scripts**: notificación, sonido, marcar pestaña, iniciar grabación
-- **Pegado seguro y difusión precisa**: retraso / espera de prompt / confirmación de comandos peligrosos
-- **Canal OpenSSH del sistema**: GSSAPI/Kerberos y post-cuántico (PQ)
+- **Panel de diagnóstico de flujo Hex/Raw del terminal**: activación opcional para inspeccionar byte a byte la entrada/salida cruda de la sesión, útil para depurar problemas de codificación y secuencias de escape
+- **Fuente de hosts JSON**: obtención de inventarios de hosts desde un archivo JSON local o un endpoint HTTP(S) (estilo CMDB / Ansible / API personalizada); solo metadatos, se rechazan inventarios con secretos; cabeceras de autenticación HTTP admitidas
+- **Compartición e importación de inventarios de hosts**: exportación de inventarios de solo metadatos para el traspaso entre equipos (incluido el formato Ansible YAML), importación desde el portapapeles
+- **Plantillas de espacios de trabajo con nombre**: guarde vinculaciones de hosts, diseños divididos y comandos cwd/de inicio opcionales como plantillas, aplicables con un clic desde el conmutador rápido
+- **Marcadores de registros de conexión**: marcadores de posición de reproducción + notas + salto por búsqueda; la lista de registros muestra el número de marcadores
+- **Vista en vivo de canales de reenvío de puertos**: origen, destino y estadísticas de bytes de tráfico por conexión para reenvíos locales/remotos/dinámicos
+- **Ampliación de acciones del disparador onOutput de scripts**: al coincidir un patrón de salida puede lanzar una notificación de escritorio, un sonido, un marcador de pestaña o iniciar la grabación de la sesión
+- **Pegado seguro y difusión precisa**: retardo de pegado multilínea / espera del prompt / confirmación de comandos peligrosos; la difusión puede dirigirse con precisión a espacio de trabajo/selección/grupo/ventana
+- **Mejoras del canal OpenSSH del sistema**: GSSAPI/Kerberos y algoritmos poscuánticos (PQ) admitidos a través del OpenSSH del sistema; cadenas de salto y proxies HTTP/SOCKS disponibles
+- **KEX poscuántico híbrido de ssh2 integrado**: prefiere `mlkem768x25519-sha256` (ML-KEM-768 + X25519) con respaldo clásico; ya no requiere el ssh del sistema
+- **Soporte de hosts RDP**: habilitar RDP en hosts del Vault y lanzar el cliente de escritorio remoto del sistema (Windows mstsc, macOS Windows App, Linux xfreerdp)
+- **El registro de cambios sigue el idioma de la interfaz**: notas de la versión en el idioma actual de la UI (10 idiomas)
 
 ### Windows ARM64
-- **win-arm64 con mosh / ET**: binarios nativos MoshMagies 0.1.9 y EternalTerminal 6.2.10
-- **Canal de auto-actualización dedicado**: `latest-arm64.yml`
+- **Los instaladores win-arm64 ya incluyen mosh / ET**: MoshMagies 0.1.9 y EternalTerminal 6.2.10 estrenan binarios nativos de Windows arm64
+- **Canal de actualización automática dedicado para win-arm64**: los metadatos de actualización pasan al canal dedicado `latest-arm64.yml` en lugar de seguir las actualizaciones x64 (antes las actualizaciones arm64 instalaban el paquete x64 y funcionaban en emulación)
 
 ## [0.4.10] - 2026-07-17
 
 ### Funciones
-- **Centro de diagnóstico SSH**: «Probar conexión» + «Ejecutar diagnóstico» — DNS / TCP / jump / clave de host / auth / SFTP
-- **Auth SSH Agent de primera clase**: elegir Agent, huellas, identidad preferida
-- **Instantánea de salud multihost**: latencia, auth, carga/memoria/disco
-- **Fiabilidad SFTP fase 1**: reanudar, reintento auto, cola persistente, SHA-256 opcional
-- **Onboarding de producto**: guía de Vault vacío, paleta de comandos, estados vacíos
+- **Centro de diagnóstico de conexiones SSH**: «Probar conexión» en el panel de edición del host + «Ejecutar diagnóstico» al fallar la conexión, con comprobaciones paso a paso de DNS / TCP / host de salto / clave del host / autenticación / SFTP
+- **El agente SSH como autenticación de primera clase**: los hosts pueden elegir explícitamente la autenticación por agente, ver las huellas de las claves del agente y designar una identidad preferida; el registro de conexión anota el método realmente usado
+- **Instantánea de salud multi-host**: comprobación masiva con un clic desde el Vault de latencia, autenticación y carga/memoria/disco; filtre hosts anómalos y ejecute scripts
+- **Fiabilidad SFTP fase 1**: transferencias reanudables, reintentos automáticos con retroceso, cola de transferencias persistente (sobrevive a reinicios), verificación SHA-256 opcional
+- **Incorporación productizada**: guía de tres pasos para el primer Vault vacío; elementos de comando del conmutador rápido (ajustes/importación/chequeo de salud, etc.); avisos de migración en estado vacío; sugerencias tras la primera conexión exitosa; matriz de funciones del README
 
 ### Correcciones
-- Vaults existentes sin onboarding inicial; cierre correcto del jump si falla auth de health
+- Los usuarios que actualizan un Vault existente ya no ven la guía de primer uso; los chequeos de salud cierran correctamente las conexiones de salto cuando falla la autenticación
 
 ## [0.4.9] - 2026-07-17
 
 ### Mejoras
-- **Fuentes de release / auto-actualización a un repo de releases dedicado**: MgTerminal-releases; UX del sitio y de la app sin cambios
+- **Publicaciones y canal de actualización automática trasladados a un repositorio de publicación dedicado**: los instaladores y metadatos de actualización se publican ahora en el repositorio MgTerminal-releases; las descargas del sitio web y la actualización automática integrada no cambian, y los clientes antiguos siguen recibiendo actualizaciones mediante redirecciones desde las URL originales
 
 ## [0.4.8] - 2026-07-16
 
 ### Funciones
-- **Quick Connect con EternalTerminal**: entrada ET (puerto SSH + puerto ET, 2022 por defecto)
-- **Autocomprobación de credenciales**: Ajustes → Sistema → Protección de credenciales
-- **Instalador Windows ARM64**: win-arm64 (mosh/et y canal en 0.5.0)
-- **Limpieza de restauración de sesión**: diseños > 14 días se descartan al arrancar
+- **La conexión rápida admite EternalTerminal**: el asistente QuickConnect añade una entrada de protocolo ET (puerto SSH + puerto de servicio ET, 2022 por defecto); los binarios cliente de ET correspondientes vienen incluidos (macOS / Linux / Windows x64)
+- **Autocomprobación de credenciales**: Ajustes → Sistema → Protección de credenciales añade «Autocomprobación»: una prueba de ida y vuelta de cifrado/descifrado más un escaneo del almacén que lista las entradas concretas que este dispositivo no puede descifrar (hosts / claves / identidades / grupos / proxies), facilitando localizar credenciales que deben reintroducirse tras un fallo del llavero
+- **Primer instalador de Windows ARM64**: nueva compilación win-arm64 (mosh / et aún no incluidos; la actualización automática sigue temporalmente el canal x64)
+- **Limpieza de restauraciones de sesión caducadas**: los diseños de restauración de más de 14 días se descartan al arrancar en lugar de restaurar montones de marcadores de posición obsoletos
 
 ### Correcciones
-- **UI rusa**: 203 cadenas faltantes; zh-CN +3; pruebas de alineación
-- Ruta mosh-server personalizada de Quick Connect se aplica
+- **Interfaz rusa: completados 203 textos ausentes** (todo el espacio de nombres de scripts / automatización / grabación caía al inglés), más 3 del chino simplificado; una nueva prueba de paridad completa evita regresiones
+- La conexión rápida de Mosh recogía una ruta personalizada de mosh-server sin aplicarla; ahora se escribe correctamente en la configuración del host
 
 ### Mejoras
-- Visibilidad SFTP unificada
-- README macOS alineado con distribución sin firmar
+- La selección total de SFTP (Cmd/Ctrl+A) y el renderizado de la lista comparten ahora una única regla de visibilidad, eliminando desvíos de comportamiento con archivos ocultos / términos de filtro
+- Las notas de macOS del README coinciden con el proceso real de publicación (sin firmar, con pasos para permitirlo en Gatekeeper; las actualizaciones integradas no se ven afectadas)
 
 ## [0.4.7] - 2026-07-15
 
 ### Funciones
-- **Idiomas de UI ampliados a 10**: alineado con el sitio — se añaden japonés / coreano / alemán / francés / español / portugués (se mantienen en / ru / zh-CN / zh-TW)
-- Ajustes → Apariencia → Idioma lista todos los idiomas admitidos; las cadenas sin traducir caen a inglés
+- **Idiomas de interfaz ampliados a 10**: cliente y sitio web alineados; se añaden 日本語 / 한국어 / Deutsch / Français / Español / Português (se conservan en / ru / zh-CN / zh-TW)
+- Ajustes → Apariencia → Idioma ofrece todos los idiomas admitidos; los textos sin traducir siguen cayendo al inglés
 
 ## [0.4.6] - 2026-07-15
 
 ### Seguridad
-- **Desactivar la verificación de claves de host SSH ya no es silencioso**: con `verifyHostKeys` off (sesiones de terminal y conexiones de stats Mosh) se registra una advertencia clara de que se acepta cualquier clave sin preguntar
-- **Aviso persistente en ajustes**: desactivar «Verificar claves de host SSH» muestra un aviso de riesgo MITM bajo el interruptor (en / zh-CN / zh-TW). Por defecto sigue activo
+- **Desactivar la verificación de claves de host SSH ya no es silencioso**: con `verifyHostKeys` desactivado (sesiones de terminal y conexiones de estadísticas de mosh) se registra una advertencia explícita de que se está aceptando cualquier clave de host sin preguntar
+- **Advertencia persistente en la página de ajustes**: tras desactivar «Verificar claves de host SSH», bajo el interruptor permanece visible un aviso del riesgo de ataque de intermediario (en / zh-CN / zh-TW). Por defecto sigue activado
 
 ## [0.4.5] - 2026-07-15
 
 ### Correcciones
-- **Cifrado anidado que provoca 401 / flujos vacíos**: guardar varias veces sin llavero anidaba el cifrado (`enc:v2(enc:v1(...))`); el bucle de descifrado desenvuelve los blobs dentro del presupuesto
-- **Una credencial mala ya no rompe todo el vault**: si falla el descifrado de un campo se conserva el valor (fail-soft)
-- **Clave API de búsqueda web**: focus/blur solos ya no borran una clave guardada tras fallo de descifrado; mensajes más claros
-- **Detección de cifrado DPAPI en Windows**: el guardia anti-recifrado omitía claves DPAPI (cabecera `AQAAAN`) — corregido
-- **Cursor Agent**: un fallo de descifrado no inyecta cifrado como API key en el proceso hijo
-- Ajustes Provider / búsqueda web / Cursor: avisos unificados de volver a introducir la clave; cambiar idioma no sobrescribe claves sin guardar
+- **401 / flujos vacíos por texto cifrado anidado**: guardar repetidamente durante un fallo del llavero envolvía las claves en capas de cifrado (`enc:v2(enc:v1(...))`); corregido el límite del bucle de descifrado, los anidamientos múltiples dentro del presupuesto se descifran por completo: se acabó el «descifrado bien y luego descartado» y los falsos fallos de descifrado
+- **Una credencial dañada ya no arrastra la carga de todo el almacén**: si falla el descifrado de un campo se conserva el valor almacenado tal cual (fail-soft), el almacén carga con normalidad y las claves siguen siendo recuperables tras reparar el llavero
+- **Clave API de búsqueda web**: tras un fallo de descifrado, enfocar/desenfocar ya no borra por error una clave guardada; se añaden avisos explícitos de fallo de descifrado/cifrado en lugar de silencio
+- **Corregida la identificación del cifrado DPAPI de Windows**: la protección contra doble cifrado pasaba por alto las claves DPAPI (cabecera `AQAAAN`), que un fallo del llavero recifraba en texto anidado; ya está corregido
+- **Cursor Agent**: al fallar el descifrado ya no se inyecta texto cifrado como clave API en el proceso hijo
+- Unificación de las tres zonas Provider / búsqueda web / Cursor de los ajustes: el fallo de descifrado pide claramente reintroducir la clave, y cambiar el idioma de la interfaz ya no sobrescribe una clave sin guardar
 
 ## [0.4.4] - 2026-07-14
 
 ### Correcciones
-- **IA 401 / flujos vacíos**: si falla el descifrado de la API key o no está sincronizada con el proceso principal, no se usa el marcador `__IPC_SECURED__`; fallo inmediato y aviso de volver a guardar
-- Esperar a que los providers se sincronicen con el proceso principal antes de enviar
-- Errores de auth claros si la clave local no está disponible
+- **IA 401 / flujos vacíos**: cuando falla el descifrado de la clave API o la clave no se ha sincronizado con el proceso principal, las solicitudes ya no salen con el marcador `__IPC_SECURED__`; fallan de inmediato con un aviso para volver a guardar la clave
+- El envío de mensajes espera a que los proveedores se sincronicen con el proceso principal, evitando fallos de autenticación por carreras
+- Indicaciones de autenticación claras cuando la clave local es inutilizable (fallo de descifrado / ausente / marcador residual)
 
 ## [0.4.3] - 2026-07-14
 
 ### Correcciones
-- **Descifrado de API key**: el proceso principal descifra correctamente claves vault locales `enc:v2`; en fallo no envía cifrado al proveedor
-- **Marcadores de credenciales**: los límites de conexión / sync en la nube reconocen `enc:v2`
-- Errores accionables en flujos de modelo vacíos (`NoOutputGeneratedError`) y 401
-- Sonda de instalación del SDK de Cursor con `require.resolve` para menos falsos positivos
+- **Descifrado de claves API**: el proceso principal descifra correctamente las claves `enc:v2` de la caja fuerte local; al fallar, el texto cifrado ya no se envía a los proveedores como texto plano (evitando los 401 y el sufijo `…5Q==`)
+- **Reconocimiento de marcadores de credenciales**: los límites de conexión / guardas de sincronización en la nube reconocen también `enc:v2`, evitando enviar el cifrado de la caja fuerte local como contraseña o subirlo a la sincronización
+- Mensajes de error accionables para flujos vacíos del modelo (`NoOutputGeneratedError`) y fallos de autenticación 401
+- La detección de instalación del SDK de Cursor pasa a `require.resolve`, evitando falsos «no instalado»
 
 ## [0.4.2] - 2026-07-14
 
 ### Correcciones
-- **Fallo de cifrado de API key resuelto**: si el llavero del SO (`safeStorage`) no está disponible, se usa un vault cifrado local (`enc:v2`)
-- macOS prefiere el llavero del sistema y cae en silencio; Ajustes → Sistema muestra el backend activo
+- **Fallos de cifrado de claves API resueltos de una vez**: cuando el llavero (safeStorage) no está disponible se usa automáticamente una caja fuerte cifrada local (`enc:v2`); las actualizaciones de la aplicación ya no impiden guardar claves API tras la invalidación de las ACL del llavero
+- macOS sigue intentando primero el llavero del sistema y recurre silenciosamente al alternativo si falla; Ajustes → Sistema muestra el backend activo
 
 ## [0.4.1] - 2026-07-14
 
 ### Mejoras
-- Selector de temas: vistas previas en tarjetas, ámbitos Core / Todo, búsqueda y estados vacíos
-- Mejor contraste de Snow / Midnight; paletas de terminal `ui-snow` / `ui-midnight` sincronizadas
-- Jerarquía de selección unificada en Vault, SFTP, navegación de ajustes, barra lateral de IA y chrome del terminal
-- Listas de temas de terminal con búsqueda y muestras más claras
-- Estado de sync, toasts, insignias de actualización y resaltados de arrastre en tokens de tema
+- Selector de temas: vistas previas en tarjetas (fondo + colores primario/secundario), alternancia de ámbito Core / Todos, búsqueda y estados vacíos
+- Los temas predeterminados Snow / Midnight ganan contraste y profundidad de tarjetas, con las paletas de terminal `ui-snow` / `ui-midnight` sincronizadas
+- Estados de selección y jerarquía visual unificados: hosts/árbol del Vault, lista/árbol/barra de pestañas de SFTP, navegación de ajustes, barra lateral de IA, barra superior del terminal
+- Las listas de temas del terminal (diálogo / barra lateral) admiten búsqueda y vistas previas de muestras de color más claras
+- Los colores codificados (estado de sincronización, toasts informativos, insignias de actualización, resaltados de arrastrar y soltar, etc.) se consolidan en tokens de tema
 
 ## [0.4.0] - 2026-07-13
 
 ### Funciones
-- Entrada «Contacto» que copia el correo de soporte
-- Reconexión SSH con backoff exponencial (desde 5 s, tope 60 s); tras 10 fallos, reconexión manual
-- Reenvíos de puerto local/dinámico reutilizan la sesión SSH del terminal ya autenticada (sin segundo password/2FA)
-- Importar claves FIDO2 (`sk-*`) sugiere autenticación con ssh-agent
+- Nueva entrada «Contactar con soporte» que copia el correo de contacto
+- La reconexión automática SSH pasa a retroceso exponencial (desde 5 s hasta 60 s); tras 10 fallos consecutivos se detiene y pide reconectar manualmente
+- El reenvío de puertos local/dinámico reutiliza la conexión SSH del terminal ya autenticada, evitando una segunda contraseña/2FA
+- Al importar claves de seguridad FIDO2 (sk-*) se sugiere cambiar a la autenticación ssh-agent
 
 ### Cambios
 
 ## [0.3.0] - 2026-07-13
 
 ### Correcciones
-- Los fallos de cifrado de API key al guardar un proveedor de IA ya no se silencian; error localizado bajo el campo
+- Los fallos de cifrado de la clave API al guardar un proveedor de IA ya no se tragan en silencio; aparece un error localizado claro bajo el campo de la clave API
 
 ## [0.2.9] - 2026-07-13
 
 ### Funciones
-- Actualización automática en macOS: instalación sustituyendo el bundle tras la descarga (elude límites Squirrel de apps sin firmar; desde 0.2.9 todas las plataformas pueden auto-actualizarse)
+- macOS admite actualización automática: instala reemplazando el bundle tras la descarga, sorteando las restricciones de Squirrel para aplicaciones sin firmar (desde 0.2.9 todas las plataformas pueden actualizarse automáticamente)
 
 ### Correcciones
-- El icono conserva la placa redondeada oficial en claro/oscuro
+- El icono de la aplicación conserva la base redondeada del material oficial, coherente en claro y oscuro
 
 ## [0.2.8] - 2026-07-13
 
 ### Correcciones
-- Paquetes Windows que salían en silencio al arrancar: reinsertar hashes de integridad tras reescribir asar, comprobaciones CI
-- Progreso y errores de instalación de actualizaciones visibles en todas las plataformas
+- El paquete de Windows se cerraba silenciosamente al arrancar: afterPack vuelve a incrustar el hash de integridad tras reescribir el asar, con una verificación de CI para evitar recaídas
+- El progreso y los errores de la instalación de actualizaciones son visibles en todas las plataformas
 
 ## [0.2.7] - 2026-07-13
 
 ### Correcciones
-- Arquitectura de release de Windows: empaquetado seguro del instalador x64
+- Windows publica un instalador x64 seguro a nivel de arquitectura
 
 ## [0.2.6] - 2026-07-12
 
 ### Seguridad
-- Ventanas de bandeja empaquetadas ignoran `VITE_DEV_SERVER_URL` y bloquean navegación / nuevas ventanas
-- Preload ya no confía en el servidor de desarrollo como origen dentro de `app.asar`
-- DOMPurify 3.3.2 y undici 6.23.0 contra XSS / DoS por zip-bomb
-- afterPack repara hashes de integridad ASAR e Info.plist para evitar el crash inmediato en macOS
+- La ventana de bandeja empaquetada ignora `VITE_DEV_SERVER_URL` y bloquea la navegación / ventanas nuevas
+- preload ya no añade el servidor de desarrollo a los orígenes de confianza bajo `app.asar`
+- Actualizaciones forzadas a DOMPurify 3.3.2 y undici 6.23.0, corrigiendo un XSS alcanzable / DoS de cadena de descompresión
+- afterPack repara el hash de integridad de los archivos ASAR y sincroniza Info.plist, evitando el cierre inesperado de macOS al arrancar
 
 ### Correcciones
-- Pruebas de integración de auto-login Telnet esperan al prompt antes de afirmar la finalización
+- La prueba de integración del inicio de sesión automático de Telnet espera ahora al prompt de comandos antes de comprobar el evento de finalización
 
 ## [0.2.5] - 2026-07-12
 
 ### Correcciones
-- «Reiniciar ahora» sin efecto: la salida de instalación de actualización ya no la cancelan las comprobaciones before-quit
-- Errores claros si falla «Reiniciar y actualizar»; plataformas sin auto-instalación abren Releases
+- Los enlaces de novedades / informes apuntan a `JasonZhangDad/MgTerminal`, corrigiendo los 404
+- Corregido «Reiniciar ahora» sin respuesta: la salida para instalar la actualización ya no la cancela la comprobación asíncrona de cambios en before-quit
+- «Reiniciar y actualizar» muestra un aviso claro al fallar; las plataformas sin instalación automática abren la página de Releases
 
 ## [0.2.4] - 2026-07-12
 
 ### Seguridad
-- Dejar de guardar si el cifrado de credenciales no está disponible — sin fallback en texto plano
-- Deep links SSH desactivados por defecto; rechazar URL con contraseña; confirmar antes de conectar
-- Portapapeles OSC52 desactivado por defecto
-- CSP de Electron más estricto; integridad ASAR y fusibles de seguridad activos
-- Eliminar el entitlement macOS disable-library-validation
+- El guardado de credenciales se detiene cuando el cifrado no está disponible; se prohíbe recurrir al texto plano
+- Los enlaces profundos SSH están desactivados por defecto, se rechazan las URL con contraseñas y la conexión exige confirmación
+- El portapapeles OSC52 está desactivado por defecto
+- CSP de Electron endurecida, integridad ASAR y fusibles de seguridad activados
+- Eliminado el permiso disable-library-validation de macOS
 
 ## [0.2.3] - 2026-07-11
 
 ### Correcciones
-- Hostnames `app://` empaquetados en minúsculas por Chromium ya no rompen la inyección de preload (terminal, SFTP, ajustes, selectores de archivo, reenvío de puertos)
-- Alinear ventanas principal/ajustes y permisos en `app://magiesterminal`
+- Corregido: el nombre de host `app://` empaquetado era pasado a minúsculas por Chromium, por lo que preload rechazaba inyectar el bridge de Electron y dejaban de funcionar el terminal, SFTP, ajustes, selección de archivos y reenvío de puertos
+- Reconocimiento unificado de `app://magiesterminal` en la ventana principal, la de ajustes y las comprobaciones de permisos, restaurando los permisos de portapapeles y fuentes locales
 
 ## [0.2.2] - 2026-07-11
 
 ### Correcciones
-- «Select Color Theme» anidado en ScrollArea bloqueaba clics; un solo scroll + pointerdown
-- Diálogos de claves SSH/locales con padre correcto en macOS
-- La ventana de ajustes se abre con el protocolo `app://`
-- Iconos de barra lateral y paquete con el nuevo set de assets
+- Detalles del host «Select Color Theme»: las ScrollArea anidadas hacían que los clics de tema no respondieran; se pasa a desplazamiento de una sola capa con selección por pointerdown
+- Los diálogos de selección de archivo de clave SSH/clave local no estaban vinculados a la ventana padre, por lo que macOS no podía mostrarlos
+- La ventana de Settings no se abría bajo el protocolo `app://`
+- Los iconos de la barra lateral y del instalador pasan a los nuevos recursos de iconos
 
 ## [0.2.1] - 2026-07-11
 
 ### CI/CD
-- Reactivar builds automáticos de macOS y Windows (sin firmar) para más paquetes listos
+- Reactivadas las compilaciones automáticas de macOS y Windows (modo sin firma de código), ofreciendo paquetes listos para usar en más plataformas.
 
 ## [0.2.0] - 2026-07-11
 
 ### Funciones
-- IPC de auto-actualización a todas las ventanas (principal + ajustes)
-- Máquina de estados unificada para comprobación manual y auto-actualización
-- «Buscar actualizaciones» muestra el progreso en vivo
-- Comprobación automática con electron-updater ~5 s tras el arranque
-- Descarga automática si hay versión nueva (`autoDownload=true`)
-- Toast persistente al completar («Reiniciar ahora»)
-- Toast de error si falla la descarga con fallback a Releases
-- Barra de progreso Ajustes → Sistema impulsada por `useUpdateCheck`
+- Corregido el envío de eventos IPC de actualización automática a una sola ventana; ahora se difunden a todas (la principal y la de ajustes los reciben)
+- Unificadas las máquinas de estados de la comprobación manual y la actualización automática, eliminando tres estados paralelos
+- Tras pulsar «Comprobar actualizaciones» en la ventana de ajustes, el progreso de descarga se refleja en vivo en la interfaz
+- La aplicación dispara automáticamente una comprobación de `electron-updater` 5 segundos tras el arranque, sin clic manual
+- Al encontrar una versión nueva la descarga comienza automáticamente (`autoDownload=true`)
+- Al completarse la descarga aparece un toast persistente; pulsar «Reiniciar ahora» instala
+- Si la descarga falla aparece un toast de error con la alternativa «Abrir Releases»
+- La barra de progreso de Settings > System muestra en vivo la descarga automática, dirigida por `useUpdateCheck`
 
 ### Notas de diseño
-- `broadcastToAllWindows` sustituye el IPC de un solo emisor
-- `manualCheckStatus` rastrea la UI de comprobación manual; prioridad con `autoDownloadStatus`
-- `SettingsSystemTab` es consumidor puro de `useUpdateCheck`
-- Listeners IPC globales se registran una vez en `autoUpdateBridge.init()`
-- `autoInstallOnAppQuit=false` — el usuario inicia el reinicio
+- `broadcastToAllWindows` sustituye al envío único `getSenderWindow`, garantizando que todas las ventanas reciban los eventos IPC
+- El campo `manualCheckStatus` sigue el estado de la comprobación manual en la interfaz (idle/checking/available/up-to-date/error) y se renderiza junto a `autoDownloadStatus` según prioridad
+- `SettingsSystemTab` ya no mantiene estado local de actualización; recibe unidireccionalmente los datos unificados de `useUpdateCheck`
+- Los escuchadores IPC persistentes globales se registran una sola vez en `autoUpdateBridge.init()`, evitando registrar/limpiar escuchadores en cada solicitud de descarga manual
+- `autoInstallOnAppQuit=false`: sin instalación silenciosa, el reinicio lo dispara el usuario
 
-### Interfaz SettingsSystemTabProps
-- Eliminado: `autoDownloadStatus`, `downloadPercent`
-- Añadido: `updateState`, `checkNow`, `installUpdate`, `openReleasePage`
+### Cambios de interfaz（SettingsSystemTabProps）
+- Eliminados: `autoDownloadStatus`, `downloadPercent`
+- Añadidos: `updateState` (UpdateState completo), `checkNow`, `installUpdate`, `openReleasePage`
 
 ### Notas
-- Aplica a apps empaquetadas (Windows NSIS, macOS dmg/zip, Linux AppImage); en dev: `forceDevUpdateConfig=true` + `dev-app-update.yml`
-- El toast legado `hasUpdate` se suprime durante la auto-descarga
+- Esta función solo aplica a aplicaciones empaquetadas (Windows NSIS, macOS dmg/zip, Linux AppImage); el modo dev requiere `forceDevUpdateConfig=true` + `dev-app-update.yml` para pruebas (ver `.gitignore`)
+- El antiguo toast `hasUpdate` se suprime mientras `autoDownloadStatus !== 'idle'`, evitando duplicados con el nuevo toast
 
-### CI / build
-- Preferir paquetes Linux gratuitos si no hay firma
-- Linux x64 (AlmaLinux 8): Clang preferido, fallback gcc-toolset-13
-- Linux arm64 (Debian Bullseye): `clang-14 + lld-14`
-- El job Release puede publicar solo con artefactos Linux
-- Suavizar comprobaciones deb a avisos si se omite una plataforma
+### Mejoras de CI / compilación
+- Se omiten las compilaciones de macOS / Windows (requieren certificados de firma de código de pago) para centrarse en paquetes Linux gratuitos
+- Actualización del compilador Linux x64 (AlmaLinux 8): Clang preferente, con gcc-toolset-13 como alternativa
+- Actualización del compilador Linux arm64 (Debian Bullseye): de `build-essential` a `clang-14 + lld-14`
+- El trabajo de release ya no depende de las compilaciones de macOS/Windows; los push de etiquetas publican la release directamente desde los artefactos de Linux
+- Validación suavizada de artefactos deb: los archivos no encontrados emiten una advertencia en lugar de un error, evitando que los saltos de plataforma hagan fallar la CI

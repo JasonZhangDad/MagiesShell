@@ -2,12 +2,15 @@
 /**
  * Pull upstream CHANGELOG.md, drop GitHub-related lines, write public snapshots.
  *
- * - public/changelog.md — Chinese (upstream language); site UI lang `zh`
- * - public/changelog.en.md and public/changelog.{lang}.md — kept if present
- *   (not auto-translated; only GitHub lines re-filtered)
+ * - public/changelog.md — Chinese (upstream language); site UI lang `zh`;
+ *   sourced from the client root CHANGELOG.md
+ * - public/changelog.{lang}.md — sourced from the client's already-translated
+ *   application/i18n/changelog/{lang}.md (en/ja/de/…)
  *
- * Prefer local sibling MgTerminal/CHANGELOG.md when present (offline / private),
- * else fetch from GitHub following redirects (repo may have moved).
+ * Each source prefers a local sibling MgTerminal checkout when present
+ * (offline / private), else the GitHub contents API following redirects (repo
+ * may have moved; the daily CI cron has no client checkout). GitHub-related
+ * lines are stripped from every snapshot.
  *
  * Usage: npm run sync:changelog
  */
@@ -17,10 +20,25 @@ import { fileURLToPath } from 'node:url'
 
 const REPOS = ['Zhangwei930/MgTerminal', 'JasonZhangDad/MgTerminal']
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const LOCAL_UPSTREAM = join(__dirname, '../../MgTerminal/CHANGELOG.md')
-const OUT_ZH = join(__dirname, '../public/changelog.md')
-const OUT_EN = join(__dirname, '../public/changelog.en.md')
-const OUT_LANG_GLOB = join(__dirname, '../public')
+// Client repo root and site public/ dir are overridable (tests / non-sibling checkouts).
+const CLIENT_ROOT = process.env.SYNC_CLIENT_ROOT || join(__dirname, '../../MgTerminal')
+const OUT_LANG_GLOB = process.env.SYNC_OUT_DIR || join(__dirname, '../public')
+const LOCAL_UPSTREAM = join(CLIENT_ROOT, 'CHANGELOG.md')
+const I18N_CHANGELOG_DIR = join(CLIENT_ROOT, 'application/i18n/changelog')
+const OUT_ZH = join(OUT_LANG_GLOB, 'changelog.md')
+
+// Site localized snapshot -> client i18n changelog source file.
+const LOCALES = [
+  ['changelog.en.md', 'en.md'],
+  ['changelog.zh-TW.md', 'zh-TW.md'],
+  ['changelog.ja.md', 'ja.md'],
+  ['changelog.ko.md', 'ko.md'],
+  ['changelog.de.md', 'de.md'],
+  ['changelog.fr.md', 'fr.md'],
+  ['changelog.es.md', 'es.md'],
+  ['changelog.pt.md', 'pt.md'],
+  ['changelog.ru.md', 'ru.md'],
+]
 
 function filterGithubLines(md) {
   return (
@@ -34,10 +52,12 @@ function filterGithubLines(md) {
   )
 }
 
-async function fetchUpstreamFromGithub() {
+// Fetch one markdown file from the client repo via the GitHub contents API,
+// trying each known repo path (repo may have been renamed/transferred).
+async function fetchFromGithub(repoPath) {
   let lastErr
   for (const repo of REPOS) {
-    const api = `https://api.github.com/repos/${repo}/contents/CHANGELOG.md`
+    const api = `https://api.github.com/repos/${repo}/contents/${repoPath}`
     try {
       const res = await fetch(api, {
         headers: {
@@ -50,21 +70,21 @@ async function fetchUpstreamFromGithub() {
         signal: AbortSignal.timeout(15000),
       })
       if (!res.ok) {
-        lastErr = new Error(`${repo}: ${res.status} ${res.statusText}`)
+        lastErr = new Error(`${repo}/${repoPath}: ${res.status} ${res.statusText}`)
         continue
       }
       const raw = await res.text()
       if (!raw.trim() || raw.startsWith('{')) {
-        lastErr = new Error(`${repo}: empty or non-markdown response`)
+        lastErr = new Error(`${repo}/${repoPath}: empty or non-markdown response`)
         continue
       }
-      console.log(`Fetched upstream CHANGELOG from ${repo}`)
+      console.log(`Fetched ${repoPath} from ${repo}`)
       return raw
     } catch (err) {
       lastErr = err
     }
   }
-  throw lastErr instanceof Error ? lastErr : new Error('Failed to fetch upstream CHANGELOG')
+  throw lastErr instanceof Error ? lastErr : new Error(`Failed to fetch ${repoPath}`)
 }
 
 async function main() {
@@ -73,7 +93,7 @@ async function main() {
     raw = readFileSync(LOCAL_UPSTREAM, 'utf8')
     console.log(`Using local upstream ${LOCAL_UPSTREAM}`)
   } else {
-    raw = await fetchUpstreamFromGithub()
+    raw = await fetchFromGithub('CHANGELOG.md')
   }
   if (!raw.trim()) throw new Error('Upstream changelog is empty')
 
@@ -85,23 +105,34 @@ async function main() {
   const top = [...filtered.matchAll(/^## \[([^\]]+)\]/gm)].slice(0, 3).map((m) => m[1])
   console.log(`Top versions: ${top.join(', ')}`)
 
-  // Re-filter existing localized snapshots (do not auto-translate).
-  for (const name of [
-    'changelog.en.md',
-    'changelog.zh-TW.md',
-    'changelog.ja.md',
-    'changelog.ko.md',
-    'changelog.de.md',
-    'changelog.fr.md',
-    'changelog.es.md',
-    'changelog.pt.md',
-    'changelog.ru.md',
-  ]) {
+  // Pull each localized snapshot from the client's i18n changelog (already
+  // translated and maintained there): prefer a local sibling checkout, else
+  // the GitHub contents API (the daily CI cron has no client checkout). Only
+  // when both are unavailable, fall back to re-filtering the existing snapshot
+  // so we never blank it out.
+  for (const [name, src] of LOCALES) {
     const path = join(OUT_LANG_GLOB, name)
-    if (!existsSync(path)) continue
-    const next = filterGithubLines(readFileSync(path, 'utf8'))
-    writeFileSync(path, next, 'utf8')
-    console.log(`Refreshed filter on ${path}`)
+    const srcPath = join(I18N_CHANGELOG_DIR, src)
+    let sourced
+    if (existsSync(srcPath)) {
+      sourced = readFileSync(srcPath, 'utf8')
+      console.log(`Sourced ${name} from ${srcPath}`)
+    } else {
+      try {
+        sourced = await fetchFromGithub(`application/i18n/changelog/${src}`)
+      } catch (err) {
+        console.warn(`Could not source ${name}: ${err.message}`)
+      }
+    }
+    if (sourced) {
+      const next = filterGithubLines(sourced)
+      writeFileSync(path, next, 'utf8')
+      const ver = next.match(/^## \[([^\]]+)\]/m)?.[1] ?? '?'
+      console.log(`Wrote ${path} (top ${ver})`)
+    } else if (existsSync(path)) {
+      writeFileSync(path, filterGithubLines(readFileSync(path, 'utf8')), 'utf8')
+      console.log(`Refreshed filter on ${path} (no upstream source)`)
+    }
   }
 }
 
