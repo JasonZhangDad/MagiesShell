@@ -23,11 +23,14 @@ writeFileSync(
   '# Changelog\n\n## [9.9.9] - 2026-01-01\n\n### 修复\n- 中文更新条目\n- see github release notes\n',
   'utf8',
 )
-writeFileSync(
-  join(i18nDir, 'en.md'),
-  '# Changelog\n\n## [9.9.9] - 2026-01-01\n\n### Fixes\n- English entry\n- see github release notes\n',
-  'utf8',
-)
+// Provide every locale source so the run stays offline (no GitHub fallback).
+for (const lang of ['en', 'zh-TW', 'ja', 'ko', 'de', 'fr', 'es', 'pt', 'ru']) {
+  writeFileSync(
+    join(i18nDir, `${lang}.md`),
+    `# Changelog\n\n## [9.9.9] - 2026-01-01\n\n### Fixes\n- ${lang} entry\n- see github release notes\n`,
+    'utf8',
+  )
+}
 // A stale localized site file that predates the fixture translation.
 writeFileSync(
   join(outDir, 'changelog.en.md'),
@@ -49,7 +52,7 @@ test('zh snapshot is pulled from the client root CHANGELOG.md', () => {
 test('localized snapshot is pulled from the client i18n changelog, not left stale', () => {
   const en = readFileSync(join(outDir, 'changelog.en.md'), 'utf8')
   assert.match(en, /\[9\.9\.9\]/)
-  assert.match(en, /English entry/)
+  assert.match(en, /en entry/)
   assert.doesNotMatch(en, /\[0\.5\.1\]/)
 })
 
@@ -58,4 +61,12 @@ test('github lines are filtered from every synced snapshot', () => {
   const en = readFileSync(join(outDir, 'changelog.en.md'), 'utf8')
   assert.doesNotMatch(zh, /github/i)
   assert.doesNotMatch(en, /github/i)
+})
+
+test('falls back to the GitHub contents API for locales when no client checkout (CI cron)', () => {
+  const script = readFileSync(new URL('../scripts/sync-changelog.mjs', import.meta.url), 'utf8')
+  // Locale loop must fetch application/i18n/changelog/{lang}.md over the API,
+  // not merely re-filter the stale existing snapshot.
+  assert.match(script, /fetchFromGithub\(`application\/i18n\/changelog\/\$\{src\}`\)/)
+  assert.match(script, /contents\/\$\{repoPath\}/)
 })
