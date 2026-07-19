@@ -164,7 +164,21 @@ button {
   border-radius: 7px;
 }
 
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 50;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: var(--gradient);
+  will-change: transform;
+}
+
 .site-nav {
+  position: relative;
   display: none;
   align-items: center;
   gap: 0.35rem 1rem;
@@ -177,8 +191,22 @@ button {
   transition: color 0.2s;
 }
 
-.site-nav a:hover {
+.site-nav a:hover,
+.site-nav a.is-active {
   color: var(--ink);
+}
+
+.nav-indicator {
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--gradient);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.3s var(--ease), width 0.3s var(--ease), opacity 0.3s var(--ease);
 }
 
 @media (min-width: 720px) {
@@ -655,8 +683,8 @@ select:focus:not(:focus-visible) {
 }
 
 .feature-item {
+  position: relative;
   padding-top: 1.1rem;
-  border-top: 1px solid var(--line);
 }
 
 .feature-item h3 {
@@ -732,10 +760,30 @@ select:focus:not(:focus-visible) {
 }
 
 .agent-points li {
+  position: relative;
   display: grid;
   gap: 0.35rem;
   padding-top: 1.1rem;
-  border-top: 1px solid var(--line);
+}
+
+/* Divider line that draws in from the left as the item reveals. */
+.feature-item::before,
+.agent-points li::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(42, 212, 200, 0.55), rgba(142, 186, 210, 0.14) 55%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.8s var(--ease) 0.15s;
+}
+
+.feature-item.is-visible::before,
+.agent-points li.is-visible::before {
+  transform: scaleX(1);
 }
 
 .agent-points strong {
@@ -1312,11 +1360,16 @@ body.changelog-open {
 @keyframes aurora-breathe {
   0%,
   100% {
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(calc(var(--aurora-x, 0) * 1px), calc(var(--aurora-y, 0) * 1px), 0) scale(1);
     opacity: 1;
   }
   50% {
-    transform: translate3d(2.5%, -2%, 0) scale(1.07);
+    transform: translate3d(
+        calc(var(--aurora-x, 0) * 1px + 2.5%),
+        calc(var(--aurora-y, 0) * 1px - 2%),
+        0
+      )
+      scale(1.07);
     opacity: 0.82;
   }
 }
@@ -1384,5 +1437,10 @@ body.changelog-open {
   .os-card::after,
   .download-card::after {
     display: none;
+  }
+
+  .feature-item::before,
+  .agent-points li::before {
+    transform: none;
   }
 }

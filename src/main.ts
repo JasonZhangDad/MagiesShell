@@ -506,6 +506,7 @@ function render(lang: Lang): string {
   const t = copy[lang]
   return `
     <a class="skip-link" href="#main">${t.skipToContent}</a>
+    <div class="scroll-progress" aria-hidden="true"></div>
     <header class="site-header" data-header>
       <a class="brand-mark" href="#top" aria-label="MagiesTerminal">
         <img src="/icon.png" alt="MagiesTerminal" width="28" height="28" />
@@ -517,6 +518,7 @@ function render(lang: Lang): string {
         <a href="#platform">${t.navPlatform}</a>
         <a href="#agent">${t.navAgent}</a>
         <a href="#download">${t.navDownload}</a>
+        <span class="nav-indicator" aria-hidden="true"></span>
       </nav>
       <div class="nav-actions">
         <label class="lang-select-wrap">
@@ -1226,10 +1228,42 @@ function bindInteractions(root: HTMLElement, lang: Lang): void {
 
   const header = root.querySelector('[data-header]')
   const parallaxImgs = Array.from(root.querySelectorAll<HTMLElement>('.shot-frame img'))
+  const progressBar = root.querySelector<HTMLElement>('.scroll-progress')
+  const navLinks = Array.from(root.querySelectorAll<HTMLAnchorElement>('.site-nav a[href^="#"]'))
+  const navIndicator = root.querySelector<HTMLElement>('.nav-indicator')
+  const spySections = navLinks.map((a) => document.getElementById(a.getAttribute('href')!.slice(1)))
   let scrollFrame = 0
   const applyScroll = () => {
     scrollFrame = 0
     header?.classList.toggle('is-scrolled', window.scrollY > 24)
+
+    // Reading-progress bar at the very top.
+    if (progressBar) {
+      const max = document.documentElement.scrollHeight - window.innerHeight
+      progressBar.style.transform = `scaleX(${max > 0 ? (window.scrollY / max).toFixed(4) : 0})`
+    }
+
+    // Scroll-spy: highlight the nav link for the section in view and slide the
+    // underline indicator beneath it.
+    if (navLinks.length) {
+      const mark = window.scrollY + window.innerHeight * 0.3
+      let activeIdx = -1
+      spySections.forEach((section, i) => {
+        if (section && section.offsetTop <= mark) activeIdx = i
+      })
+      navLinks.forEach((a, i) => a.classList.toggle('is-active', i === activeIdx))
+      if (navIndicator) {
+        if (activeIdx >= 0) {
+          const link = navLinks[activeIdx]
+          navIndicator.style.width = `${link.offsetWidth}px`
+          navIndicator.style.transform = `translateX(${link.offsetLeft}px)`
+          navIndicator.style.opacity = '1'
+        } else {
+          navIndicator.style.opacity = '0'
+        }
+      }
+    }
+
     if (reduceMotion) return
     // Drift the background grid slightly against the scroll.
     document.documentElement.style.setProperty('--grid-shift', String(window.scrollY * -0.08))
@@ -1246,6 +1280,24 @@ function bindInteractions(root: HTMLElement, lang: Lang): void {
   }
   applyScroll()
   window.addEventListener('scroll', onScroll, { passive: true })
+  // Recompute the nav indicator position when the layout width changes.
+  window.addEventListener('resize', onScroll, { passive: true })
+
+  // Aurora background follows the cursor (offset fed into the breathe keyframe).
+  if (!reduceMotion) {
+    let auroraFrame = 0
+    window.addEventListener('pointermove', (event) => {
+      if (auroraFrame) return
+      const { clientX, clientY } = event as PointerEvent
+      auroraFrame = requestAnimationFrame(() => {
+        auroraFrame = 0
+        const dx = (clientX / window.innerWidth - 0.5) * 22
+        const dy = (clientY / window.innerHeight - 0.5) * 22
+        document.documentElement.style.setProperty('--aurora-x', dx.toFixed(1))
+        document.documentElement.style.setProperty('--aurora-y', dy.toFixed(1))
+      })
+    })
+  }
 
   root.querySelectorAll<HTMLSelectElement>('[data-lang-select]').forEach((select) => {
     select.addEventListener('change', () => {
