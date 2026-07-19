@@ -17,10 +17,25 @@ import { fileURLToPath } from 'node:url'
 
 const REPOS = ['Zhangwei930/MgTerminal', 'JasonZhangDad/MgTerminal']
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const LOCAL_UPSTREAM = join(__dirname, '../../MgTerminal/CHANGELOG.md')
-const OUT_ZH = join(__dirname, '../public/changelog.md')
-const OUT_EN = join(__dirname, '../public/changelog.en.md')
-const OUT_LANG_GLOB = join(__dirname, '../public')
+// Client repo root and site public/ dir are overridable (tests / non-sibling checkouts).
+const CLIENT_ROOT = process.env.SYNC_CLIENT_ROOT || join(__dirname, '../../MgTerminal')
+const OUT_LANG_GLOB = process.env.SYNC_OUT_DIR || join(__dirname, '../public')
+const LOCAL_UPSTREAM = join(CLIENT_ROOT, 'CHANGELOG.md')
+const I18N_CHANGELOG_DIR = join(CLIENT_ROOT, 'application/i18n/changelog')
+const OUT_ZH = join(OUT_LANG_GLOB, 'changelog.md')
+
+// Site localized snapshot -> client i18n changelog source file.
+const LOCALES = [
+  ['changelog.en.md', 'en.md'],
+  ['changelog.zh-TW.md', 'zh-TW.md'],
+  ['changelog.ja.md', 'ja.md'],
+  ['changelog.ko.md', 'ko.md'],
+  ['changelog.de.md', 'de.md'],
+  ['changelog.fr.md', 'fr.md'],
+  ['changelog.es.md', 'es.md'],
+  ['changelog.pt.md', 'pt.md'],
+  ['changelog.ru.md', 'ru.md'],
+]
 
 function filterGithubLines(md) {
   return (
@@ -85,23 +100,23 @@ async function main() {
   const top = [...filtered.matchAll(/^## \[([^\]]+)\]/gm)].slice(0, 3).map((m) => m[1])
   console.log(`Top versions: ${top.join(', ')}`)
 
-  // Re-filter existing localized snapshots (do not auto-translate).
-  for (const name of [
-    'changelog.en.md',
-    'changelog.zh-TW.md',
-    'changelog.ja.md',
-    'changelog.ko.md',
-    'changelog.de.md',
-    'changelog.fr.md',
-    'changelog.es.md',
-    'changelog.pt.md',
-    'changelog.ru.md',
-  ]) {
+  // Pull each localized snapshot from the client's i18n changelog (already
+  // translated and maintained there). When the client source is unavailable
+  // (offline / server deploy without the client checkout), fall back to
+  // re-filtering the existing snapshot so we never blank it out.
+  for (const [name, src] of LOCALES) {
     const path = join(OUT_LANG_GLOB, name)
-    if (!existsSync(path)) continue
-    const next = filterGithubLines(readFileSync(path, 'utf8'))
-    writeFileSync(path, next, 'utf8')
-    console.log(`Refreshed filter on ${path}`)
+    const srcPath = join(I18N_CHANGELOG_DIR, src)
+    if (existsSync(srcPath)) {
+      const next = filterGithubLines(readFileSync(srcPath, 'utf8'))
+      writeFileSync(path, next, 'utf8')
+      const ver = next.match(/^## \[([^\]]+)\]/m)?.[1] ?? '?'
+      console.log(`Synced ${path} from ${srcPath} (top ${ver})`)
+    } else if (existsSync(path)) {
+      const next = filterGithubLines(readFileSync(path, 'utf8'))
+      writeFileSync(path, next, 'utf8')
+      console.log(`Refreshed filter on ${path} (no client source)`)
+    }
   }
 }
 

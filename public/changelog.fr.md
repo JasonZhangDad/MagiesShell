@@ -1,221 +1,288 @@
-# Journal des versions
+# Journal des modifications
 
-## [0.5.1] - 2026-07-18
+## [0.5.9] - 2026-07-19
 
-### Version
-- Installateurs et métadonnées de mise à jour auto de la ligne 0.5.x (MgTerminal-releases)
+### Corrections
+- **Impossible de fermer la boîte de dialogue**: les boîtes de dialogue ouvertes dans la fenêtre Paramètres (par ex. le journal « Nouveautés ») ne pouvaient pas être fermées — le X en haut à droite chevauchait la zone de déplacement de la barre de titre, donc les clics étaient interprétés comme un déplacement de la fenêtre. Toutes les boîtes de dialogue sont désormais exclues de cette zone et le X ferme correctement
+
+## [0.5.8] - 2026-07-19
+
+### Sécurité
+- **Renforcement de l'IPC de fichiers locaux**: les gestionnaires IPC de lecture/écriture/suppression/énumération de fichiers locaux valident désormais l'expéditeur du renderer appelant et rejettent les contextes webview/invité, afin qu'un XSS du renderer ne puisse pas dégénérer en accès arbitraire aux fichiers locaux (défense en profondeur)
+- **Renforcement des dépendances**: toutes les alertes de gravité élevée de l'arbre de dépendances de production corrigées : fast-uri → 4.1.1, fast-xml-parser → 5.10.1, fast-xml-builder → 1.3.0, hono → 4.12.31 ; et, limité au sous-arbre @cursor/sdk, node-gyp → 11.4.2 et tar → 7.5.20 (portée restreinte pour ne pas affecter les builds natifs)
+
+## [0.5.7] - 2026-07-18
+
+### Fonctionnalités
+- **Rapports de plantage anonymes (opt-in)** : désactivé par défaut ; une fois activé dans Paramètres → Système, des résumés de plantage assainis (sans chemins, noms d'utilisateur, noms d'hôte ni données de session) sont envoyés pour corriger les plantages plus vite
+
+## [0.5.6] - 2026-07-18
+
+### Sécurité
+- **En-tête d’authentification d’inventaire HTTP chiffré** : l’en-tête d’authentification (Authorization / clé API) des sources json_http n’est plus stocké en clair ; il utilise désormais le chiffrement au niveau du champ du vault, et les valeurs en clair existantes sont migrées au premier lancement après la mise à jour
+- **Renforcement des dépendances** : undici → 6.27.0, DOMPurify → 3.4.12, uuid → 13.0.2, corrigeant les avis de XSS atteignable et de request smuggling / DoS que les overrides obsolètes touchaient encore
+
+## [0.5.5] - 2026-07-18
+
+### Corrections
+- **Faux toasts « Échec de la mise à jour »** : les erreurs de phase de vérification ne sont plus traitées comme des échecs de téléchargement ; état in-flight nettoyé après chaque contrôle IPC
+- **Canal de mise à jour Windows arm64** : utiliser `latest-arm64.yml` pour ne pas télécharger les installateurs x64
+- **Chemin de contrôle/téléchargement plus fiable** : dual-feed et machine d’état UI pour moins de fausses erreurs en contrôles concurrents
+
+## [0.5.4] - 2026-07-18
+
+### Sécurité
+- **Frontière de déverrouillage Vault** : désactivation/changement de PIN et WebAuthn exigent le déverrouillage ou le PIN actuel ; limitation des essais
+- **Diagnostics SSH / santé** : arrêt avant auth si clé hôte unknown/changed pour ne jamais envoyer le mot de passe à un MITM
+- **Suivi de session** : scellage AES-GCM E2E avec le jeton d’invitation ; relay opaque ; rejet du faux wss/ws TLS
+- **IPC des identifiants** : validation du sender pour le déverrouillage vault et encrypt/decrypt
+- **Temp / RDP / deep links / journaux / pièces jointes IA** : 0700+symlink-safe, nettoyage cmdkey immédiat si RDP échoue, confirmation Telnet/JMS, pas de log des réponses kbd-int, plafonds de taille des pièces jointes
+
+### Corrections
+- Health keyboard-interactive ; défilement des notes de version
+- Envoi IA pièces jointes seules ; SFTP/port-forward honorent verifyHostKeys
+
+### Ingénierie
+- Ajout de `npm run typecheck` ; premier lot d’erreurs de type production (vault/WebAuthn/update/SFTP)
+
+## [0.5.3] - 2026-07-18
+
+### Corrections
+- **Défilement des notes de version** : les notes longues peuvent défiler dans la fenêtre du dialogue
+
+### Améliorations
+- Libellé du nombre de changements de la dernière version corrigé ; chaînes « Nouveautés » complétées pour les 10 langues d’interface
+
+## [0.5.2] - 2026-07-18
+
+### Fonctionnalités
+- **Coffre d’équipe local-first** : paquets d’inventaire hôtes métadonnées uniquement, rôles (owner/editor/viewer) et audit signé HMAC ; mots de passe et clés privées ne quittent pas l’appareil
+- **Suivi de session via relais WAN** : relais TCP NDJSON compatible NAT ; relais local intégré ou `scripts/follow-relay.cjs` auto-hébergé
+- **Déverrouillage Vault par passkey d’appareil** : authentificateurs WebAuthn (Touch ID / Windows Hello / clé de sécurité) vérifiés dans le processus principal ; pas de sync multi-appareils cloud
+- **KEX post-quantique hybride ssh2 intégré** : privilégie `mlkem768x25519-sha256`, repli classique si non pris en charge
+- **Prise en charge des hôtes RDP** : lancement du client bureau à distance système depuis le Vault (Windows mstsc, macOS Windows App, Linux xfreerdp)
+- **Saut et proxy OpenSSH système** : chaînes de jump et proxies HTTP/SOCKS pour les sessions OpenSSH système
+
+### Améliorations
+- **Rafraîchissement global des composants UI** : rayons, ombres douces et anneaux de focus unifiés pour boutons, champs, popovers, panneaux latéraux, états vides et toasts
+- **Panneau latéral IA peaufiné** : mise en page Q&R, contrôles modèle/permission, spinner de réflexion carré et typographie de saisie
+- **Dialogue journal des versions repensé** : versions repliables, couleurs par section et notes selon la langue de l’interface
 
 ## [0.5.0] - 2026-07-17
 
 ### Fonctionnalités
-- **Panneau de diagnostic Hex/Raw du terminal** : I/O de session octet par octet (optionnel)
-- **Source d’hôtes JSON** : inventaire depuis JSON local ou HTTP(S) ; métadonnées seules ; en-têtes d’auth HTTP
-- **Partage et import d’inventaire** : export métadonnées (YAML Ansible inclus) ; import presse-papiers
-- **Modèles d’espace de travail nommés** : liaisons d’hôtes, splits, cwd/commande de démarrage optionnels
-- **Signets de journal de connexion** : positions + notes + recherche
-- **Vue canaux de transfert de ports en direct** : source, cible, octets par connexion
-- **Actions onOutput de scripts** : notification, son, marquer l’onglet, démarrer l’enregistrement
-- **Collage sûr et diffusion précise** : délai / attente d’invite / confirmation de commande dangereuse
-- **Canal OpenSSH système** : GSSAPI/Kerberos et post-quantique (PQ)
+- **Panneau de diagnostic Hex/Raw du terminal** : activation optionnelle pour inspecter octet par octet les entrées/sorties brutes de la session, pratique pour déboguer les problèmes d'encodage et de séquences d'échappement
+- **Source d'hôtes JSON** : récupération d'inventaires d'hôtes depuis un fichier JSON local ou un point de terminaison HTTP(S) (style CMDB / Ansible / API personnalisée) ; métadonnées uniquement, les inventaires contenant des secrets sont rejetés ; en-têtes d'authentification HTTP pris en charge
+- **Partage et import d'inventaires d'hôtes** : export d'inventaires ne contenant que des métadonnées pour la passation d'équipe (y compris au format Ansible YAML), import depuis le presse-papiers
+- **Modèles d'espaces de travail nommés** : enregistrez les liaisons d'hôtes, les dispositions fractionnées et les commandes cwd/de démarrage optionnelles comme modèles, applicables en un clic depuis le sélecteur rapide
+- **Signets de journaux de connexion** : signets de position de relecture + notes + saut par recherche ; la liste des journaux affiche le nombre de signets
+- **Vue en direct des canaux de redirection de ports** : source, cible et statistiques d'octets de trafic par connexion pour les redirections locales/distantes/dynamiques
+- **Extensions d'actions de déclencheur onOutput des scripts** : un motif de sortie détecté peut déclencher une notification de bureau, un son, un marqueur d'onglet ou le démarrage de l'enregistrement de session
+- **Collage sécurisé et diffusion précise** : délai de collage multiligne / attente d'invite / confirmation des commandes dangereuses ; la diffusion peut cibler précisément l'espace de travail/la sélection/le groupe/la fenêtre
+- **Améliorations des canaux OpenSSH système** : GSSAPI/Kerberos et algorithmes post-quantiques (PQ) pris en charge via l'OpenSSH du système ; chaînes de saut et proxies HTTP/SOCKS disponibles
+- **KEX post-quantique hybride ssh2 intégré** : préfère `mlkem768x25519-sha256` (ML-KEM-768 + X25519) avec repli classique ; n'exige plus le ssh système
+- **Prise en charge des hôtes RDP** : activer RDP sur les hôtes du coffre et lancer le client Bureau à distance du système (Windows mstsc, macOS Windows App, Linux xfreerdp)
+- **Journal des modifications selon la langue de l'interface** : notes de version dans la langue d'interface actuelle (10 langues)
 
 ### Windows ARM64
-- **win-arm64 avec mosh / ET** : binaires natifs MoshMagies 0.1.9 et EternalTerminal 6.2.10
-- **Canal de mise à jour auto dédié** : `latest-arm64.yml`
+- **Les installateurs win-arm64 embarquent désormais mosh / ET** : MoshMagies 0.1.9 et EternalTerminal 6.2.10 inaugurent les binaires natifs Windows arm64
+- **Flux de mise à jour automatique dédié pour win-arm64** : les métadonnées de mise à jour passent par le canal dédié `latest-arm64.yml` au lieu de suivre les mises à jour x64 (auparavant, les mises à jour arm64 installaient le paquet x64 et tournaient en émulation)
 
 ## [0.4.10] - 2026-07-17
 
 ### Fonctionnalités
-- **Centre de diagnostic SSH** : « Tester la connexion » + « Diagnostiquer » — DNS / TCP / jump / clé d’hôte / auth / SFTP
-- **Auth SSH Agent de premier plan** : choix Agent, empreintes, identité préférée
-- **Instantané de santé multi-hôtes** : latence, auth, charge/mémoire/disque
-- **Fiabilité SFTP phase 1** : reprise, nouvel essai auto, file persistante, SHA-256 optionnel
-- **Onboarding produit** : guide Vault vide, palette de commandes, états vides
+- **Centre de diagnostic des connexions SSH** : « Tester la connexion » dans le panneau d'édition d'hôte + « Lancer le diagnostic » en cas d'échec, avec vérifications pas à pas de DNS / TCP / hôte de rebond / clé d'hôte / authentification / SFTP
+- **L'agent SSH comme méthode d'authentification de premier rang** : les hôtes peuvent choisir explicitement l'authentification par agent, consulter les empreintes des clés de l'agent et désigner une identité préférée ; le journal de connexion note la méthode réellement utilisée
+- **Instantané de santé multi-hôtes** : vérification groupée en un clic depuis le Vault de la latence, de l'authentification et de la charge/mémoire/disque ; filtrez les hôtes anormaux et exécutez des scripts
+- **Fiabilité SFTP phase 1** : reprise des transferts, nouvelles tentatives avec repli automatique, file de transfert persistante (survit aux redémarrages), vérification SHA-256 optionnelle
+- **Accueil produit** : guide en trois étapes pour un premier Vault vide ; éléments de commande du sélecteur rapide (paramètres/import/bilan de santé, etc.) ; indications de migration à l'état vide ; conseils après la première connexion réussie ; matrice des fonctionnalités du README
 
-### Correctifs
-- Vaults existants sans onboarding initial ; fermeture correcte du jump en échec d’auth health
+### Corrections
+- Les utilisateurs mettant à niveau un Vault existant ne voient plus le guide de premier lancement ; les bilans de santé ferment correctement les connexions de rebond en cas d'échec d'authentification
 
 ## [0.4.9] - 2026-07-17
 
 ### Améliorations
-- **Sources de release / MAJ auto vers un dépôt releases dédié** : MgTerminal-releases ; UX site et in-app inchangée
+- **Publications et flux de mise à jour automatique déplacés vers un dépôt de publication dédié** : les installateurs et métadonnées de mise à jour sont désormais publiés dans le dépôt MgTerminal-releases ; les téléchargements du site et la mise à jour automatique intégrée restent inchangés, et les anciens clients continuent de recevoir les mises à jour via des redirections depuis les URL d'origine
 
 ## [0.4.8] - 2026-07-16
 
 ### Fonctionnalités
-- **Quick Connect EternalTerminal** : entrée ET (port SSH + port service ET, 2022 par défaut)
-- **Auto-contrôle des identifiants** : Réglages → Système → Protection des identifiants
-- **Installateur Windows ARM64** : win-arm64 (mosh/et et canal dédié en 0.5.0)
-- **Expiration de restauration de session** : layouts > 14 jours purgés au démarrage
+- **La connexion rapide prend en charge EternalTerminal** : l'assistant QuickConnect ajoute une entrée de protocole ET (port SSH + port de service ET, 2022 par défaut) ; les binaires clients ET correspondants sont embarqués (macOS / Linux / Windows x64)
+- **Autodiagnostic des identifiants** : Paramètres → Système → Protection des identifiants ajoute un « Autodiagnostic » — sonde d'aller-retour chiffrement/déchiffrement plus analyse du magasin d'identifiants listant précisément les entrées indéchiffrables sur cet appareil (hôtes / clés / identités / groupes / proxys), pour repérer facilement les identifiants à ressaisir après une panne du trousseau
+- **Premier installateur Windows ARM64** : nouvelle build win-arm64 (mosh / et pas encore embarqués ; la mise à jour automatique suit temporairement le flux x64)
+- **Nettoyage des restaurations de session expirées** : les dispositions de restauration de plus de 14 jours sont éliminées au démarrage au lieu de restaurer une masse d'espaces réservés obsolètes
 
-### Correctifs
-- **UI russe** : 203 chaînes manquantes ; zh-CN +3 ; tests d’alignement
-- Chemin mosh-server personnalisé Quick Connect appliqué
+### Corrections
+- **Interface russe : 203 textes manquants complétés** (tout l'espace de noms scripts / automatisation / enregistrement retombait en anglais), plus 3 pour le chinois simplifié ; un nouveau test de parité complète empêche les régressions
+- La connexion rapide Mosh collectait un chemin mosh-server personnalisé sans l'appliquer ; il est désormais correctement écrit dans la configuration de l'hôte
 
 ### Améliorations
-- Règles de visibilité SFTP unifiées
-- README macOS aligné sur la distribution non signée
+- La sélection totale SFTP (Cmd/Ctrl+A) et le rendu de liste partagent désormais une règle de visibilité unique, éliminant les dérives de comportement avec fichiers cachés / termes de filtrage
+- Les notes macOS du README correspondent au processus de publication réel (non signé, avec étapes de contournement de Gatekeeper ; mises à jour intégrées non affectées)
 
 ## [0.4.7] - 2026-07-15
 
 ### Fonctionnalités
-- **Langues d’interface étendues à 10** : aligné sur le site — ajout de japonais / coréen / allemand / français / espagnol / portugais (en / ru / zh-CN / zh-TW conservés)
-- Réglages → Apparence → Langue liste toutes les langues prises en charge ; les chaînes non traduites basculent en anglais
+- **Langues d'interface étendues à 10** : client et site alignés ; ajout de 日本語 / 한국어 / Deutsch / Français / Español / Português (en / ru / zh-CN / zh-TW existants conservés)
+- Paramètres → Apparence → Langue propose toutes les langues prises en charge ; les textes non traduits retombent toujours en anglais
 
 ## [0.4.6] - 2026-07-15
 
 ### Sécurité
-- **La désactivation de la vérification des clés d’hôte SSH n’est plus silencieuse** : si `verifyHostKeys` est off (sessions terminal et connexions stats Mosh), un avertissement indique clairement que toute clé d’hôte est acceptée sans demande
-- **Avertissement permanent dans les réglages** : désactiver « Vérifier les clés d’hôte SSH » affiche un risque MITM sous le basculeur (en / zh-CN / zh-TW). Activé par défaut
+- **La désactivation de la vérification des clés d'hôte SSH n'est plus silencieuse** : avec `verifyHostKeys` désactivé (sessions de terminal et connexions de statistiques mosh), un avertissement explicite est journalisé indiquant que n'importe quelle clé d'hôte est acceptée sans confirmation
+- **Avertissement permanent sur la page des paramètres** : après désactivation de « Vérifier les clés d'hôte SSH », un avis de risque d'attaque de l'homme du milieu reste affiché sous l'interrupteur (en / zh-CN / zh-TW). Activé par défaut
 
 ## [0.4.5] - 2026-07-15
 
-### Correctifs
-- **Chiffrements imbriqués provoquant 401 / flux vides** : des enregistrements répétés sans trousseau imbriquaient le chiffrement (`enc:v2(enc:v1(...))`) ; la boucle de déchiffrement déplie correctement les blobs dans le budget
-- **Un mauvais identifiant ne casse plus tout le vault** : échec de déchiffrement d’un champ conserve la valeur stockée (fail-soft)
-- **Clé API de recherche web** : focus/blur seuls ne suppriment plus une clé stockée après échec de déchiffrement ; messages plus clairs
-- **Détection du chiffré DPAPI Windows** : le garde anti-rechiffrement manquait les clés DPAPI (en-tête `AQAAAN`) — corrigé
-- **Cursor Agent** : un échec de déchiffrement n’injecte plus le chiffré comme clé API dans le processus enfant
-- Réglages Provider / recherche web / Cursor : invites de ressaisie unifiées ; le changement de langue n’écrase plus les clés non enregistrées
+### Corrections
+- **401 / flux vides causés par du chiffré imbriqué** : des enregistrements répétés pendant une panne du trousseau enveloppaient les clés de couches de chiffrement (`enc:v2(enc:v1(...))`) ; la limite de la boucle de déchiffrement corrigée, les imbrications multiples dans le budget se déchiffrent entièrement — plus de « déchiffré puis jeté » ni de fausses erreurs de déchiffrement
+- **Un identifiant corrompu ne bloque plus le chargement de tout le magasin** : en cas d'échec de déchiffrement d'un champ, la valeur stockée est conservée telle quelle (fail-soft), le magasin se charge normalement et les clés restent récupérables après réparation du trousseau
+- **Clé API de recherche Web** : après un échec de déchiffrement, un simple focus/défocus ne supprime plus une clé enregistrée ; ajout d'avis explicites d'échec de déchiffrement/chiffrement au lieu du silence
+- **Détection du chiffré DPAPI Windows corrigée** : le garde anti-double-chiffrement manquait les clés DPAPI (en-tête `AQAAAN`), qu'une panne de trousseau re-chiffrait en chiffré imbriqué ; corrigé
+- **Cursor Agent** : en cas d'échec de déchiffrement, le chiffré n'est plus injecté comme clé API dans le processus enfant
+- Unification des trois zones Provider / recherche Web / Cursor des paramètres : l'échec de déchiffrement invite clairement à ressaisir la clé, et le changement de langue d'interface n'écrase plus une clé non enregistrée
 
 ## [0.4.4] - 2026-07-14
 
-### Correctifs
-- **IA 401 / flux vides** : si la déchiffrement de clé échoue ou n’est pas synchronisé au processus principal, plus de requête avec le placeholder `__IPC_SECURED__` ; échec immédiat et invite de réenregistrement
-- Attendre la sync des providers vers le processus principal avant l’envoi
-- Erreurs d’auth claires si la clé locale est indisponible
+### Corrections
+- **IA 401 / flux vides** : quand le déchiffrement de la clé API échoue ou que la clé n'est pas synchronisée vers le processus principal, les requêtes ne partent plus avec l'espace réservé `__IPC_SECURED__` ; elles échouent immédiatement avec invitation à réenregistrer la clé
+- L'envoi de messages attend la synchronisation des fournisseurs vers le processus principal, évitant les échecs d'authentification dus aux courses
+- Indications d'authentification claires quand la clé locale est inutilisable (échec de déchiffrement / manquante / espace réservé résiduel)
 
 ## [0.4.3] - 2026-07-14
 
-### Correctifs
-- **Déchiffrement de clé API** : le processus principal déchiffre correctement les clés vault locales `enc:v2` ; pas d’envoi de chiffré au fournisseur en cas d’échec
-- **Placeholders d’identifiants** : les gardes de connexion / sync cloud reconnaissent `enc:v2`
-- Erreurs actionnables pour flux modèles vides (`NoOutputGeneratedError`) et 401
-- Sonde d’installation Cursor SDK via `require.resolve` pour moins de faux positifs
+### Corrections
+- **Déchiffrement des clés API** : le processus principal déchiffre correctement les clés `enc:v2` du coffre local ; en cas d'échec, le chiffré n'est plus envoyé aux fournisseurs comme du texte clair (évitant les 401 et le suffixe `…5Q==`)
+- **Reconnaissance des espaces réservés d'identifiants** : les frontières de connexion / gardes de synchronisation cloud reconnaissent aussi `enc:v2`, empêchant d'envoyer le chiffré du coffre local comme mot de passe ou de le téléverser vers la synchronisation
+- Messages d'erreur exploitables pour les flux vides du modèle (`NoOutputGeneratedError`) et les échecs d'authentification 401
+- La détection d'installation du SDK Cursor passe à `require.resolve`, évitant les faux « non installé »
 
 ## [0.4.2] - 2026-07-14
 
-### Correctifs
-- **Échec de chiffrement de clé API résolu** : si le trousseau OS (`safeStorage`) est indisponible, bascule automatique vers un vault chiffré local (`enc:v2`)
-- macOS préfère le trousseau système puis bascule discrètement ; Réglages → Système affiche le backend actif
+### Corrections
+- **Échecs de chiffrement des clés API résolus une fois pour toutes** : quand le trousseau (safeStorage) est indisponible, un coffre chiffré local (`enc:v2`) est utilisé automatiquement ; les mises à jour de l'application ne rendent plus les clés API insauvegardables après invalidation des ACL du trousseau
+- macOS essaie toujours d'abord le trousseau système et se replie silencieusement en cas d'échec ; Paramètres → Système affiche le backend actif
 
 ## [0.4.1] - 2026-07-14
 
 ### Améliorations
-- Sélecteur de thème : aperçus en cartes, portées Core / Tout, recherche et états vides
-- Contraste Snow / Midnight par défaut amélioré ; palettes terminal `ui-snow` / `ui-midnight` synchronisées
-- Hiérarchie de sélection unifiée sur Vault, SFTP, navigation des réglages, barre latérale IA, chrome terminal
-- Listes de thèmes terminal avec recherche et pastilles plus claires
-- Statut de sync, toasts, badges de mise à jour et surbrillances de dépôt sur des tokens de thème
+- Sélecteur de thèmes : aperçus en cartes (arrière-plan + couleurs primaire/secondaire), bascule de portée Core / Tous, recherche et états vides
+- Les thèmes par défaut Snow / Midnight gagnent en contraste et en relief de cartes, avec les palettes de terminal `ui-snow` / `ui-midnight` assorties
+- États de sélection et hiérarchie visuelle unifiés : hôtes/arborescence du Vault, liste/arborescence/barre d'onglets SFTP, navigation des paramètres, barre latérale IA, barre supérieure du terminal
+- Les listes de thèmes de terminal (dialogue / barre latérale) prennent en charge la recherche et des aperçus de pastilles plus lisibles
+- Les couleurs codées en dur (état de synchronisation, toasts d'info, badges de mise à jour, surbrillances de glisser-déposer, etc.) sont regroupées en jetons de thème
 
 ## [0.4.0] - 2026-07-13
 
 ### Fonctionnalités
-- Entrée « Contact » qui copie l’e-mail de support
-- Reconnexion SSH en backoff exponentiel (dès 5 s, plafond 60 s) ; arrêt après 10 échecs avec invite manuelle
-- Transferts de ports locaux/dynamiques réutilisent la session SSH terminal déjà authentifiée (pas de 2e mot de passe/2FA)
-- Import de clés FIDO2 (`sk-*`) qui oriente vers l’auth ssh-agent
+- Nouvelle entrée « Contacter le support » qui copie l'e-mail de contact
+- La reconnexion SSH automatique passe au repli exponentiel (de 5 s à 60 s max) ; après 10 échecs consécutifs, elle s'arrête et invite à reconnecter manuellement
+- La redirection de ports locale/dynamique réutilise la connexion SSH du terminal déjà authentifiée, évitant une seconde demande de mot de passe/2FA
+- L'import de clés de sécurité FIDO2 (sk-*) suggère de passer à l'authentification ssh-agent
 
-### Modifications
+### Changements
 
 ## [0.3.0] - 2026-07-13
 
-### Correctifs
-- Les échecs de chiffrement de clé API à l’enregistrement d’un fournisseur IA ne sont plus avalés ; erreur localisée sous le champ
+### Corrections
+- Les échecs de chiffrement de clé API lors de l'enregistrement d'un fournisseur IA ne sont plus avalés en silence ; une erreur localisée claire apparaît sous le champ de clé API
 
 ## [0.2.9] - 2026-07-13
 
 ### Fonctionnalités
-- Mise à jour auto macOS : installation par remplacement de bundle après téléchargement (contourne les limites Squirrel des apps non signées ; depuis 0.2.9 toutes les plateformes peuvent s’auto-mettre à jour)
+- Mise à jour automatique sur macOS : installation par remplacement du bundle après téléchargement, contournant les restrictions de Squirrel sur les applications non signées (dès 0.2.9, toutes les plateformes se mettent à niveau automatiquement)
 
-### Correctifs
-- L’icône conserve la plaque arrondie officielle en clair/sombre
+### Corrections
+- L'icône de l'application conserve le socle arrondi du visuel officiel, cohérent en clair et en sombre
 
 ## [0.2.8] - 2026-07-13
 
-### Correctifs
-- Paquets Windows qui quittaient silencieusement au lancement : ré-incorporation des hashs d’intégrité après réécriture asar, contrôles CI
-- Progression et erreurs d’installation de mise à jour visibles sur toutes les plateformes
+### Corrections
+- Paquet Windows se fermant silencieusement au lancement : afterPack réinsère le hachage d'intégrité après réécriture de l'asar, avec une vérification CI contre les récidives
+- La progression et les erreurs d'installation des mises à jour sont visibles sur toutes les plateformes
 
 ## [0.2.7] - 2026-07-13
 
-### Correctifs
-- Architecture de release Windows : empaquetage installateur x64 sûr
+### Corrections
+- Windows publie désormais un installateur x64 sûr au niveau architecture
 
 ## [0.2.6] - 2026-07-12
 
 ### Sécurité
-- Fenêtres tray empaquetées ignorent `VITE_DEV_SERVER_URL` et bloquent navigation / nouvelles fenêtres
-- Preload ne fait plus confiance au serveur de dev comme origine dans `app.asar`
-- DOMPurify 3.3.2, undici 6.23.0 contre XSS / DoS zip-bomb
-- afterPack répare les hashs d’intégrité ASAR et Info.plist pour éviter le crash immédiat macOS
+- La fenêtre de barre d'état empaquetée ignore `VITE_DEV_SERVER_URL` et bloque la navigation / les nouvelles fenêtres
+- preload n'ajoute plus le serveur de développement aux origines de confiance sous `app.asar`
+- Mises à niveau forcées vers DOMPurify 3.3.2 et undici 6.23.0, corrigeant un XSS atteignable / un DoS de chaîne de décompression
+- afterPack répare le hachage d'intégrité des fichiers ASAR et synchronise Info.plist, évitant le plantage de macOS au lancement
 
-### Correctifs
-- Tests d’intégration Telnet auto-login attendent l’invite avant d’asserter la fin
+### Corrections
+- Le test d'intégration de connexion automatique Telnet attend désormais l'invite de commande avant de vérifier l'événement de complétion
 
 ## [0.2.5] - 2026-07-12
 
-### Correctifs
-- « Redémarrer maintenant » sans effet : la sortie d’installation de mise à jour n’est plus annulée par les contrôles before-quit
-- Erreurs claires si « Redémarrer et mettre à jour » échoue ; plateformes sans auto-install ouvrent Releases
+### Corrections
+- Les liens Nouveautés / signalement pointent vers `JasonZhangDad/MgTerminal`, corrigeant les 404
+- « Redémarrer maintenant » ne répondait pas : la fermeture pour installer la mise à jour n'est plus annulée par la vérification asynchrone des modifications dans before-quit
+- « Redémarrer et mettre à jour » affiche un message clair en cas d'échec ; les plateformes sans installation automatique ouvrent la page Releases
 
 ## [0.2.4] - 2026-07-12
 
 ### Sécurité
-- Arrêt de l’enregistrement si le chiffrement des identifiants est indisponible — pas de repli en clair
-- Deep links SSH désactivés par défaut ; rejet des URL avec mot de passe ; confirmation avant connexion
-- Presse-papiers OSC52 désactivé par défaut
-- CSP Electron renforcé ; intégrité ASAR et fuses de sécurité activés
-- Suppression de l’entitlement macOS disable-library-validation
+- L'enregistrement des identifiants s'arrête quand le chiffrement est indisponible ; le repli en texte clair est interdit
+- Les liens profonds SSH sont désactivés par défaut, les URL contenant des mots de passe sont rejetées et la connexion exige une confirmation
+- Le presse-papiers OSC52 est désactivé par défaut
+- CSP Electron resserrée, intégrité ASAR et fusibles de sécurité activés
+- Suppression de l'autorisation macOS disable-library-validation
 
 ## [0.2.3] - 2026-07-11
 
-### Correctifs
-- Noms d’hôte `app://` empaquetés mis en minuscules par Chromium ne cassent plus l’injection preload (terminal, SFTP, réglages, sélecteurs de fichiers, transferts de ports)
-- Alignement des fenêtres principale/réglages et des permissions sur `app://magiesterminal`
+### Corrections
+- Correction : le nom d'hôte `app://` empaqueté était mis en minuscules par Chromium, ce qui faisait refuser à preload l'injection du bridge Electron et cassait le terminal, SFTP, les paramètres, la sélection de fichiers et la redirection de ports
+- Reconnaissance unifiée de `app://magiesterminal` dans la fenêtre principale, la fenêtre des paramètres et les vérifications de permissions, restaurant les permissions de presse-papiers et de polices locales
 
 ## [0.2.2] - 2026-07-11
 
-### Correctifs
-- « Select Color Theme » imbriqué dans un ScrollArea bloquait les clics ; un seul défilement + pointerdown
-- Dialogues de clés SSH/locales parentés correctement pour macOS
-- Fenêtre des réglages s’ouvre sous le protocole `app://`
-- Icônes barre latérale et paquet avec le nouvel ensemble d’assets
+### Corrections
+- Détails de l'hôte « Select Color Theme » : des ScrollArea imbriquées rendaient les clics de thème inopérants ; passage à un défilement mono-couche avec sélection au pointerdown
+- Les boîtes de dialogue de sélection de clé SSH/clé locale n'étaient pas liées à la fenêtre parente, empêchant macOS de les afficher
+- La fenêtre Settings ne s'ouvrait pas sous le protocole `app://`
+- Les icônes de la barre latérale et de l'installateur passent aux nouvelles ressources d'icônes
 
 ## [0.2.1] - 2026-07-11
 
 ### CI/CD
-- Réactivation des builds auto macOS et Windows (non signés) pour plus de paquets prêts à l’emploi
+- Réactivation des builds automatisées macOS et Windows (mode sans signature de code), fournissant des paquets prêts à l'emploi pour plus de plateformes.
 
 ## [0.2.0] - 2026-07-11
 
 ### Fonctionnalités
-- IPC de mise à jour auto diffusé à toutes les fenêtres (principale + réglages)
-- Machine d’état unifiée pour contrôle manuel et mise à jour auto
-- « Vérifier les mises à jour » affiche la progression en direct
-- Contrôle auto via electron-updater ~5 s après le lancement
-- Téléchargement auto si nouvelle version (`autoDownload=true`)
-- Toast persistant à la fin (« Redémarrer maintenant »)
-- Toast d’erreur en cas d’échec avec repli Releases
-- Barre de progression Réglages → Système pilotée par `useUpdateCheck`
+- Correction des événements IPC de mise à jour automatique envoyés à une seule fenêtre ; diffusion à toutes les fenêtres (principale + paramètres les reçoivent toutes deux)
+- Unification des machines à états de la vérification manuelle et de la mise à jour automatique, éliminant trois états parallèles
+- Après un clic sur « Vérifier les mises à jour » dans la fenêtre des paramètres, la progression du téléchargement s'affiche en direct dans l'interface
+- L'application déclenche automatiquement une vérification `electron-updater` 5 secondes après le démarrage, sans clic manuel
+- Le téléchargement démarre automatiquement à la découverte d'une nouvelle version (`autoDownload=true`)
+- Un toast persistant apparaît à la fin du téléchargement ; cliquer sur « Redémarrer maintenant » installe
+- Un échec de téléchargement affiche un toast d'erreur avec un repli « Ouvrir Releases »
+- La barre de progression de Settings > System affiche en direct le téléchargement automatique, pilotée par `useUpdateCheck`
 
 ### Notes de conception
-- `broadcastToAllWindows` remplace l’IPC mono-émetteur
-- `manualCheckStatus` suit l’UI de contrôle manuel ; priorité avec `autoDownloadStatus`
-- `SettingsSystemTab` est un pur consommateur de `useUpdateCheck`
-- Écouteurs IPC globaux enregistrés une fois dans `autoUpdateBridge.init()`
-- `autoInstallOnAppQuit=false` — l’utilisateur déclenche le redémarrage
+- `broadcastToAllWindows` remplace l'envoi unique `getSenderWindow`, garantissant que chaque fenêtre reçoit les événements IPC
+- Le champ `manualCheckStatus` suit l'état UI de la vérification manuelle (idle/checking/available/up-to-date/error) et est rendu avec `autoDownloadStatus` selon la priorité dans l'interface
+- `SettingsSystemTab` ne détient plus d'état de mise à jour local ; il reçoit unidirectionnellement les données unifiées de `useUpdateCheck`
+- Les écouteurs IPC persistants globaux sont enregistrés une seule fois dans `autoUpdateBridge.init()`, évitant les enregistrements/nettoyages répétés à chaque demande de téléchargement manuel
+- `autoInstallOnAppQuit=false` : pas d'installation silencieuse, le redémarrage est déclenché par l'utilisateur
 
-### Interface SettingsSystemTabProps
-- Supprimé : `autoDownloadStatus`, `downloadPercent`
-- Ajouté : `updateState`, `checkNow`, `installUpdate`, `openReleasePage`
+### Changements d'interface（SettingsSystemTabProps）
+- Supprimés : `autoDownloadStatus`, `downloadPercent`
+- Ajoutés : `updateState` (UpdateState complet), `checkNow`, `installUpdate`, `openReleasePage`
 
-### Notes
-- S’applique aux apps empaquetées (Windows NSIS, macOS dmg/zip, Linux AppImage) ; en dev : `forceDevUpdateConfig=true` + `dev-app-update.yml`
-- Toast `hasUpdate` historique supprimé pendant le téléchargement auto
+### Remarques
+- Cette fonctionnalité ne vaut que pour les applications empaquetées (Windows NSIS, macOS dmg/zip, Linux AppImage) ; le mode dev nécessite `forceDevUpdateConfig=true` + `dev-app-update.yml` pour les tests (voir `.gitignore`)
+- L'ancien toast `hasUpdate` est supprimé tant que `autoDownloadStatus !== 'idle'`, évitant les doublons avec le nouveau toast
 
-### CI / build
-- Privilégier les paquets Linux gratuits si la signature manque
-- Linux x64 (AlmaLinux 8) : Clang en priorité, repli gcc-toolset-13
-- Linux arm64 (Debian Bullseye) : `clang-14 + lld-14`
-- Le job Release peut publier uniquement depuis les artefacts Linux
-- Assouplir les contrôles deb en warnings si une plateforme est ignorée
+### Améliorations CI / build
+- Builds macOS / Windows ignorées (certificats de signature de code payants requis), concentration sur les paquets Linux gratuits
+- Mise à niveau du compilateur Linux x64 (AlmaLinux 8) : Clang en priorité, repli sur gcc-toolset-13
+- Mise à niveau du compilateur Linux arm64 (Debian Bullseye) : de `build-essential` à `clang-14 + lld-14`
+- Le job de release ne dépend plus des builds macOS/Windows ; les push de tags publient la release directement depuis les artefacts Linux
+- Validation assouplie des artefacts deb : les fichiers introuvables émettent un avertissement au lieu d'une erreur, pour que les sauts de plateforme ne fassent plus échouer la CI
