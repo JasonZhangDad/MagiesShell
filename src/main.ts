@@ -540,6 +540,11 @@ function render(lang: Lang): string {
           <div class="hero-cta">
             <a class="btn btn-primary" href="#download">${t.ctaDownload}</a>
           </div>
+          <div class="hero-term" aria-hidden="true">
+            <span class="hero-term-prompt">ops@prod ~ %</span>
+            <span class="hero-term-cmd" data-typer></span>
+            <span class="cursor-blink"></span>
+          </div>
           <ul class="trust-row" data-reveal>
             ${t.trustItems.map((item) => `<li>${item}</li>`).join('')}
           </ul>
@@ -1209,12 +1214,37 @@ function bindDownload(root: HTMLElement, lang: Lang): void {
   })
 }
 
+// Continuous-motion handles, cancelled on re-render (language switch) so a new
+// render never leaves a stale loop writing to detached nodes.
+let heroFloatFrame = 0
+let heroTyperTimer = 0
+
 function bindInteractions(root: HTMLElement, lang: Lang): void {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  cancelAnimationFrame(heroFloatFrame)
+  window.clearTimeout(heroTyperTimer)
+
   const header = root.querySelector('[data-header]')
-  const onScroll = () => {
+  const parallaxImgs = Array.from(root.querySelectorAll<HTMLElement>('.shot-frame img'))
+  let scrollFrame = 0
+  const applyScroll = () => {
+    scrollFrame = 0
     header?.classList.toggle('is-scrolled', window.scrollY > 24)
+    if (reduceMotion) return
+    // Drift the background grid slightly against the scroll.
+    document.documentElement.style.setProperty('--grid-shift', String(window.scrollY * -0.08))
+    // Depth parallax: screenshots drift as they cross the viewport (scale
+    // buffer keeps the frame filled while the image translates).
+    for (const img of parallaxImgs) {
+      const rect = img.getBoundingClientRect()
+      const progress = (rect.top + rect.height / 2 - window.innerHeight / 2) / window.innerHeight
+      img.style.transform = `translateY(${(-progress * 24).toFixed(1)}px) scale(1.08)`
+    }
   }
-  onScroll()
+  const onScroll = () => {
+    if (!scrollFrame) scrollFrame = requestAnimationFrame(applyScroll)
+  }
+  applyScroll()
   window.addEventListener('scroll', onScroll, { passive: true })
 
   root.querySelectorAll<HTMLSelectElement>('[data-lang-select]').forEach((select) => {
@@ -1227,16 +1257,125 @@ function bindInteractions(root: HTMLElement, lang: Lang): void {
   const observer = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible')
-          observer.unobserve(entry.target)
-        }
+        if (!entry.isIntersecting) continue
+        const el = entry.target as HTMLElement
+        // Cascade siblings in a group instead of revealing them all at once.
+        const order = Number(el.dataset.revealOrder || '0')
+        window.setTimeout(() => el.classList.add('is-visible'), order * 80)
+        observer.unobserve(el)
       }
     },
     { threshold: 0.2 },
   )
 
-  root.querySelectorAll('[data-reveal]').forEach((el) => observer.observe(el))
+  root.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => {
+    const parent = el.parentElement
+    if (parent) {
+      const group = Array.from(parent.children).filter((child) => child.hasAttribute('data-reveal'))
+      el.dataset.revealOrder = String(Math.min(group.indexOf(el), 6))
+    }
+    observer.observe(el)
+  })
+
+  // Pointer-follow spotlight on cards (see .why-card::after et al. in style.css).
+  if (!reduceMotion) {
+    const cardSelector = '.why-card, .platform-card, .os-card, .download-card'
+    let spotlightRaf = 0
+    root.addEventListener('pointermove', (event) => {
+      const card = (event.target as HTMLElement).closest<HTMLElement>(cardSelector)
+      if (!card) return
+      const { clientX, clientY } = event as PointerEvent
+      if (spotlightRaf) return
+      spotlightRaf = requestAnimationFrame(() => {
+        spotlightRaf = 0
+        const rect = card.getBoundingClientRect()
+        card.style.setProperty('--mx', `${clientX - rect.left}px`)
+        card.style.setProperty('--my', `${clientY - rect.top}px`)
+      })
+    })
+  }
+
+  // Hero terminal: type shell commands out and back, cycling forever.
+  const typer = root.querySelector<HTMLElement>('[data-typer]')
+  if (typer) {
+    const commands = [
+      'ssh ops@prod-01',
+      'mosh gpu-node --port 4200',
+      'sftp put build.tar staging:/srv',
+      'agent "why is prod-01 load high?"',
+    ]
+    if (reduceMotion) {
+      typer.textContent = commands[0]
+    } else {
+      let ci = 0
+      let chars = 0
+      let deleting = false
+      const step = () => {
+        const cmd = commands[ci]
+        chars += deleting ? -1 : 1
+        typer.textContent = cmd.slice(0, chars)
+        let delay = deleting ? 40 : 70 + Math.random() * 60
+        if (!deleting && chars === cmd.length) {
+          deleting = true
+          delay = 1500
+        } else if (deleting && chars === 0) {
+          deleting = false
+          ci = (ci + 1) % commands.length
+          delay = 350
+        }
+        heroTyperTimer = window.setTimeout(step, delay)
+      }
+      step()
+    }
+  }
+
+  // Hero screenshot: gentle idle float + cursor-driven 3D tilt (one transform
+  // source, updated per frame; scale buffer hides the tilt/float edges).
+  const heroImg = root.querySelector<HTMLElement>('.hero-stage img')
+  const hero = root.querySelector<HTMLElement>('.hero')
+  if (heroImg && hero && !reduceMotion) {
+    let tiltX = 0
+    let tiltY = 0
+    let targetX = 0
+    let targetY = 0
+    hero.addEventListener('pointermove', (event) => {
+      const rect = hero.getBoundingClientRect()
+      targetY = ((event as PointerEvent).clientX - rect.left) / rect.width - 0.5
+      targetX = ((event as PointerEvent).clientY - rect.top) / rect.height - 0.5
+    })
+    hero.addEventListener('pointerleave', () => {
+      targetX = 0
+      targetY = 0
+    })
+    const start = performance.now()
+    const tick = (now: number) => {
+      if (window.scrollY < window.innerHeight) {
+        tiltX += (targetX - tiltX) * 0.06
+        tiltY += (targetY - tiltY) * 0.06
+        const floatY = Math.sin((now - start) / 1600) * 6
+        heroImg.style.transform =
+          `perspective(1100px) translate3d(0, ${floatY.toFixed(2)}px, 0) ` +
+          `rotateX(${(-tiltX * 4).toFixed(2)}deg) rotateY(${(tiltY * 5).toFixed(2)}deg) scale(1.04)`
+      }
+      heroFloatFrame = requestAnimationFrame(tick)
+    }
+    heroFloatFrame = requestAnimationFrame(tick)
+  }
+
+  // Magnetic primary buttons: nudge toward the cursor, ease back on leave.
+  if (!reduceMotion) {
+    root.querySelectorAll<HTMLElement>('.btn-primary').forEach((btn) => {
+      btn.addEventListener('pointermove', (event) => {
+        const rect = btn.getBoundingClientRect()
+        const mx = (event as PointerEvent).clientX - rect.left - rect.width / 2
+        const my = (event as PointerEvent).clientY - rect.top - rect.height / 2
+        btn.style.transform = `translate(${(mx * 0.28).toFixed(1)}px, ${(my * 0.28 - 1).toFixed(1)}px)`
+      })
+      btn.addEventListener('pointerleave', () => {
+        btn.style.transform = ''
+      })
+    })
+  }
 
   const downloadRoot = root.querySelector('[data-download-root]')
   if (downloadRoot instanceof HTMLElement) bindDownload(downloadRoot, lang)
