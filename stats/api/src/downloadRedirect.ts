@@ -16,6 +16,7 @@ export type DownloadId =
   | 'linux-arm64'
   | 'linux-x64-deb'
   | 'linux-arm64-deb'
+  | 'android'
 
 type DownloadSpec = {
   id: DownloadId
@@ -83,6 +84,11 @@ export const DOWNLOAD_SPECS: DownloadSpec[] = [
     id: 'linux-arm64-deb',
     match: /^MagiesTerminal-[\d.]+-linux-arm64\.deb$/i,
     fileName: (v) => `MagiesTerminal-${v}-linux-arm64.deb`,
+  },
+  {
+    id: 'android',
+    match: /^MagiesTerminal-[\d.]+-android\.apk$/i,
+    fileName: (v) => `MagiesTerminal-${v}-android.apk`,
   },
 ]
 

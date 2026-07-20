@@ -66,6 +66,11 @@ export type CopyBundle = {
     lead: string
     steps: readonly string[]
   }
+  androidSideload: {
+    title: string
+    lead: string
+    steps: readonly string[]
+  }
   cnSpeedHint: string
   footerNote: string
   footerCopyright: string
@@ -248,6 +253,15 @@ export const copy: Record<Lang, CopyBundle> = {
         '若被 Defender 隔离，可在「病毒和威胁防护 → 保护历史记录」中允许该文件。',
       ],
     },
+    androidSideload: {
+      title: 'Android APK',
+      lead: 'Companion app (sideload, no store required).',
+      steps: [
+        'Download the APK',
+        'Allow unknown sources if prompted',
+        'Open the APK to install',
+      ],
+    },
     cnSpeedHint:
       '提示：下载速度较慢时，可复制下载链接到支持多线程的下载工具（如 IDM、NDM、迅雷）加速。',
     footerNote: 'MagiesTerminal · AI-Powered SSH Workspace',
@@ -374,6 +388,15 @@ export const copy: Record<Lang, CopyBundle> = {
         '若被 Defender 隔離，可在「病毒與威脅防護 → 保護記錄」中允許該檔案。',
       ],
     },
+    androidSideload: {
+      title: 'Android APK',
+      lead: 'Companion app (sideload, no store required).',
+      steps: [
+        'Download the APK',
+        'Allow unknown sources if prompted',
+        'Open the APK to install',
+      ],
+    },
     cnSpeedHint: '提示：下載速度較慢時，可複製下載連結到支援多執行緒的下載工具加速。',
     footerNote: 'MagiesTerminal · AI-Powered SSH Workspace',
     footerCopyright: '© 2026 Magies Technology All rights reserved.',
@@ -497,6 +520,15 @@ export const copy: Record<Lang, CopyBundle> = {
         'In SmartScreen, click More info → Run anyway.',
         'Or right-click the installer → Properties → check Unblock → Apply, then run again.',
         'If Defender quarantined it, allow the file under Virus & threat protection → Protection history.',
+      ],
+    },
+    androidSideload: {
+      title: 'Android APK install',
+      lead: 'Companion app — no Play Store required. Allow installs from this source after download.',
+      steps: [
+        'Download the APK to your phone',
+        'Allow install from this source in system settings',
+        'Open the APK to install',
       ],
     },
     cnSpeedHint:
@@ -625,6 +657,15 @@ export const copy: Record<Lang, CopyBundle> = {
         'Defender が隔離した場合は「ウイルスと脅威の防止 → 保護の履歴」で許可。',
       ],
     },
+    androidSideload: {
+      title: 'Android APK',
+      lead: 'Companion app (sideload, no store required).',
+      steps: [
+        'Download the APK',
+        'Allow unknown sources if prompted',
+        'Open the APK to install',
+      ],
+    },
     cnSpeedHint:
       'ヒント：ダウンロードが遅い場合は、リンクをマルチスレッド対応ダウンローダー（IDM など）に貼ると高速化できます。',
     footerNote: 'MagiesTerminal · AI-Powered SSH Workspace',
@@ -749,6 +790,15 @@ export const copy: Record<Lang, CopyBundle> = {
         'SmartScreen에서 추가 정보 → 실행을 클릭합니다.',
         '또는 설치 파일을 우클릭 → 속성 → 차단 해제 → 적용 후 실행합니다.',
         'Defender가 격리했다면 바이러스 및 위협 방지 → 보호 기록에서 허용합니다.',
+      ],
+    },
+    androidSideload: {
+      title: 'Android APK',
+      lead: 'Companion app (sideload, no store required).',
+      steps: [
+        'Download the APK',
+        'Allow unknown sources if prompted',
+        'Open the APK to install',
       ],
     },
     cnSpeedHint:
@@ -877,6 +927,15 @@ export const copy: Record<Lang, CopyBundle> = {
         'Bei Defender-Quarantäne unter „Viren- & Bedrohungsschutz → Schutzverlauf“ zulassen.',
       ],
     },
+    androidSideload: {
+      title: 'Android APK',
+      lead: 'Companion app (sideload, no store required).',
+      steps: [
+        'Download the APK',
+        'Allow unknown sources if prompted',
+        'Open the APK to install',
+      ],
+    },
     cnSpeedHint:
       'Tipp: Bei langsamem Download den Link in einen Multithread-Downloader (IDM, NDM usw.) kopieren.',
     footerNote: 'MagiesTerminal · AI-Powered SSH Workspace',
@@ -1001,6 +1060,15 @@ export const copy: Record<Lang, CopyBundle> = {
         'Dans SmartScreen, cliquez Infos complémentaires → Exécuter quand même.',
         'Ou clic droit sur l’installateur → Propriétés → Débloquer → Appliquer, puis relancer.',
         'Si Defender l’a mis en quarantaine, autorisez-le sous Protection contre les virus → Historique.',
+      ],
+    },
+    androidSideload: {
+      title: 'Android APK',
+      lead: 'Companion app (sideload, no store required).',
+      steps: [
+        'Download the APK',
+        'Allow unknown sources if prompted',
+        'Open the APK to install',
       ],
     },
     cnSpeedHint:
@@ -1129,6 +1197,15 @@ export const copy: Record<Lang, CopyBundle> = {
         'Si Defender lo puso en cuarentena, permítelo en Protección frente a virus → Historial.',
       ],
     },
+    androidSideload: {
+      title: 'Android APK',
+      lead: 'Companion app (sideload, no store required).',
+      steps: [
+        'Download the APK',
+        'Allow unknown sources if prompted',
+        'Open the APK to install',
+      ],
+    },
     cnSpeedHint:
       'Consejo: si la descarga es lenta, copia el enlace en un gestor multiproceso (IDM, NDM, etc.).',
     footerNote: 'MagiesTerminal · AI-Powered SSH Workspace',
@@ -1255,6 +1332,15 @@ export const copy: Record<Lang, CopyBundle> = {
         'Se o Defender colocou em quarentena, permita em Proteção contra vírus → Histórico.',
       ],
     },
+    androidSideload: {
+      title: 'Android APK',
+      lead: 'Companion app (sideload, no store required).',
+      steps: [
+        'Download the APK',
+        'Allow unknown sources if prompted',
+        'Open the APK to install',
+      ],
+    },
     cnSpeedHint:
       'Dica: se o download estiver lento, copie o link para um gerenciador multithread (IDM, NDM etc.).',
     footerNote: 'MagiesTerminal · AI-Powered SSH Workspace',
@@ -1379,6 +1465,15 @@ export const copy: Record<Lang, CopyBundle> = {
         'В SmartScreen: Подробнее → Выполнить в любом случае.',
         'Или ПКМ по установщику → Свойства → Разблокировать → Применить, затем запустите снова.',
         'Если Defender поместил в карантин, разрешите файл в Защита от вирусов → Журнал.',
+      ],
+    },
+    androidSideload: {
+      title: 'Android APK',
+      lead: 'Companion app (sideload, no store required).',
+      steps: [
+        'Download the APK',
+        'Allow unknown sources if prompted',
+        'Open the APK to install',
       ],
     },
     cnSpeedHint:

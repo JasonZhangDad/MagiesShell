@@ -18,6 +18,15 @@ test('Windows users can choose installer, portable, or ZIP x64 downloads', () =>
   assert.match(source, /'win-arm64':\s*\{[\s\S]*zh: 'ARM64 · 安装版\(\.exe\)'/)
 })
 
+test('Android users can download a sideload companion APK', () => {
+  assert.match(source, /id: 'android'/)
+  assert.match(source, /os: 'android'/)
+  assert.match(source, /match: \/\^MagiesTerminal-\[\\d\.\]\+-android\\.apk\$\/i/)
+  assert.match(source, /android:\s*\{[\s\S]*zh: 'APK · 伴侣应用\(免商店安装\)'/)
+  assert.match(source, /if \(\/Android\/i\.test\(ua\)\) return 'android'/)
+  assert.match(source, /androidSideload/)
+})
+
 test('Linux users can choose AppImage and deb packages', () => {
   assert.match(source, /id: 'linux-x64'/)
   assert.match(source, /id: 'linux-arm64'/)

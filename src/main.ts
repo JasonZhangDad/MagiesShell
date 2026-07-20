@@ -8,7 +8,7 @@ import {
   langMeta,
 } from './i18n'
 
-type OsId = 'mac' | 'win' | 'linux'
+type OsId = 'mac' | 'win' | 'linux' | 'android'
 
 type DownloadItem = {
   id: string
@@ -88,6 +88,7 @@ const OS_OPTIONS: OsOption[] = [
   { id: 'mac', label: 'macOS' },
   { id: 'win', label: 'Windows' },
   { id: 'linux', label: 'Linux' },
+  { id: 'android', label: 'Android' },
 ]
 
 /** Per-UI-language OS picker hints (not zh/en only). */
@@ -127,6 +128,18 @@ const OS_HINTS: Record<OsId, Record<Lang, string>> = {
     es: 'AppImage / deb (Debian, Ubuntu) · x64 / ARM64',
     pt: 'AppImage / deb (Debian, Ubuntu) · x64 / ARM64',
     ru: 'AppImage / deb (Debian, Ubuntu) · x64 / ARM64',
+  },
+  android: {
+    zh: 'APK · 免商店侧载安装',
+    'zh-TW': 'APK · 免商店側載安裝',
+    en: 'APK · sideload, no store required',
+    ja: 'APK · ストア不要のサイドロード',
+    ko: 'APK · 스토어 없이 직접 설치',
+    de: 'APK · Sideload, kein Store nötig',
+    fr: 'APK · sideload, sans store',
+    es: 'APK · sideload, sin tienda',
+    pt: 'APK · sideload, sem loja',
+    ru: 'APK · установка без магазина',
   },
 }
 
@@ -276,6 +289,18 @@ const DOWNLOAD_DETAILS: Record<string, Record<Lang, string>> = {
     pt: 'ARM64 · deb (Debian / Ubuntu)',
     ru: 'ARM64 · deb (Debian / Ubuntu)',
   },
+  android: {
+    zh: 'APK · 伴侣应用(免商店安装)',
+    'zh-TW': 'APK · 伴侶應用(免商店安裝)',
+    en: 'APK · companion app (sideload)',
+    ja: 'APK · コンパニオン(ストア不要)',
+    ko: 'APK · 컴패니언(스토어 없이 설치)',
+    de: 'APK · Companion (Sideload)',
+    fr: 'APK · compagnon (sideload)',
+    es: 'APK · companion (sideload)',
+    pt: 'APK · companion (sideload)',
+    ru: 'APK · companion (sideload)',
+  },
 }
 
 const DOWNLOADS: DownloadItem[] = [
@@ -291,6 +316,7 @@ const DOWNLOADS: DownloadItem[] = [
   { id: 'linux-arm64', os: 'linux', match: /^MagiesTerminal-[\d.]+-linux-arm64\.AppImage$/i },
   { id: 'linux-x64-deb', os: 'linux', match: /^MagiesTerminal-[\d.]+-linux-amd64\.deb$/i },
   { id: 'linux-arm64-deb', os: 'linux', match: /^MagiesTerminal-[\d.]+-linux-arm64\.deb$/i },
+  { id: 'android', os: 'android', match: /^MagiesTerminal-[\d.]+-android\.apk$/i },
 ]
 
 function localizedDownloadDetail(id: string, lang: Lang): string {
@@ -308,6 +334,7 @@ const OS_ICONS: Record<OsId, string> = {
   mac: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.7 12.6c0-2.2 1.8-3.3 1.9-3.4-1-1.5-2.6-1.7-3.2-1.7-1.3-.1-2.6.8-3.3.8-.7 0-1.8-.8-3-.8-1.5 0-2.9.9-3.7 2.3-1.6 2.7-.4 6.7 1.1 8.9.8 1.1 1.7 2.3 2.9 2.2 1.2-.1 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.2.9-1.3 1.3-2.5 1.3-2.6-.1 0-2.4-.9-2.4-3.5zm-2.2-6.4c.6-.8 1.1-1.9.9-3-.9 0-2 .6-2.6 1.4-.6.7-1.1 1.9-.9 3 1 .1 2-.5 2.6-1.4z"/></svg>`,
   win: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 5.2 10.2 4.2v7.1H3V5.2zm0 13.6v-7.1h7.2v8.1L3 18.8zM11.3 4l9.7-1.4v8.7h-9.7V4zm0 16.4V12.3h9.7v8.7L11.3 20.4z"/></svg>`,
   linux: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12.1 2.1c-.7 0-1.4.5-1.7 1.3-.2.5-.1 1.2.2 2.1-.8.3-1.4.9-1.7 1.7-.5 1.3-.1 2.8.9 3.7l-.4 1.2c-.8.3-1.7.9-2.1 1.8-.6 1.3-.2 2.9.9 3.7.3.2.6.4 1 .5-.1.6-.1 1.3.1 2 .4 1.4 1.4 2.5 2.7 2.9.4.1.8.2 1.2.2.5 0 1-.1 1.5-.3.5.5 1.2.8 1.9.8.3 0 .6-.1.9-.2 1.4-.5 2.3-1.8 2.3-3.3 0-.4-.1-.8-.2-1.1.7-.4 1.2-1.1 1.4-1.9.3-1.1 0-2.3-.8-3.1.5-.8.6-1.8.3-2.7-.3-1-.9-1.7-1.8-2.1.1-.5.1-1 0-1.5-.3-1.2-1.2-2.1-2.3-2.3-.2-1-.8-1.8-1.7-2.1-.3-.1-.6-.2-.9-.2zm0 1.5c.3 0 .6.1.8.3.3.3.5.7.5 1.2v.3l-.2.1c-.5.2-1 .6-1.2 1.1l-.1.3-.3-.1c-.3-.1-.5-.4-.5-.8 0-.4.2-.8.5-1 .2-.3.4-.4.5-.4zm2.1 1.1c.4.1.7.5.8 1 0 .3-.1.6-.2.8l-.2.3-.3-.2c-.4-.3-.7-.7-.8-1.2l-.1-.3.3-.1c.1-.2.3-.3.5-.3zm-4.3 2.2c.3 0 .5.1.7.3.5.4.7 1.1.5 1.7-.1.4-.4.7-.7.9l-.3.1-.2-.3c-.3-.5-.3-1.1 0-1.6.1-.3.4-.6.7-.7.1 0 .2-.1.3-.1.1 0 .1 0 .2 0zm4.4.3c.3-.1.7 0 1 .2.5.4.7 1.1.5 1.7-.1.3-.3.6-.6.8l-.3.1-.2-.2c-.4-.5-.4-1.2 0-1.7.1-.2.3-.4.5-.5.1 0 .1-.1.2-.1.1 0 .1 0 .1 0zm-2.2 1.5c.6 0 1.1.2 1.5.5.7.6 1 1.5.8 2.4-.1.5-.4.9-.8 1.2l-.2.1v.4c0 .6-.2 1.1-.5 1.5-.4.5-.9.8-1.5.8-.4 0-.8-.1-1.1-.4-.5-.4-.8-1-.8-1.7v-.5l-.3-.2c-.5-.3-.9-.8-1-1.4-.2-.8.1-1.6.7-2.1.5-.4 1.1-.6 1.7-.6zm0 1.4c-.3 0-.6.1-.8.3-.3.3-.5.7-.4 1.1 0 .3.2.6.5.8l.4.2.1.4c0 .3.1.5.3.7.1.1.3.2.5.2.3 0 .5-.1.7-.4.2-.2.3-.5.3-.8v-.5l.3-.2c.2-.1.4-.4.4-.6.1-.4-.1-.8-.4-1-.3-.2-.6-.3-.9-.3z"/></svg>`,
+  android: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.6 9.48 19.44 6.3a.5.5 0 1 0-.87-.5l-1.9 3.3A8.37 8.37 0 0 0 12 8.5c-1.62 0-3.13.46-4.42 1.25l-1.9-3.3a.5.5 0 1 0-.87.5l1.84 3.18A7.8 7.8 0 0 0 4.2 15.5v.2h15.6v-.2a7.8 7.8 0 0 0-2.2-6.02ZM8.5 13.1a.9.9 0 1 1 0-1.8.9.9 0 0 1 0 1.8Zm7 0a.9.9 0 1 1 0-1.8.9.9 0 0 1 0 1.8ZM6.2 16.2v3.1c0 .55.45 1 1 1h1.2v2.2a1 1 0 0 0 2 0v-2.2h3.2v2.2a1 1 0 0 0 2 0v-2.2H16.8c.55 0 1-.45 1-1v-3.1H6.2Z"/></svg>`,
 }
 
 let selectedOs: OsId | null = null
@@ -354,9 +381,10 @@ function assetSizeLabel(item: DownloadItem): string {
 function detectOs(): OsId {
   const ua = navigator.userAgent
   const platform = navigator.platform || ''
+  if (/Android/i.test(ua)) return 'android'
   if (/Mac|iPhone|iPad|iPod/i.test(ua) || /Mac/i.test(platform)) return 'mac'
   if (/Win/i.test(ua) || /Win/i.test(platform)) return 'win'
-  if (/Linux/i.test(ua) && !/Android/i.test(ua)) return 'linux'
+  if (/Linux/i.test(ua)) return 'linux'
   return 'mac'
 }
 
@@ -366,6 +394,7 @@ function detectRecommendedId(os: OsId): string {
   const isArm = /arm|aarch64/i.test(`${ua} ${platform}`)
   if (os === 'mac') return 'mac-arm64'
   if (os === 'win') return isArm ? 'win-arm64' : 'win-x64'
+  if (os === 'android') return 'android'
   return isArm ? 'linux-arm64' : 'linux-x64'
 }
 
@@ -392,6 +421,18 @@ function renderOsPicker(lang: Lang): string {
 }
 
 function renderUnsignedNotice(lang: Lang, os: OsId): string {
+  if (os === 'android') {
+    const t = copy[lang]
+    const notice = t.androidSideload
+    return `
+    <aside class="unsigned-notice" data-reveal>
+      <p class="unsigned-title">${notice.title}</p>
+      <p class="unsigned-lead">${notice.lead}</p>
+      <ol class="unsigned-steps">
+        ${notice.steps.map((step) => `<li>${step}</li>`).join('')}
+      </ol>
+    </aside>`
+  }
   if (os !== 'mac' && os !== 'win') return ''
   const t = copy[lang]
   const notice = os === 'mac' ? t.unsignedMac : t.unsignedWin
