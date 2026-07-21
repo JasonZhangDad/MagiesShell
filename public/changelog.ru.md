@@ -1,5 +1,82 @@
 # Журнал изменений
 
+## [0.5.21] - 2026-07-21
+
+### Безопасность
+- **Глубокая очистка контекста хоста**: пароли, Telnet-пароли, закрытые ключи и кодовые фразы рекурсивно удаляются из вложенных объектов и массивов
+- **Область сессии публичных возможностей**: каждая публичная возможность использует fail-closed проверку и не выходит за пределы терминальных сессий текущего чата
+- **Чувствительное чтение и аудит подтверждений**: Pod describe стал Sensitive Read; главный процесс сохраняет только метаданные подтверждений без аргументов и учётных данных
+
+### Функции
+- **Строгая локальная приватность и проверка модели**: только loopback-модели, без внешних Agent/веб-поиска, с проверкой вызова инструментов
+- **Управление Docker Compose**: просмотр проектов и сервисов, явные операции up, restart и down
+- **Расширенные операции Kubernetes**: структурированные Events, статус/история/перезапуск rollout, Agent Exec, интерактивный Exec и loopback Port Forward
+
+### Исправления
+- **JSON-разбор списков Kubernetes**: Namespaces, Pods и Deployments больше не зависят от нестабильных таблиц, ошибки kubectl показываются напрямую
+- **Кроссплатформенные пакеты**: исправлен сбой Apple Silicon после Fuses без платного Developer ID; Android использует JDK 21, SDK/Build Tools 36 и метаданные v0.5.21
+
+## [0.5.20] - 2026-07-21
+
+### Features
+- **System Manager Kubernetes**: remote kubectl for Pods/Deployments (list, logs, describe); delete pod / scale deployment with confirmation; MCP/CLI expose read and controlled write tools
+- **Local LLM privacy hardening**: Ollama/LM Studio paths and approval audit; secrets never sent into LLM context
+- **Session cast recording**: asciinema cast v2 records input; resize emits geometry markers; startStream stores cols/rows
+- **SFTP conflict compare + true byte resume**: conflict dialog shows metadata compare; drag-drop resume uses `startOffset` append without deleting the target
+- **Capability catalog expansion**: Kubernetes domain catalog registration, quasi-plugin registration, CLI/MCP/sidebar tool specs aligned
+
+### Improvements
+- **System Overview monitoring look**: resource bars and overview closer to a live monitoring HUD
+- **SSH config / Vault import UX**: import flow and messaging polish
+
+## [0.5.19] - 2026-07-20
+
+### Improvements
+- **Auto model catalog + UX**: providers fetch live `/models` after API key entry; loading/error/retry status; live list preferred over offline presets
+- **GPT-5.6 / Grok / Gemini presets**: updated Codex/Cursor/OpenCode and OpenAI/xAI/Google defaults
+- **xAI (Grok) provider**: first-class `api.x.ai` preset
+- **ChatGPT branding**: Codex agent displays as ChatGPT with OpenAI icon; agent icons resolve by brand
+
+## [0.5.18] - 2026-07-20
+
+### Улучшения
+- **Макет AI-чата в стиле Claude**: центральная колонка чтения (~44rem) с более крупным шрифтом; мягкие пузыри пользователя и текст ассистента без рамки; минимальный заголовок и скруглённый композер; круглая кнопка отправки foreground/background; спокойнее пустое состояние, недавние, thinking и группы инструментов
+
+## [0.5.17] - 2026-07-20
+
+### Улучшения
+- **Переразметка иконок тулбара**: инструменты vault в тематическом кластере; единые высоты/отступы; полоса multi-select и утилиты верхней панели сгруппированы
+
+## [0.5.16] - 2026-07-20
+
+### Улучшения
+- **Проще выбирать цветные темы**: core — **Claude orange / White / Black** плюс синий, зелёный, фиолетовый, rose, amber, sky; в «Оформлении» — быстрые цветовые чипы
+
+## [0.5.15] - 2026-07-20
+
+### Улучшения
+- **Оранжевый Claude по умолчанию**: светлая/тёмная UI-темы по умолчанию — тёплый Anthropic/Claude orange; Claude первым в core-списке, **Pure Black** по-прежнему доступен; follow-app темы терминала совпадают
+
+## [0.5.14] - 2026-07-20
+
+### Улучшения
+- **Редизайн AI-иконок и компонентов**: градиентные бейджи агентов/провайдеров; карточки tool-call с иконками категорий; усиленная полоса approval и status chips; единые карточки vault/terminal артефактов; slash-picker и меню экспорта с иконками
+
+## [0.5.13] - 2026-07-20
+
+### Улучшения
+- **Полный редизайн AI-панели**: ambient-фон и микросетка; стеклянный заголовок + solid primary «Новый чат»; пузыри пользователя solid primary, карточки ассистента с primary-кромкой; плавающий composer с focus-glow; пустое состояние, недавние сессии, группы инструментов, thinking-блоки и меню агента обновлены
+
+## [0.5.12] - 2026-07-20
+
+### Улучшения
+- **Заметный редизайн UI**: боковая панель vault — solid primary-«таблетка» для активного пункта; карточки хостов — полоска primary, подъём и свечение при наведении; сильнее контраст сцены/сайдбара; навигация настроек в solid primary; вкладки Vault/SFTP с primary-подчёркиванием; заголовки секций — компактные uppercase с иконками
+
+## [0.5.11] - 2026-07-20
+
+### Улучшения
+- **Обновление клиентского UI под тему**: оболочка, боковая панель/сцена vault, окно настроек и общие UI-примитивы яснее следуют активной теме — навигация с primary-акцентом, стеклянные оверлеи, более мягкая глубина, улучшенный фокус у кнопок, полей, диалогов, вкладок, переключателей, пустых состояний и боковых панелей
+
 ## [0.5.10] - 2026-07-19
 
 ### Исправления

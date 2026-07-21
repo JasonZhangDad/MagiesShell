@@ -1,5 +1,82 @@
 # 更新履歴
 
+## [0.5.21] - 2026-07-21
+
+### セキュリティ
+- **ホストコンテキストの深層サニタイズ**：ネストされたオブジェクトと配列からパスワード、Telnet パスワード、秘密鍵、パスフレーズを再帰的に除去
+- **Public Capability のセッションスコープ**：すべての公開機能が fail-closed 検証を行い、現在のチャットに公開された端末セッション外へアクセス不可
+- **機密読み取りと承認監査**：Pod describe を Sensitive Read 化し、メインプロセスが引数や資格情報を含まない承認メタデータのみを永続化
+
+### 機能
+- **厳格なローカルプライバシーとモデル検査**：ループバックのモデルのみ許可し、外部 Agent/Web 検索を無効化してツール呼び出し能力を検証
+- **Docker Compose 管理**：プロジェクトとサービスを確認し、明示的な up、restart、down 操作を実行
+- **Kubernetes 操作の拡張**：構造化 Events、rollout 状態/履歴/再起動、Agent Exec、対話型 Exec、ループバック Port Forward
+
+### 修正
+- **Kubernetes リストの JSON 解析**：Namespaces、Pods、Deployments は不安定な表を解析せず、kubectl エラーを直接表示
+- **クロスプラットフォームパッケージ**：有料 Developer ID なしの Apple Silicon Fuse 後クラッシュを修正し、Android を JDK 21、SDK/Build Tools 36、v0.5.21 に統一
+
+## [0.5.20] - 2026-07-21
+
+### Features
+- **System Manager Kubernetes**: remote kubectl for Pods/Deployments (list, logs, describe); delete pod / scale deployment with confirmation; MCP/CLI expose read and controlled write tools
+- **Local LLM privacy hardening**: Ollama/LM Studio paths and approval audit; secrets never sent into LLM context
+- **Session cast recording**: asciinema cast v2 records input; resize emits geometry markers; startStream stores cols/rows
+- **SFTP conflict compare + true byte resume**: conflict dialog shows metadata compare; drag-drop resume uses `startOffset` append without deleting the target
+- **Capability catalog expansion**: Kubernetes domain catalog registration, quasi-plugin registration, CLI/MCP/sidebar tool specs aligned
+
+### Improvements
+- **System Overview monitoring look**: resource bars and overview closer to a live monitoring HUD
+- **SSH config / Vault import UX**: import flow and messaging polish
+
+## [0.5.19] - 2026-07-20
+
+### Improvements
+- **Auto model catalog + UX**: providers fetch live `/models` after API key entry; loading/error/retry status; live list preferred over offline presets
+- **GPT-5.6 / Grok / Gemini presets**: updated Codex/Cursor/OpenCode and OpenAI/xAI/Google defaults
+- **xAI (Grok) provider**: first-class `api.x.ai` preset
+- **ChatGPT branding**: Codex agent displays as ChatGPT with OpenAI icon; agent icons resolve by brand
+
+## [0.5.18] - 2026-07-20
+
+### 改善
+- **Claude 風 AI チャットレイアウト**：中央の読み取り欄（約 44rem）と大きめの字間・行間。ユーザーは柔らかい吹き出し、アシスタントは枠なし本文。最小限のヘッダーと丸い作曲家入力、前景/背景の送信丸ボタン。空状態・最近・思考・ツール群も装飾を控えめに
+
+## [0.5.17] - 2026-07-20
+
+### 改善
+- **ツールバーアイコン配置の再設計**：Vault ヘッダーのツールをテーマ調クラスタに集約。検索・副操作・新規ホストの高さ/余白を統一。複数選択バーと上部 AI/テーマ/設定も同様にグループ化
+
+## [0.5.16] - 2026-07-20
+
+### 改善
+- **多色テーマを選びやすく**：コアに **Claude オレンジ / White / Black** と青・緑・紫・ローズ・アンバー・スカイなどを整理。外観にワンタップ色チップを追加
+
+## [0.5.15] - 2026-07-20
+
+### 改善
+- **デフォルトを Claude オレンジに**：明暗 UI の既定テーマを Anthropic/Claude 風の暖色オレンジに。コア一覧の先頭が Claude、**Pure Black** など黒系も選択可。フォローアプリ端末テーマも一致
+
+## [0.5.14] - 2026-07-20
+
+### 改善
+- **AI アイコンとコンポーネント体系の再設計**：Agent/Provider バッジをグラデーション色盤に；ツール呼び出しカードは種別アイコン盤；承認バーとステータス chip を強化；Vault/端末アーティファクトを統一カード；スラッシュピッカーとエクスポートメニューもアイコン化
+
+## [0.5.13] - 2026-07-20
+
+### 改善
+- **AI サイドパネル全面再設計**：パネルの環境光と微細グリッド；ガラス調ヘッダー + 主色の新規チャットボタン；ユーザーメッセージは主色ソリッド吹き出し、アシスタントは主色左縁のカード；下部入力はフローティング作曲家風（フォーカスグロー）；空状態・最近のセッション・ツールグループ・思考ブロック・Agent メニューも同期
+
+## [0.5.12] - 2026-07-20
+
+### 改善
+- **一目でわかる UI 再設計**：Vault サイドバーの選択項目を主色のソリッドピルに変更。ホストグリッドカードに主色エッジバー、ホバー時の浮き上がりとグローを追加。ステージ/サイドバーのコントラスト強化。設定ナビも主色ソリッド選択。上部 Vault/SFTP タブに主色下線。セクション見出しをアイコン付き小サイズ大文字スタイルに
+
+## [0.5.11] - 2026-07-20
+
+### 改善
+- **テーマに沿ったクライアント UI の刷新**：シェル、Vault サイドバー/ステージ、設定ウィンドウ、共有 UI プリミティブをアクティブなテーマ色により強く合わせました。プライマリアクセントのナビ、ガラス調オーバーレイ、柔らかい奥行き、ボタン/入力/ダイアログ/タブ/スイッチ/空状態/サイドパネルのフォーカスと立体感を改善
+
 ## [0.5.10] - 2026-07-19
 
 ### 修正

@@ -1,5 +1,82 @@
 # Changelog
 
+## [0.5.21] - 2026-07-21
+
+### Security
+- **Deep host-context sanitization**: recursively removes passwords, Telnet passwords, private keys, and passphrases from nested objects and arrays before Agent context is built
+- **Public capability session scope**: every public capability now uses a fail-closed session check and cannot cross terminal sessions exposed to the current chat
+- **Sensitive reads and approval audit**: Pod describe is now a Sensitive Read; approval metadata is atomically persisted by the main process without tool arguments or credentials
+
+### Features
+- **Strict local privacy and model probe**: strict mode permits loopback model services only, disables external agents/web search, and can verify local-model tool calling
+- **Docker Compose management**: System Manager can inspect Compose projects/services and run explicit up, restart, and down actions
+- **Expanded Kubernetes operations**: structured Events, rollout status/history/restart, non-interactive Agent Exec, interactive terminal Exec, and loopback Port Forward
+
+### Fixes
+- **Kubernetes JSON list parsing**: Namespaces, Pods, and Deployments no longer parse unstable table text, and kubectl failures surface directly
+- **Cross-platform packages**: fixes Apple Silicon Fuse-integrity crashes without a paid Developer ID; Android now aligns JDK 21, SDK/Build Tools 36, and v0.5.21 metadata
+
+## [0.5.20] - 2026-07-21
+
+### Features
+- **System Manager Kubernetes**: remote kubectl for Pods/Deployments (list, logs, describe); delete pod / scale deployment with confirmation; MCP/CLI expose read and controlled write tools
+- **Local LLM privacy hardening**: Ollama/LM Studio paths and approval audit; secrets never sent into LLM context
+- **Session cast recording**: asciinema cast v2 records input; resize emits geometry markers; startStream stores cols/rows
+- **SFTP conflict compare + true byte resume**: conflict dialog shows metadata compare; drag-drop resume uses `startOffset` append without deleting the target
+- **Capability catalog expansion**: Kubernetes domain catalog registration, quasi-plugin registration, CLI/MCP/sidebar tool specs aligned
+
+### Improvements
+- **System Overview monitoring look**: resource bars and overview closer to a live monitoring HUD
+- **SSH config / Vault import UX**: import flow and messaging polish
+
+## [0.5.19] - 2026-07-20
+
+### Improvements
+- **Auto model catalog + UX**: providers fetch live `/models` after API key entry; loading/error/retry status; live list preferred over offline presets
+- **GPT-5.6 / Grok / Gemini presets**: updated Codex/Cursor/OpenCode and OpenAI/xAI/Google defaults
+- **xAI (Grok) provider**: first-class `api.x.ai` preset
+- **ChatGPT branding**: Codex agent displays as ChatGPT with OpenAI icon; agent icons resolve by brand
+
+## [0.5.18] - 2026-07-20
+
+### Improvements
+- **Claude-like AI chat layout**: centered reading column (~44rem) with larger type and line-height; soft user bubbles and borderless assistant prose; minimal header and rounded composer; send button as foreground/background circle; quieter empty state, recents, thinking blocks, and tool groups
+
+## [0.5.17] - 2026-07-20
+
+### Improvements
+- **Toolbar icon-button layout redesign**: vault header tools sit in a themed control cluster with primary active states; search, secondary actions, and New Host share consistent height/spacing; multi-select strip and top-tab utilities (AI/theme/settings) are grouped with theme-aligned hover
+
+## [0.5.16] - 2026-07-20
+
+### Improvements
+- **Easier multi-color themes**: core themes clearly offer **Claude orange / White / Black** plus blue, green, purple, rose, amber, and sky; Appearance adds a one-tap color chip strip; White sits next to Claude in light mode, Black next to Claude in dark mode
+
+## [0.5.15] - 2026-07-20
+
+### Improvements
+- **Claude orange as the default UI theme**: light and dark defaults now use a vivid Anthropic/Claude-inspired warm orange; Claude is first in the core theme list, with **Pure Black** still available for a black look; follow-app terminal themes match
+
+## [0.5.14] - 2026-07-20
+
+### Improvements
+- **AI icons & component system redesign**: agent/provider badges use gradient plates with inset highlights; tool-call cards show category icon plates (terminal/SFTP/vault/…); stronger approval strip and status chips; vault/terminal artifact cards share the new card chrome; slash picker and export menu are iconized
+
+## [0.5.13] - 2026-07-20
+
+### Improvements
+- **AI side panel redesign**: ambient panel wash; glass header with solid primary New Chat; solid primary user bubbles and assistant cards with a primary edge rail; floating composer with focus glow; empty state, recent sessions, tool groups, thinking blocks, and agent menu restyled to match
+
+## [0.5.12] - 2026-07-20
+
+### Improvements
+- **Clearly visible UI redesign**: vault sidebar uses a solid primary pill for the active item; host grid cards gain a primary edge bar, lift, and glow on hover; stronger stage/sidebar contrast; settings nav uses solid primary selection; top Vault/SFTP tabs show a primary underline; section titles use compact uppercase labels with icon chips
+
+## [0.5.11] - 2026-07-20
+
+### Improvements
+- **Theme-aligned client UI refresh**: shell chrome, vault sidebar/stage, settings window, and shared UI primitives now follow the active theme more clearly — primary-accent nav, glass overlays, softer elevation, and refined focus/depth on buttons, inputs, dialogs, tabs, switches, empty states, and side panels
+
 ## [0.5.10] - 2026-07-19
 
 ### Fixes

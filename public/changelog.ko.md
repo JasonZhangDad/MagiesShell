@@ -1,5 +1,82 @@
 # 변경 로그
 
+## [0.5.21] - 2026-07-21
+
+### 보안
+- **호스트 컨텍스트 심층 정리**: 중첩 객체와 배열의 비밀번호, Telnet 비밀번호, 개인 키, 암호문을 재귀적으로 제거
+- **Public Capability 세션 범위**: 모든 공개 기능이 fail-closed 세션 검사를 적용하여 현재 채팅에 노출된 터미널 세션을 벗어나지 못함
+- **민감 읽기와 승인 감사**: Pod describe를 Sensitive Read로 지정하고 메인 프로세스가 인자나 자격 증명 없이 승인 메타데이터만 영구 저장
+
+### 기능
+- **엄격한 로컬 개인정보 보호와 모델 검사**: 루프백 모델만 허용하고 외부 Agent/웹 검색을 비활성화하며 도구 호출 능력을 검증
+- **Docker Compose 관리**: 프로젝트와 서비스를 확인하고 명시적인 up, restart, down 작업 실행
+- **확장된 Kubernetes 작업**: 구조화 Events, rollout 상태/기록/재시작, Agent Exec, 대화형 Exec, 루프백 Port Forward
+
+### 수정
+- **Kubernetes JSON 목록 파싱**: Namespaces, Pods, Deployments가 불안정한 표를 파싱하지 않으며 kubectl 오류를 직접 표시
+- **크로스 플랫폼 패키지**: 유료 Developer ID 없이 Apple Silicon Fuse 이후 충돌을 수정하고 Android를 JDK 21, SDK/Build Tools 36, v0.5.21로 통일
+
+## [0.5.20] - 2026-07-21
+
+### Features
+- **System Manager Kubernetes**: remote kubectl for Pods/Deployments (list, logs, describe); delete pod / scale deployment with confirmation; MCP/CLI expose read and controlled write tools
+- **Local LLM privacy hardening**: Ollama/LM Studio paths and approval audit; secrets never sent into LLM context
+- **Session cast recording**: asciinema cast v2 records input; resize emits geometry markers; startStream stores cols/rows
+- **SFTP conflict compare + true byte resume**: conflict dialog shows metadata compare; drag-drop resume uses `startOffset` append without deleting the target
+- **Capability catalog expansion**: Kubernetes domain catalog registration, quasi-plugin registration, CLI/MCP/sidebar tool specs aligned
+
+### Improvements
+- **System Overview monitoring look**: resource bars and overview closer to a live monitoring HUD
+- **SSH config / Vault import UX**: import flow and messaging polish
+
+## [0.5.19] - 2026-07-20
+
+### Improvements
+- **Auto model catalog + UX**: providers fetch live `/models` after API key entry; loading/error/retry status; live list preferred over offline presets
+- **GPT-5.6 / Grok / Gemini presets**: updated Codex/Cursor/OpenCode and OpenAI/xAI/Google defaults
+- **xAI (Grok) provider**: first-class `api.x.ai` preset
+- **ChatGPT branding**: Codex agent displays as ChatGPT with OpenAI icon; agent icons resolve by brand
+
+## [0.5.18] - 2026-07-20
+
+### 개선
+- **Claude 스타일 AI 채팅 레이아웃**: 중앙 읽기 열(~44rem)과 더 큰 글자·행간; 부드러운 사용자 말풍선과 테두리 없는 어시스턴트 본문; 미니멀 헤더와 둥근 작곡가 입력; 전경/배경 원형 전송 버튼; 빈 상태·최근·사고·도구 그룹 장식 완화
+
+## [0.5.17] - 2026-07-20
+
+### 개선
+- **기능 아이콘 버튼 레이아웃 재설계**: Vault 헤더 도구를 테마형 클러스터로 묶고, 검색/보조/새 호스트 높이와 간격 통일; 다중 선택 바와 상단 AI/테마/설정도 그룹화
+
+## [0.5.16] - 2026-07-20
+
+### 개선
+- **다색 테마 선택 개선**: 코어에 **Claude 오렌지 / White / Black** 및 파랑·초록·보라·로즈·앰버·스카이; 외관에 원탭 색상 칩 추가
+
+## [0.5.15] - 2026-07-20
+
+### 개선
+- **기본 테마 Claude 오렌지**: 라이트/다크 기본 UI를 Anthropic/Claude 스타일 따뜻한 오렌지로; 코어 목록 최상단 Claude, **Pure Black** 등 검정 테마 유지; 앱 연동 터미널 테마 일치
+
+## [0.5.14] - 2026-07-20
+
+### 개선
+- **AI 아이콘·컴포넌트 체계 재설계**: Agent/Provider 배지 그라데이션 플레이트; 도구 호출 카드 카테고리 아이콘; 승인 바·상태 칩 강화; Vault/터미널 아티팩트 카드 통일; 슬래시 피커·내보내기 메뉴 아이콘화
+
+## [0.5.13] - 2026-07-20
+
+### 개선
+- **AI 사이드 패널 전면 재설계**: 패널 환경광과 미세 그리드; 글래스 헤더 + 프라이머리 새 채팅 버튼; 사용자 메시지는 솔리드 프라이머리 버블, 어시스턴트는 프라이머리 좌측 엣지 카드; 하단 입력은 포커스 글로우가 있는 플로팅 컴포저; 빈 상태/최근 세션/도구 그룹/사고 블록/에이전트 메뉴 동기화
+
+## [0.5.12] - 2026-07-20
+
+### 개선
+- **한눈에 보이는 UI 재설계**: Vault 사이드바 선택 항목을 프라이머리 솔리드 필로 변경; 호스트 그리드 카드에 프라이머리 엣지 바, 호버 시 떠오름/글로우; 스테이지/사이드바 대비 강화; 설정 내비게이션도 프라이머리 솔리드 선택; 상단 Vault/SFTP 탭 프라이머리 밑줄; 섹션 제목을 아이콘 칩이 있는 작은 대문자 스타일로
+
+## [0.5.11] - 2026-07-20
+
+### 개선
+- **테마에 맞춘 클라이언트 UI 개편**: 셸 크롬, Vault 사이드바/스테이지, 설정 창, 공유 UI 프리미티브가 활성 테마를 더 분명히 따릅니다 — 프라이머리 강조 내비게이션, 글래스 오버레이, 부드러운 입체감, 버튼/입력/대화상자/탭/스위치/빈 상태/사이드 패널의 포커스와 깊이 개선
+
 ## [0.5.10] - 2026-07-19
 
 ### 버그 수정

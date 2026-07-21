@@ -1,5 +1,82 @@
 # Journal des modifications
 
+## [0.5.21] - 2026-07-21
+
+### Sécurité
+- **Nettoyage profond du contexte hôte** : supprime récursivement mots de passe, mots de passe Telnet, clés privées et phrases secrètes des objets et tableaux imbriqués
+- **Portée de session des capacités publiques** : chaque capacité publique applique une validation fail-closed et ne peut pas sortir des sessions exposées au chat courant
+- **Lectures sensibles et audit d’approbation** : Pod describe devient une Sensitive Read ; le processus principal conserve uniquement les métadonnées d’approbation, sans arguments ni identifiants
+
+### Fonctionnalités
+- **Confidentialité locale stricte et test du modèle** : services de modèle loopback uniquement, agents externes/recherche web désactivés et vérification des appels d’outils
+- **Gestion Docker Compose** : inspection des projets/services et actions explicites up, restart et down
+- **Opérations Kubernetes étendues** : Events structurés, état/historique/redémarrage de rollout, Agent Exec, Exec interactif et Port Forward loopback
+
+### Corrections
+- **Listes Kubernetes en JSON** : Namespaces, Pods et Deployments ne dépendent plus de tableaux instables, et les erreurs kubectl sont affichées directement
+- **Paquets multiplateformes** : corrige le crash Apple Silicon après les Fuses sans Developer ID payant ; Android aligne JDK 21, SDK/Build Tools 36 et v0.5.21
+
+## [0.5.20] - 2026-07-21
+
+### Features
+- **System Manager Kubernetes**: remote kubectl for Pods/Deployments (list, logs, describe); delete pod / scale deployment with confirmation; MCP/CLI expose read and controlled write tools
+- **Local LLM privacy hardening**: Ollama/LM Studio paths and approval audit; secrets never sent into LLM context
+- **Session cast recording**: asciinema cast v2 records input; resize emits geometry markers; startStream stores cols/rows
+- **SFTP conflict compare + true byte resume**: conflict dialog shows metadata compare; drag-drop resume uses `startOffset` append without deleting the target
+- **Capability catalog expansion**: Kubernetes domain catalog registration, quasi-plugin registration, CLI/MCP/sidebar tool specs aligned
+
+### Improvements
+- **System Overview monitoring look**: resource bars and overview closer to a live monitoring HUD
+- **SSH config / Vault import UX**: import flow and messaging polish
+
+## [0.5.19] - 2026-07-20
+
+### Improvements
+- **Auto model catalog + UX**: providers fetch live `/models` after API key entry; loading/error/retry status; live list preferred over offline presets
+- **GPT-5.6 / Grok / Gemini presets**: updated Codex/Cursor/OpenCode and OpenAI/xAI/Google defaults
+- **xAI (Grok) provider**: first-class `api.x.ai` preset
+- **ChatGPT branding**: Codex agent displays as ChatGPT with OpenAI icon; agent icons resolve by brand
+
+## [0.5.18] - 2026-07-20
+
+### Améliorations
+- **Mise en page chat IA style Claude** : colonne de lecture centrée (~44rem) avec typo plus grande ; bulles utilisateur douces et prose assistant sans cadre ; en-tête minimal et compositeur arrondi ; bouton d’envoi circulaire foreground/background ; état vide, récents, thinking et outils plus discrets
+
+## [0.5.17] - 2026-07-20
+
+### Améliorations
+- **Réorganisation des boutons-icônes de barre d'outils** : outils d'en-tête vault en cluster thématique ; hauteurs/espacements unifiés ; bande multi-sélection et utilitaires top-tab groupés
+
+## [0.5.16] - 2026-07-20
+
+### Améliorations
+- **Thèmes multi-couleurs plus accessibles** : core avec **Claude orange / White / Black** et bleu, vert, violet, rose, ambre, ciel ; bandeau de pastilles en un clic dans Apparence
+
+## [0.5.15] - 2026-07-20
+
+### Améliorations
+- **Orange Claude par défaut** : thèmes clairs/sombres par défaut en orange chaud inspiré d'Anthropic/Claude ; Claude en tête de la liste core, **Pure Black** toujours disponible ; thèmes terminal follow-app alignés
+
+## [0.5.14] - 2026-07-20
+
+### Améliorations
+- **Refonte des icônes et composants IA** : badges agent/fournisseur en dégradé ; cartes d'appels d'outils avec icônes de catégorie ; barre d'approbation et puces d'état renforcées ; cartes d'artefacts vault/terminal unifiées ; sélecteur slash et menu d'export iconisés
+
+## [0.5.13] - 2026-07-20
+
+### Améliorations
+- **Refonte du panneau latéral IA** : lavis ambiant et micro-grille ; en-tête verre + bouton Nouvelle conversation primary ; bulles utilisateur solid primary et cartes assistant avec rail primary ; compositeur flottant avec halo de focus ; état vide, sessions récentes, groupes d'outils, blocs de réflexion et menu agent mis à jour
+
+## [0.5.12] - 2026-07-20
+
+### Améliorations
+- **Refonte UI clairement visible** : barre latérale vault avec pastille primary solide pour l'élément actif ; cartes grille d'hôtes avec barre primary, soulèvement et lueur au survol ; contraste scène/sidebar renforcé ; navigation des paramètres en primary solide ; onglets Vault/SFTP avec soulignement primary ; titres de section en petites capitales avec pastilles d'icône
+
+## [0.5.11] - 2026-07-20
+
+### Améliorations
+- **Rafraîchissement UI client aligné sur le thème** : chrome de l'application, barre latérale/scène du vault, fenêtre des paramètres et primitives UI partagées suivent mieux le thème actif — navigation en accent primaire, superpositions verre, élévation plus douce, focus et profondeur affinés pour boutons, champs, dialogues, onglets, interrupteurs, états vides et panneaux latéraux
+
 ## [0.5.10] - 2026-07-19
 
 ### Corrections
