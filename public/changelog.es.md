@@ -1,5 +1,39 @@
 # Registro de cambios
 
+## [0.5.25] - 2026-07-22
+
+### Funcionalidades
+- **Mascota de escritorio**: actívala en Ajustes → IA → Mascota y aparecerá una mascota flotante y arrastrable en cualquier parte de la pantalla, animándose según el estado de la IA: respiración en reposo, salto mientras trabaja, balanceo mientras espera tu aprobación, saludo al terminar, temblor si falla. Como la mascota rara vez tiene el foco del sistema, se desactivó específicamente la limitación de animaciones de Electron para ventanas sin foco, para que no parezca congelada
+- **Interacciones directas**: clic para abrir/enfocar el panel de chat de IA, saltando a la sesión de terminal ocupada cuando es posible; doble clic para enfocar la ventana principal; clic derecho abre un menú para ejecutar un comando configurado en ajustes, abrir los ajustes de IA, restablecer la posición de la mascota u ocultarla; al pasar el cursor se muestra una burbuja de estado más detallada
+- **Apariencia personalizada**: puedes subir tu propia imagen o sprite sheet, con rangos de fotogramas por estado (reposo/ejecutando/esperando/hecho/error) para sprite sheets; tamaño, opacidad, mantener siempre visible y visibilidad de la burbuja son ajustables
+- **Modo privado y avisos de finalización**: el modo privado limita la burbuja a un estado genérico como "ejecutando" en lugar de nombrar la herramienta activa; las tareas de 10 segundos o más pueden disparar opcionalmente una notificación de escritorio al terminar o fallar
+- **Persistencia de posición y soporte multi-monitor**: la mascota recuerda dónde la arrastraste, incluso tras reinicios o al volver a activarla; vuelve automáticamente a la esquina predeterminada si un monitor se desconecta o cambia de resolución
+
+## [0.5.24] - 2026-07-22
+
+### Correcciones
+- **La sonda del diagnóstico nunca había leído realmente un archivo de clave**: la función asíncrona que lee la clave privada se llamaba sin `await`, por lo que examinaba una Promise sin resolver en lugar del contenido del archivo, y cada clave se consideraba silenciosamente «no es una clave privada». Cualquier host que dependiera de un archivo de clave local en lugar de una clave almacenada en línea fallaba siempre el diagnóstico, aunque la misma conexión funcionara perfectamente en la terminal
+- **Un fallo de descifrado local ya no se informa como un inicio de sesión rechazado**: una contraseña o clave que seguía siendo un marcador cifrado se vaciaba antes de la sonda, así que el servidor rechazaba lógicamente un inicio de sesión sin ninguna credencial. Ahora el diagnóstico reconoce que «hay credenciales configuradas pero este dispositivo no puede descifrarlas» y señala que hay que desbloquear la bóveda o reparar el almacenamiento seguro
+- **Una clave de host no confiable ya no se hace pasar por un fallo de autenticación**: la sonda ya retenía todos los métodos de autenticación cuando la clave del host es desconocida o ha cambiado, pero nunca informaba de ese hecho al panel. Ahora aparece un estado propio de «clave de host no verificada», sugiriendo conectarse una vez manualmente para establecer la confianza
+- **El aviso de «clave cifrada omitida» ya no depende de la suerte**: antes solo aparecía cuando no se había intentado ningún método de autenticación, pero en cualquier máquina con un agente SSH en ejecución siempre se prueba primero el agente, por lo que este aviso casi nunca se activaba
+- **El diagnóstico ahora reutiliza la frase de contraseña de la clave guardada durante una conexión interactiva**: antes esa frase de contraseña solo se aplicaba a las conexiones normales y el diagnóstico nunca la consultaba, así que una clave protegida con frase de contraseña que funciona perfectamente en la terminal siempre fallaba el diagnóstico
+
+## [0.5.23] - 2026-07-22
+
+### Correcciones
+- **El script de tema del arranque nunca se había ejecutado**: aplica el tema, el color de acento y el idioma guardados antes de pintar la interfaz, pero como bloque en línea la CSP se negaba a ejecutarlo, de modo que al iniciar aparecían por un instante los colores equivocados. Ahora vive en su propio archivo, sin relajar la política de seguridad
+- **frame-ancestors se entrega ahora como cabecera**: el navegador ignora esa directiva dentro de una CSP en `<meta>`, así que no hacía nada. Ahora procede de las cabeceras app:// y del servidor de desarrollo, con una prueba nueva que falla si reaparece un script en línea
+
+### Funcionalidades
+- **Reproducción de grabaciones cast**: la aplicación sabía grabar en asciinema cast v2 pero nunca abrirlas. Hay reproducción, pausa, desplazamiento y 1x/2x/4x; una grabación truncada omite sus líneas dañadas e indica cuántas, en lugar de rechazar el archivo
+- **Búsqueda dentro de un registro de sesión**: Cmd/Ctrl+F en el visor, independiente de la búsqueda del terminal en vivo
+- **Bytes por fila en el panel hexadecimal**: alterna entre 8 / 16 / 32 y lo ya capturado se recompone al instante
+- **Filtrar las notas de versión por categoría**: fichas de seguridad / funcionalidades / correcciones / mejoras con su número de entradas
+
+### Mejoras
+- **Eliminadas declaraciones que no podían surtir efecto**: código definido y nunca invocado, entre ello un permiso de equipo que jamás se comprobaba pero decía existir, un campo de grupo sin efecto al establecerlo y un analizador de invitaciones WAN que duplicaba la implementación del proceso principal y no podía cargarse nunca
+- **Cobertura del anclaje de marcadores**: la conversión de desplazamiento en bytes a número de línea queda fijada en CRLF, fuera de rango e ida y vuelta exacta
+
 ## [0.5.22] - 2026-07-21
 
 ### Seguridad

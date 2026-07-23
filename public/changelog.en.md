@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.5.25] - 2026-07-22
+
+### Features
+- **Desktop pet**: enable it in Settings → AI → Pet and a draggable floating pet appears anywhere on screen, animating with the AI's status — idle breathing, a bounce while running, a wobble while waiting on your approval, a wave on completion, a shake on failure. Since the pet rarely holds OS focus, Electron's background-window animation throttling is explicitly disabled for it so it doesn't look frozen
+- **Click-through interactions**: click the pet to open/focus the AI chat panel, jumping to whichever terminal session is currently busy when possible; double-click focuses the main window; right-click opens a menu to run a command you've configured in settings, open AI settings, reset the pet's position, or hide it; hovering shows a more detailed status bubble
+- **Custom appearance**: upload your own image or sprite sheet for the pet, with per-status (idle/running/waiting/done/failed) frame ranges for sprite sheets; size, opacity, always-on-top, and bubble visibility are all adjustable
+- **Privacy mode and completion alerts**: privacy mode limits the bubble to a generic status like "running" instead of naming the active tool; tasks that take 10 seconds or longer can optionally trigger a desktop notification when they finish or fail
+- **Position persistence and multi-monitor support**: the pet remembers where you dragged it, across restarts and re-enabling; it snaps back to the default corner automatically if a monitor is disconnected or resized out from under it
+
+## [0.5.24] - 2026-07-22
+
+### Fixes
+- **The health probe had never actually read a key file**: the async helper that reads private keys was called without `await`, so it examined an unresolved Promise instead of file content and silently judged every key "not a private key". Any host relying on a local key file rather than an inline stored key was guaranteed to fail the health check, even though the same key connects fine in the terminal
+- **A local decryption failure is no longer reported as a rejected login**: a password or key that is still an encrypted placeholder was stripped to nothing before probing, so the server naturally refused a login with zero credentials; the check now recognises "credentials are configured but this device cannot decrypt them" and points at unlocking the vault or repairing secure storage
+- **An untrusted host key no longer masquerades as an authentication failure**: the probe already withholds every authentication method when a host key is unknown or has changed, but never reported that fact to the panel; it now shows a dedicated "host key not verified" status and suggests connecting once manually to establish trust
+- **The "encrypted key skipped" notice no longer depends on luck**: it previously only appeared when no authentication method had been attempted at all, but any machine with an SSH agent running always tries the agent first — so the notice almost never fired
+- **The health check now reuses the key passphrase saved during an interactive connect**: that passphrase previously only applied to normal connections and was never consulted by the health check, so a passphrase-protected key that works fine in the terminal always failed the health check
+
+## [0.5.23] - 2026-07-22
+
+### Fixes
+- **The startup theme script had never run**: it applies the saved theme, accent and language before the UI paints, but as an inline block the CSP refused to execute it, so the window flashed the wrong colours on launch. Moved to its own file with no security policy relaxed
+- **frame-ancestors is now delivered as a header**: the browser ignores that directive inside a `<meta>` CSP, so it was doing nothing. It now comes from the app:// response headers and the dev server, with a new test that fails if an inline script reappears
+
+### Features
+- **Cast recording playback**: the app could record asciinema cast v2 but never open one. Play, pause, seek and 1x/2x/4x are supported; a recording cut short skips its damaged lines and reports the count instead of refusing the file
+- **Search inside a session log**: Cmd/Ctrl+F in the log viewer, kept separate from the live terminal's own search
+- **Bytes per row in the hex panel**: switch between 8 / 16 / 32; already-captured output re-lays-out immediately
+- **Filter release notes by category**: security / features / fixes / improvements chips, each with its item count
+
+### Improvements
+- **Removed declarations that could never take effect**: a batch of code defined and never called, including a team permission that was never enforced yet claimed to exist, a group field that had no effect when set, and a WAN invite parser duplicating the main-process implementation that could never be loaded
+- **Bookmark anchor coverage**: byte-offset to line conversion is now pinned at CRLF, out-of-range and exact round-trip edges
+
 ## [0.5.22] - 2026-07-21
 
 ### Security

@@ -1,5 +1,39 @@
 # Registro de alterações
 
+## [0.5.25] - 2026-07-22
+
+### Funcionalidades
+- **Bichinho de desktop**: ative em Configurações → IA → Bichinho e um bichinho flutuante e arrastável aparece em qualquer lugar da tela, animando-se conforme o estado da IA — respirando parado, pulando enquanto trabalha, balançando enquanto espera sua aprovação, acenando ao concluir, tremendo em caso de falha. Como o bichinho raramente tem o foco do sistema, a limitação de animação do Electron para janelas sem foco foi desativada especificamente para ele, para não parecer congelado
+- **Interações diretas**: clique para abrir/focar o painel de chat de IA, pulando para a sessão de terminal ocupada quando possível; duplo clique foca a janela principal; clique direito abre um menu para executar um comando configurado nas definições, abrir as definições de IA, redefinir a posição do bichinho ou escondê-lo; passar o mouse mostra um balão de status mais detalhado
+- **Aparência personalizada**: você pode enviar sua própria imagem ou sprite sheet, com intervalos de quadros por estado (parado/executando/aguardando/concluído/falhou) para sprite sheets; tamanho, opacidade, sempre visível e visibilidade do balão são ajustáveis
+- **Modo privado e avisos de conclusão**: o modo privado limita o balão a um status genérico como "executando" em vez de nomear a ferramenta ativa; tarefas com 10 segundos ou mais podem opcionalmente disparar uma notificação de desktop ao concluir ou falhar
+- **Persistência de posição e suporte a múltiplos monitores**: o bichinho lembra onde você o arrastou, mesmo após reinicializações ou reativação; ele volta automaticamente ao canto padrão se um monitor for desconectado ou tiver a resolução alterada
+
+## [0.5.24] - 2026-07-22
+
+### Correções
+- **A sonda de verificação de estado nunca tinha realmente lido um ficheiro de chave**: a função assíncrona que lê a chave privada era chamada sem `await`, pelo que examinava uma Promise não resolvida em vez do conteúdo do ficheiro, e cada chave era silenciosamente considerada «não é uma chave privada». Qualquer anfitrião que dependesse de um ficheiro de chave local em vez de uma chave guardada em linha falhava sempre a verificação de estado, apesar de a mesma ligação funcionar perfeitamente no terminal
+- **Uma falha de desencriptação local deixa de ser reportada como um início de sessão recusado**: uma palavra-passe ou chave que ainda era um marcador encriptado era esvaziada antes da sonda, pelo que o servidor recusava naturalmente um início de sessão sem quaisquer credenciais. A verificação reconhece agora «há credenciais configuradas, mas este dispositivo não as consegue desencriptar» e aponta para desbloquear o cofre ou reparar o armazenamento seguro
+- **Uma chave de anfitrião não fiável deixa de se fazer passar por uma falha de autenticação**: a sonda já retinha todos os métodos de autenticação quando a chave do anfitrião é desconhecida ou mudou, mas nunca reportava esse facto ao painel. Aparece agora um estado próprio de «chave de anfitrião não verificada», sugerindo ligar uma vez manualmente para estabelecer confiança
+- **O aviso de «chave encriptada ignorada» deixa de depender da sorte**: antes só aparecia quando nenhum método de autenticação tinha sido tentado, mas em qualquer máquina com um agente SSH em execução tenta-se sempre primeiro o agente, pelo que este aviso quase nunca era acionado
+- **A verificação de estado passa agora a reutilizar a frase-passe da chave guardada numa ligação interativa**: essa frase-passe antes só se aplicava a ligações normais e nunca era consultada pela verificação de estado, pelo que uma chave protegida por frase-passe que funciona bem no terminal falhava sempre a verificação de estado
+
+## [0.5.23] - 2026-07-22
+
+### Correções
+- **O script de tema no arranque nunca tinha corrido**: aplica o tema, a cor de destaque e o idioma guardados antes de a interface desenhar, mas enquanto bloco em linha a CSP recusava executá-lo, pelo que ao iniciar surgiam por instantes as cores erradas. Passou a ficheiro próprio, sem afrouxar a política de segurança
+- **frame-ancestors passa a ser entregue por cabeçalho**: o navegador ignora essa diretiva numa CSP em `<meta>`, pelo que não fazia nada. Vem agora dos cabeçalhos app:// e do servidor de desenvolvimento, com um teste novo que falha se reaparecer um script em linha
+
+### Funcionalidades
+- **Reprodução de gravações cast**: a aplicação sabia gravar em asciinema cast v2 mas nunca abri-las. Há reprodução, pausa, navegação e 1x/2x/4x; uma gravação truncada salta as linhas danificadas e indica quantas, em vez de recusar o ficheiro
+- **Pesquisa dentro de um registo de sessão**: Cmd/Ctrl+F no visualizador, independente da pesquisa do terminal em curso
+- **Bytes por linha no painel hexadecimal**: alterna entre 8 / 16 / 32 e o que já foi capturado é reorganizado de imediato
+- **Filtrar as notas de versão por categoria**: etiquetas de segurança / funcionalidades / correções / melhorias com o número de entradas
+
+### Melhorias
+- **Removidas declarações que nunca poderiam ter efeito**: código definido e nunca chamado, incluindo uma permissão de equipa que jamais era verificada mas dizia existir, um campo de grupo sem efeito quando definido e um analisador de convites WAN que duplicava a implementação do processo principal e nunca poderia ser carregado
+- **Cobertura da âncora dos marcadores**: a conversão de deslocamento em bytes para número de linha fica fixada em CRLF, fora do intervalo e ida e volta exata
+
 ## [0.5.22] - 2026-07-21
 
 ### Segurança

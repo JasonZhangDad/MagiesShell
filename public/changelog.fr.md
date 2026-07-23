@@ -1,5 +1,39 @@
 # Journal des modifications
 
+## [0.5.25] - 2026-07-22
+
+### Fonctionnalités
+- **Animal de bureau**: activez-le dans Réglages → IA → Animal, et un animal flottant déplaçable apparaît n'importe où à l'écran, s'animant selon l'état de l'IA — respiration au repos, rebond pendant l'exécution, balancement en attente de votre approbation, signe de la main à la fin, tremblement en cas d'échec. Comme l'animal a rarement le focus système, la limitation d'animation d'Electron pour les fenêtres non focalisées a été spécifiquement désactivée pour lui, afin qu'il ne paraisse pas figé
+- **Interactions directes**: cliquer ouvre/active le panneau de chat IA, en sautant si possible vers la session de terminal occupée; double-clic active la fenêtre principale; clic droit ouvre un menu pour exécuter une commande configurée dans les réglages, ouvrir les réglages IA, réinitialiser la position de l'animal ou le masquer; le survol affiche une bulle de statut plus détaillée
+- **Apparence personnalisée**: vous pouvez importer votre propre image ou feuille de sprites, avec des plages d'images par statut (repos/exécution/attente/terminé/échec) pour les feuilles de sprites; taille, opacité, toujours au premier plan et visibilité de la bulle sont réglables
+- **Mode privé et alertes de fin**: le mode privé limite la bulle à un statut générique comme « en cours » plutôt que de nommer l'outil actif; les tâches de 10 secondes ou plus peuvent déclencher une notification de bureau optionnelle à la fin ou en cas d'échec
+- **Persistance de la position et prise en charge multi-écrans**: l'animal se souvient de l'endroit où vous l'avez déplacé, même après redémarrage ou réactivation; il revient automatiquement au coin par défaut si un écran est déconnecté ou change de résolution
+
+## [0.5.24] - 2026-07-22
+
+### Corrections
+- **La sonde de bilan de santé n'avait en réalité jamais lu de fichier de clé** : la fonction asynchrone de lecture de clé privée était appelée sans `await`, si bien qu'elle examinait une Promise non résolue au lieu du contenu du fichier, et chaque clé était silencieusement jugée « pas une clé privée ». Tout hôte reposant sur un fichier de clé local plutôt que sur une clé stockée en ligne échouait invariablement au bilan de santé, alors que la même connexion fonctionnait très bien dans le terminal
+- **Un échec de déchiffrement local n'est plus signalé comme une connexion refusée** : un mot de passe ou une clé encore sous forme de substitut chiffré était vidé avant la sonde, si bien que le serveur refusait naturellement une connexion sans aucun identifiant. Le bilan reconnaît désormais « des identifiants sont configurés mais cet appareil ne peut pas les déchiffrer » et oriente vers le déverrouillage du coffre ou la réparation du stockage sécurisé
+- **Une clé d'hôte non approuvée ne se fait plus passer pour un échec d'authentification** : la sonde retenait déjà toutes les méthodes d'authentification lorsque la clé de l'hôte est inconnue ou a changé, mais ne le signalait jamais au panneau. Un statut dédié « clé d'hôte non vérifiée » s'affiche désormais, suggérant de se connecter une fois manuellement pour établir la confiance
+- **L'avis « clé chiffrée ignorée » ne dépend plus du hasard** : il n'apparaissait auparavant que si aucune méthode d'authentification n'avait été tentée, mais toute machine avec un agent SSH actif essaie toujours l'agent en premier, ce qui empêchait presque toujours cet avis de se déclencher
+- **Le bilan de santé réutilise désormais la phrase de passe de clé enregistrée lors d'une connexion interactive** : cette phrase de passe ne s'appliquait auparavant qu'aux connexions normales et n'était jamais consultée par le bilan de santé, si bien qu'une clé protégée par phrase de passe, parfaitement fonctionnelle dans le terminal, échouait toujours au bilan de santé
+
+## [0.5.23] - 2026-07-22
+
+### Corrections
+- **Le script de thème au démarrage n'avait jamais été exécuté** : il applique le thème, la couleur d'accentuation et la langue enregistrés avant l'affichage, mais en tant que bloc en ligne la CSP refusait de l'exécuter, d'où un éclair de couleurs erronées au lancement. Il est désormais dans son propre fichier, sans assouplir la politique de sécurité
+- **frame-ancestors est maintenant transmis par en-tête** : le navigateur ignore cette directive dans une CSP en `<meta>`, elle ne faisait donc rien. Elle provient à présent des en-têtes app:// et du serveur de développement, avec un nouveau test qui échoue si un script en ligne réapparaît
+
+### Fonctionnalités
+- **Lecture des enregistrements cast** : l'application savait enregistrer en asciinema cast v2 sans jamais pouvoir les ouvrir. Lecture, pause, navigation et 1x/2x/4x ; un enregistrement interrompu ignore ses lignes endommagées et en indique le nombre au lieu de refuser le fichier
+- **Recherche dans un journal de session** : Cmd/Ctrl+F dans la visionneuse, indépendante de la recherche du terminal en cours
+- **Octets par ligne dans le panneau hexadécimal** : bascule entre 8 / 16 / 32, la sortie déjà capturée est réagencée immédiatement
+- **Filtrer les notes de version par catégorie** : puces sécurité / fonctionnalités / corrections / améliorations avec leur nombre d'entrées
+
+### Améliorations
+- **Suppression de déclarations sans effet possible** : du code défini et jamais appelé, dont une permission d'équipe jamais vérifiée mais affichée comme existante, un champ de groupe sans effet une fois défini, et un analyseur d'invitation WAN dupliquant l'implémentation du processus principal et ne pouvant jamais être chargé
+- **Couverture du point d'ancrage des signets** : la conversion décalage d'octets vers numéro de ligne est fixée sur CRLF, hors plage et aller-retour exact
+
 ## [0.5.22] - 2026-07-21
 
 ### Sécurité

@@ -1,5 +1,39 @@
 # Änderungsprotokoll
 
+## [0.5.25] - 2026-07-22
+
+### Funktionen
+- **Desktop-Haustier**: In Einstellungen → KI → Haustier aktivieren, und ein verschiebbares, schwebendes Haustier erscheint irgendwo auf dem Bildschirm und animiert sich passend zum KI-Status – Atmen im Leerlauf, Hüpfen während der Ausführung, Wackeln beim Warten auf Ihre Bestätigung, Winken bei Abschluss, Zittern bei Fehlern. Da das Haustier selten den Systemfokus hält, wurde die Animationsdrosselung von Electron für nicht fokussierte Fenster hier gezielt deaktiviert, damit es nicht eingefroren wirkt
+- **Direkte Interaktionen**: Klick öffnet/fokussiert das KI-Chat-Panel und springt nach Möglichkeit zur gerade beschäftigten Terminal-Sitzung; Doppelklick fokussiert das Hauptfenster; Rechtsklick öffnet ein Menü zum Ausführen eines in den Einstellungen konfigurierten Befehls, zum Öffnen der KI-Einstellungen, zum Zurücksetzen der Position oder zum Ausblenden des Haustiers; beim Hover erscheint eine ausführlichere Statusblase
+- **Individuelles Aussehen**: eigenes Bild oder Sprite-Sheet hochladbar, mit pro Status (Leerlauf/Ausführung/Warten/Fertig/Fehler) einstellbaren Frame-Bereichen für Sprite-Sheets; Größe, Deckkraft, Immer-im-Vordergrund und Sichtbarkeit der Sprechblase sind einstellbar
+- **Privatmodus und Abschlussbenachrichtigungen**: Der Privatmodus zeigt in der Blase nur einen allgemeinen Status wie "läuft" statt den aktiven Tool-Namen; Aufgaben ab 10 Sekunden Laufzeit können bei Abschluss oder Fehlschlag optional eine Desktop-Benachrichtigung auslösen
+- **Positionsspeicherung und Mehrbildschirm-Unterstützung**: Die Position, an die das Haustier gezogen wurde, bleibt über Neustarts und erneutes Aktivieren hinweg erhalten; wird ein Bildschirm getrennt oder die Auflösung geändert, springt das Haustier automatisch zurück in die Standardecke
+
+## [0.5.24] - 2026-07-22
+
+### Fehlerbehebungen
+- **Die Zustandsprüfung hatte noch nie tatsächlich eine Schlüsseldatei gelesen**: die asynchrone Hilfsfunktion zum Lesen privater Schlüssel wurde ohne `await` aufgerufen, sodass ein noch nicht aufgelöstes Promise statt des Dateiinhalts geprüft wurde und jeder Schlüssel stillschweigend als „kein privater Schlüssel" eingestuft wurde. Jeder Host, der auf eine lokale Schlüsseldatei statt auf einen inline gespeicherten Schlüssel angewiesen ist, scheiterte garantiert an der Zustandsprüfung — obwohl dieselbe Verbindung im Terminal einwandfrei funktioniert
+- **Ein lokales Entschlüsselungsproblem wird nicht mehr als abgelehnter Login gemeldet**: ein Passwort oder Schlüssel, der noch als verschlüsselter Platzhalter vorlag, wurde vor der Prüfung auf nichts reduziert, sodass der Server folgerichtig einen Login ohne jegliche Zugangsdaten ablehnte. Die Prüfung erkennt jetzt „Zugangsdaten sind konfiguriert, können auf diesem Gerät aber nicht entschlüsselt werden" und verweist auf das Entsperren des Tresors oder die Reparatur des sicheren Speichers
+- **Ein nicht vertrauenswürdiger Host-Schlüssel gibt sich nicht mehr als Authentifizierungsfehler aus**: die Prüfung verweigerte schon immer sämtliche Authentifizierungsmethoden, wenn ein Host-Schlüssel unbekannt ist oder sich geändert hat, meldete diese Tatsache aber nie an das Panel. Jetzt erscheint ein eigener Status „Host-Schlüssel nicht verifiziert" mit dem Hinweis, einmal manuell zu verbinden, um Vertrauen herzustellen
+- **Der Hinweis „verschlüsselter Schlüssel übersprungen" hängt nicht mehr vom Zufall ab**: er erschien bisher nur, wenn überhaupt keine Authentifizierungsmethode versucht wurde — doch auf jeder Maschine mit laufendem SSH-Agent wird immer zuerst der Agent versucht, wodurch der Hinweis fast nie ausgelöst wurde
+- **Die Zustandsprüfung verwendet jetzt die beim interaktiven Verbinden gespeicherte Schlüssel-Passphrase**: diese Passphrase galt bisher nur für normale Verbindungen und wurde von der Zustandsprüfung nie abgefragt, sodass ein passphrasegeschützter Schlüssel, der im Terminal einwandfrei funktioniert, die Zustandsprüfung immer scheitern ließ
+
+## [0.5.23] - 2026-07-22
+
+### Fehlerbehebungen
+- **Das Theme-Skript beim Start wurde nie ausgeführt**: es setzt gespeichertes Theme, Akzentfarbe und Sprache, bevor die Oberfläche zeichnet, wurde als eingebetteter Block aber von der CSP abgelehnt — beim Start blitzten die falschen Farben auf. Es liegt jetzt in einer eigenen Datei, ohne die Sicherheitsrichtlinie zu lockern
+- **frame-ancestors kommt jetzt als Header**: in einer `<meta>`-CSP ignoriert der Browser diese Direktive, sie bewirkte also nichts. Sie stammt nun aus den app://-Antwortheadern und vom Entwicklungsserver, und ein neuer Test schlägt fehl, sobald wieder ein eingebettetes Skript auftaucht
+
+### Funktionen
+- **Wiedergabe von cast-Aufzeichnungen**: die App konnte asciinema cast v2 aufzeichnen, aber nie öffnen. Abspielen, Pause, Spulen und 1x/2x/4x; eine abgebrochene Aufzeichnung überspringt beschädigte Zeilen und nennt deren Anzahl, statt die Datei abzulehnen
+- **Suche innerhalb eines Sitzungsprotokolls**: Cmd/Strg+F im Protokollbetrachter, unabhängig von der Suche im laufenden Terminal
+- **Bytes pro Zeile im Hex-Panel**: Umschalten zwischen 8 / 16 / 32, bereits erfasste Ausgabe wird sofort neu umbrochen
+- **Änderungsprotokoll nach Kategorie filtern**: Chips für Sicherheit / Funktionen / Fehlerbehebungen / Verbesserungen samt Anzahl
+
+### Verbesserungen
+- **Nicht erreichbare Deklarationen entfernt**: Code, der definiert und nie aufgerufen wurde — darunter eine Teamberechtigung, die nie geprüft wurde, aber zu existieren behauptete, ein Gruppenfeld ohne Wirkung und ein WAN-Einladungsparser, der die Implementierung des Hauptprozesses doppelte und nie geladen werden konnte
+- **Abdeckung des Lesezeichen-Ankers**: die Umrechnung von Byte-Offset zu Zeilennummer ist nun an CRLF, Bereichsüberschreitung und exaktem Hin- und Rückweg festgeschrieben
+
 ## [0.5.22] - 2026-07-21
 
 ### Sicherheit
