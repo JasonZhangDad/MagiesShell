@@ -1,5 +1,19 @@
 # Journal des modifications
 
+## [0.5.27] - 2026-07-23
+
+### Fonctionnalités
+- **Client de base de données léger**: le coffre prend désormais en charge un type de connexion à une base de données — connectez-vous à MySQL, PostgreSQL, SQL Server ou Oracle via un tunnel d'hôte SSH déjà enregistré, sans avoir à exposer le port de la base de données sur le serveur; l'ouverture d'une connexion à une base de données ouvre un nouvel onglet tout comme une session de terminal, avec un éditeur SQL intégré et un tableau de résultats de requête; les mots de passe de base de données réutilisent le même chiffrement du coffre que les mots de passe d'hôte, au lieu d'être stockés en texte brut dans le stockage local
+
+## [0.5.26] - 2026-07-23
+
+### Fonctionnalités
+- **Ajouter un hôte depuis le menu contextuel du groupe**: le menu contextuel d'un groupe dans l'arborescence des hôtes propose désormais « Nouvel hôte », qui préremplit le groupe du nouvel hôte au lieu de passer par le bouton du haut puis de choisir le groupe manuellement
+
+### Améliorations
+- **L'animal de bureau au repos marche désormais au lieu de respirer sur place**: l'animation de repos fait aller l'animal de gauche à droite dans sa fenêtre flottante, avec un rebond de pas et un demi-tour retourné à chaque extrémité; le personnage par défaut n'ayant pas de feuille de sprites de marche, le mouvement est une illusion obtenue par transformation CSS pure
+- **Le graphique temps réel du moniteur redessiné en panneau HUD néon**: le graphique de l'onglet aperçu passe d'une ligne lissée à une ligne en escalier, sur un fond étoilé sombre fixe avec une lueur à deux couches plus forte et un anneau radar pulsé qui s'étend sur le dernier échantillon de chaque série
+
 ## [0.5.25] - 2026-07-22
 
 ### Fonctionnalités

@@ -1,5 +1,19 @@
 # Registro de cambios
 
+## [0.5.27] - 2026-07-23
+
+### Funcionalidades
+- **Cliente de base de datos ligero**: el almacén ahora admite un tipo de conexión de base de datos: conéctate a MySQL, PostgreSQL, SQL Server u Oracle mediante un túnel de host SSH ya guardado, sin necesidad de exponer el puerto de la base de datos en el servidor; abrir una conexión de base de datos abre una nueva pestaña igual que una sesión de terminal, con un editor SQL integrado y una tabla de resultados de consultas; las contraseñas de la base de datos reutilizan el mismo cifrado del almacén que las contraseñas de host, en lugar de guardarse en texto plano en el almacenamiento local
+
+## [0.5.26] - 2026-07-23
+
+### Funcionalidades
+- **Añadir host desde el menú contextual del grupo**: el menú contextual de un grupo en el árbol de hosts ahora tiene "Nuevo host", que rellena de antemano el grupo del nuevo host en lugar de crearlo desde el botón superior y elegir el grupo a mano
+
+### Mejoras
+- **La mascota de escritorio en reposo ahora camina en lugar de respirar en el sitio**: la animación de reposo hace que la mascota camine de lado a lado dentro de su ventana flotante, con un rebote de paso y un giro al llegar a cada borde; el personaje por defecto no tiene una hoja de sprites de caminata, así que el movimiento es una ilusión creada solo con transformaciones CSS
+- **El gráfico en tiempo real del monitor rediseñado como panel HUD neón**: el gráfico de la pestaña de resumen pasa de una línea suavizada a una línea escalonada, sobre un fondo de campo de estrellas oscuro fijo, con un resplandor de dos capas más intenso y un anillo de radar pulsante que se expande sobre la última muestra de cada serie
+
 ## [0.5.25] - 2026-07-22
 
 ### Funcionalidades

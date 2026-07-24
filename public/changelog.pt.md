@@ -1,5 +1,19 @@
 # Registro de alterações
 
+## [0.5.27] - 2026-07-23
+
+### Funcionalidades
+- **Cliente de banco de dados leve**: o cofre agora aceita um tipo de conexão de banco de dados — conecte-se a MySQL, PostgreSQL, SQL Server ou Oracle por meio de um túnel de host SSH já salvo, sem precisar expor a porta do banco de dados no servidor; abrir uma conexão de banco de dados abre uma nova aba assim como uma sessão de terminal, com um editor SQL embutido e uma tabela de resultados de consulta; as senhas do banco de dados reutilizam a mesma criptografia do cofre usada nas senhas de host, em vez de ficarem em texto simples no armazenamento local
+
+## [0.5.26] - 2026-07-23
+
+### Funcionalidades
+- **Adicionar host pelo menu de contexto do grupo**: o menu de clique com o botão direito de um grupo na árvore de hosts agora tem "Novo host", que já preenche o grupo do novo host em vez de criar pelo botão superior e escolher o grupo manualmente
+
+### Melhorias
+- **O bichinho de desktop em repouso agora anda em vez de respirar no lugar**: a animação de repouso faz o bichinho andar de um lado para o outro dentro da janela flutuante, com um solavanco de passo e uma virada ao chegar em cada borda; o personagem padrão não tem uma sprite sheet de caminhada, então o movimento é uma ilusão feita só com transformações CSS
+- **Gráfico em tempo real do monitor redesenhado como painel HUD neon**: o gráfico da aba de visão geral passa de uma linha suavizada para uma linha em degraus, sobre um fundo fixo de céu estrelado escuro, com um brilho de duas camadas mais forte e um anel de radar pulsante que se expande sobre a última amostra de cada série
+
 ## [0.5.25] - 2026-07-22
 
 ### Funcionalidades

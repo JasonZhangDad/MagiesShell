@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.5.27] - 2026-07-23
+
+### Features
+- **Lightweight database client**: Vault now supports a database connection type — connect to MySQL, PostgreSQL, SQL Server, or Oracle through an already-saved SSH host tunnel, with no need to expose the database port on the server; opening a database connection opens a new tab just like a terminal session, with a built-in SQL editor and a query results table; database passwords reuse the same vault encryption as host passwords instead of landing on local storage in plain text
+
+## [0.5.26] - 2026-07-23
+
+### Features
+- **Add host from the group context menu**: the host tree's group right-click menu now has "New host", which pre-fills the new host's group instead of requiring the top toolbar button plus a manual group pick
+
+### Improvements
+- **Idle desktop pet now paces instead of breathing in place**: the idle animation walks the pet side to side inside its overlay window with a footstep bounce and a turn-around flip; the default character has no walk-cycle sprite sheet, so the motion is a pure CSS-transform illusion
+- **Monitor's real-time chart restyled as a neon HUD panel**: the overview tab's live chart switched from a smoothed line to a step-line, on a fixed dark starfield backdrop with a stronger two-layer glow and an expanding radar-ping ring on each series' latest sample
+
 ## [0.5.25] - 2026-07-22
 
 ### Features
