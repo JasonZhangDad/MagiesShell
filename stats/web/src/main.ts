@@ -221,28 +221,38 @@ function formatHourBucket(bucket: string): string {
   return `${Number(match[1])}时`
 }
 
+/** Galaxy chart palette — aligned with public site. */
+const CHART_AXIS = '#9aa0c4'
+const CHART_SPLIT = 'rgba(140,150,220,0.12)'
+const CHART_SERIES = ['#4f8cff', '#e879f9']
+const CHART_BAR = ['#7b5cff']
+const CHART_PIE = ['#4f8cff', '#a78bfa', '#e879f9', '#f472b6', '#38bdf8', '#c4b5fd', '#fb7185', '#818cf8']
+
 function lineOption(visits: SeriesPoint[], downloads: SeriesPoint[]): EChartsOption {
   const buckets = Array.from(new Set([...visits.map((i) => i.bucket), ...downloads.map((i) => i.bucket)])).sort()
   const visitMap = new Map(visits.map((i) => [i.bucket, i.count]))
   const downloadMap = new Map(downloads.map((i) => [i.bucket, i.count]))
   return {
-    color: ['#2ad4c8', '#c6ff4d'],
+    color: CHART_SERIES,
     tooltip: {
       trigger: 'axis',
+      backgroundColor: 'rgba(12,12,28,0.92)',
+      borderColor: 'rgba(140,150,220,0.2)',
+      textStyle: { color: '#f0eeff' },
       formatter: (params) => formatAxisTooltip(params, formatDayLabel),
     },
     legend: {
       data: ['访问', '下载'],
       bottom: 0,
       itemGap: 20,
-      textStyle: { color: '#8aa0b5' },
+      textStyle: { color: CHART_AXIS },
     },
     grid: { left: 40, right: 20, top: 24, bottom: 72 },
     xAxis: {
       type: 'category',
       data: buckets,
       axisLabel: {
-        color: '#8aa0b5',
+        color: CHART_AXIS,
         hideOverlap: true,
         margin: 12,
         rotate: buckets.length > 14 ? 40 : 0,
@@ -251,8 +261,8 @@ function lineOption(visits: SeriesPoint[], downloads: SeriesPoint[]): EChartsOpt
     },
     yAxis: {
       type: 'value',
-      axisLabel: { color: '#8aa0b5' },
-      splitLine: { lineStyle: { color: 'rgba(142,186,210,0.12)' } },
+      axisLabel: { color: CHART_AXIS },
+      splitLine: { lineStyle: { color: CHART_SPLIT } },
     },
     series: [
       { name: '访问', type: 'line', smooth: true, showSymbol: false, data: buckets.map((b) => visitMap.get(b) || 0) },
@@ -263,18 +273,23 @@ function lineOption(visits: SeriesPoint[], downloads: SeriesPoint[]): EChartsOpt
 
 function barOption(rows: NamedCount[]): EChartsOption {
   return {
-    color: ['#3d7bff'],
-    tooltip: { trigger: 'axis' },
+    color: CHART_BAR,
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(12,12,28,0.92)',
+      borderColor: 'rgba(140,150,220,0.2)',
+      textStyle: { color: '#f0eeff' },
+    },
     grid: { left: 90, right: 20, top: 20, bottom: 30 },
     xAxis: {
       type: 'value',
-      axisLabel: { color: '#8aa0b5' },
-      splitLine: { lineStyle: { color: 'rgba(142,186,210,0.12)' } },
+      axisLabel: { color: CHART_AXIS },
+      splitLine: { lineStyle: { color: CHART_SPLIT } },
     },
     yAxis: {
       type: 'category',
       data: rows.map((r) => r.name).reverse(),
-      axisLabel: { color: '#8aa0b5' },
+      axisLabel: { color: CHART_AXIS },
     },
     series: [
       {
@@ -289,14 +304,19 @@ function barOption(rows: NamedCount[]): EChartsOption {
 
 function pieOption(rows: NamedCount[]): EChartsOption {
   return {
-    color: ['#2ad4c8', '#c6ff4d', '#3d7bff', '#8aa0b5', '#ff9f43', '#a29bfe'],
-    tooltip: { trigger: 'item' },
+    color: CHART_PIE,
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: 'rgba(12,12,28,0.92)',
+      borderColor: 'rgba(140,150,220,0.2)',
+      textStyle: { color: '#f0eeff' },
+    },
     series: [
       {
         type: 'pie',
         radius: ['40%', '68%'],
         data: rows.map((r) => ({ name: r.name, value: r.count })),
-        label: { color: '#8aa0b5' },
+        label: { color: CHART_AXIS },
       },
     ],
   }
@@ -309,9 +329,12 @@ function dualBarOption(
   labelFmt?: (v: string) => string,
 ): EChartsOption {
   return {
-    color: ['#2ad4c8', '#c6ff4d'],
+    color: CHART_SERIES,
     tooltip: {
       trigger: 'axis',
+      backgroundColor: 'rgba(12,12,28,0.92)',
+      borderColor: 'rgba(140,150,220,0.2)',
+      textStyle: { color: '#f0eeff' },
       formatter: labelFmt
         ? (params) => formatAxisTooltip(params, labelFmt)
         : undefined,
@@ -320,14 +343,14 @@ function dualBarOption(
       data: ['访问', '下载'],
       bottom: 0,
       itemGap: 20,
-      textStyle: { color: '#8aa0b5' },
+      textStyle: { color: CHART_AXIS },
     },
     grid: { left: 40, right: 20, top: 24, bottom: 72 },
     xAxis: {
       type: 'category',
       data: labels,
       axisLabel: {
-        color: '#8aa0b5',
+        color: CHART_AXIS,
         hideOverlap: true,
         margin: 12,
         rotate: labels.length > 14 ? 35 : 0,
@@ -336,8 +359,8 @@ function dualBarOption(
     },
     yAxis: {
       type: 'value',
-      axisLabel: { color: '#8aa0b5' },
-      splitLine: { lineStyle: { color: 'rgba(142,186,210,0.12)' } },
+      axisLabel: { color: CHART_AXIS },
+      splitLine: { lineStyle: { color: CHART_SPLIT } },
     },
     series: [
       { name: '访问', type: 'bar', data: visits },
@@ -363,6 +386,10 @@ function renderLogin(error = ''): void {
   app.innerHTML = `
     <div class="login-page">
       <form class="login-card" data-login>
+        <div class="login-brand">
+          <img src="${import.meta.env.BASE_URL}logo-galaxy-v4.png" alt="MagiesTerminal" width="56" height="56" />
+          <p class="login-series">MAGIESTERMINAL · GALAXY SERIES</p>
+        </div>
         <h1>MagiesTerminal Stats</h1>
         <p>输入用户名和密码进入运营大屏</p>
         <p class="login-error" role="alert" data-login-error></p>
@@ -430,8 +457,13 @@ function buildShell(): void {
     <div class="dashboard" data-dashboard>
       <header class="dash-header">
         <div>
-          <h1>MagiesTerminal 数据运营大屏</h1>
-          <div class="meta" data-meta>加载中…</div>
+          <div class="dash-title-row">
+            <img src="${import.meta.env.BASE_URL}logo-galaxy-v4.png" alt="" width="40" height="40" />
+            <div>
+              <h1>MagiesTerminal 数据运营大屏</h1>
+              <div class="meta" data-meta>加载中…</div>
+            </div>
+          </div>
         </div>
         <div class="header-actions" role="toolbar" aria-label="大屏控制">
           <div class="seg" role="group" aria-label="时间范围">
