@@ -28,7 +28,9 @@ test('mainland-China visitors see the multi-threaded downloader hint', () => {
   assert.match(source, /if \(!preferMirror\(\)\) return ''/)
   assert.match(source, /cnSpeedHint/)
   assert.match(i18n, /多线程的下载工具/)
-  assert.match(source, /renderVersionList\(lang, selectedOs\) \+ renderCnSpeedHint\(lang\)/)
+  // Version step still wires the CN speed hint after the package list.
+  assert.match(source, /renderVersionList\(lang, selectedOs\)/)
+  assert.match(source, /renderCnSpeedHint\(lang\)/)
 })
 
 test('public download hrefs use same-origin redirect hop, never raw GitHub/mirror URLs', () => {

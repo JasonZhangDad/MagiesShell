@@ -5,6 +5,7 @@ import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 
 const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8')
+const index = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
 
 test('Windows users can choose installer, portable, or ZIP x64 downloads', () => {
   assert.match(source, /'win-x64':\s*\{[\s\S]*zh: 'x64 · 安装版\(\.exe\)'/)
@@ -58,11 +59,13 @@ test('site language drives full UI including downloads and legal links', () => {
 })
 
 test('site exposes nav anchors, changelog modal, contact, and OG helpers', () => {
+  assert.match(source, /href="#top"/)
+  assert.match(source, /href="#product"/)
   assert.match(source, /href="#features"/)
-  assert.match(source, /href="#platform"/)
-  assert.match(source, /id="platform"/)
-  assert.match(source, /href="#agent"/)
   assert.match(source, /href="#download"/)
+  assert.match(source, /id="platform"/)
+  assert.match(source, /id="agent"/)
+  assert.match(source, /id="product"/)
   assert.doesNotMatch(source, /GITHUB_REPO_URL/)
   assert.doesNotMatch(source, /GITHUB_RELEASES_URL/)
   assert.doesNotMatch(source, /CHANGELOG_API/)
@@ -95,7 +98,15 @@ test('site exposes nav anchors, changelog modal, contact, and OG helpers', () =>
   assert.match(source, /skip-link/)
   assert.match(source, /privacy\.html\?lang=\$\{lang\}/)
   assert.match(source, /terms\.html\?lang=\$\{lang\}/)
-  assert.match(source, /hero-workspace-v2\.webp/)
+  assert.match(source, /logo-galaxy-v3\.png/)
+  assert.match(source, /logo-galaxy-ring-v3\.png/)
+  assert.match(source, /logo-cross-v4\.png/)
+  assert.doesNotMatch(source, /logo-galaxy-star-v3\.png/)
+  assert.match(source, /product-hosts-v3\.jpg/)
+  assert.match(source, /product-terminal-v3\.jpg/)
+  assert.match(source, /product-theme-v3\.jpg/)
+  assert.equal(index.match(/screenshots\/product-terminal-v3\.jpg/g)?.length, 3)
+  assert.doesNotMatch(index, /screenshots\/product-terminal\.jpg/)
 })
 
 test('i18n packs cover multi-country locales', () => {
@@ -147,8 +158,21 @@ test('landing copy introduces expanded client capabilities', () => {
   assert.match(i18n, /title: '主题与快捷操作'/)
   assert.match(i18n, /title: 'Multi-protocol'/)
   assert.match(i18n, /title: 'Port forwarding'/)
-  assert.match(i18n, /Cursor Agent/)
-  assert.match(i18n, /SSH · Mosh · Telnet/)
+  assert.match(i18n, /可接入主流模型与Agent/)
+  assert.doesNotMatch(i18n, /Cursor Agent/)
+  assert.match(
+    i18n,
+    /MagiesTerminal 让远程连接、文件管理、命令执行变得前所未有的简单与安全。专为开发者和运维团队打造的现代化智能终端管理平台。/,
+  )
+  assert.equal(i18n.match(/footerSeries: 'MAGIES · GALAXY SERIES'/g)?.length, 10)
+  assert.doesNotMatch(i18n, /MAGIESTERMINAL · GALAXY SERIES/)
+  // Galaxy hero pillars + product cards
+  assert.match(source, /data-typer/)
+  assert.match(i18n, /掌控服务器，从未如此优雅/)
+  assert.match(i18n, /productHostTitle:/)
+  assert.match(i18n, /productTermTitle:/)
+  assert.match(i18n, /productThemeTitle:/)
+  assert.match(i18n, /安全连接/)
   // reliability section: auto-update / credential encryption / system manager
   assert.match(i18n, /platformItems:/)
   assert.match(i18n, /title: '全平台自动更新'/)
@@ -158,6 +182,9 @@ test('landing copy introduces expanded client capabilities', () => {
   assert.match(i18n, /title: 'Local credential encryption'/)
   assert.match(i18n, /title: 'System manager panel'/)
   assert.match(i18n, /navPlatform:/)
+  // download client flow copy remains
+  assert.match(i18n, /downloadTitle:/)
+  assert.match(i18n, /ctaDownload:/)
 })
 
 test('Windows download cards resolve via opaque redirect ids', () => {

@@ -410,12 +410,13 @@ function renderOsPicker(lang: Lang): string {
         class="os-card${recommended ? ' is-recommended' : ''}"
         data-select-os="${os.id}"
       >
-        <span class="download-icon">${OS_ICONS[os.id]}</span>
+        <span class="download-icon download-icon-${os.id}">${OS_ICONS[os.id]}</span>
         <span class="download-meta">
           <span class="download-os">${label}</span>
           <span class="download-detail">${hint}</span>
         </span>
         ${recommended ? `<span class="download-badge">${copy[lang].recommended}</span>` : ''}
+        <span class="download-chevron" aria-hidden="true"></span>
       </button>`
   }).join('')
 }
@@ -472,13 +473,16 @@ function renderVersionList(lang: Lang, os: OsId): string {
     <div class="version-panel" data-reveal>
       <div class="version-panel-head">
         <div class="version-panel-title">
-          <span class="download-icon">${OS_ICONS[os]}</span>
+          <span class="download-icon download-icon-${os}">${OS_ICONS[os]}</span>
           <div>
             <p class="version-kicker">${t.pickVersion}</p>
             <h3>${title}</h3>
           </div>
         </div>
-        <button type="button" class="btn btn-ghost version-back" data-change-os>${t.changeOs}</button>
+        <button type="button" class="btn btn-ghost version-back" data-change-os>
+          <span class="version-back-icon" aria-hidden="true">←</span>
+          ${t.changeOs}
+        </button>
       </div>
       <div class="version-grid">
         ${DOWNLOADS.filter((item) => item.os === os)
@@ -503,11 +507,15 @@ function renderVersionList(lang: Lang, os: OsId): string {
 
             return `
               <${tag} ${attrs}>
+                <span class="download-card-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10"/><path d="M8 10l4 4 4-4"/><path d="M5 18h14"/></svg>
+                </span>
                 <span class="download-meta">
                   <span class="download-os">${detail}</span>
                   <span class="download-detail">${detailLine}</span>
                 </span>
                 ${recommended ? `<span class="download-badge">${t.recommended}</span>` : ''}
+                ${disabled ? '' : '<span class="download-chevron" aria-hidden="true"></span>'}
               </${tag}>`
           })
           .join('')}
@@ -529,12 +537,21 @@ function renderDownloadSection(lang: Lang): string {
   const t = copy[lang]
   if (!selectedOs) {
     return `
-      <p class="download-step">${t.selectOs}</p>
+      <div class="download-step-row">
+        <span class="download-step-num" aria-hidden="true">01</span>
+        <p class="download-step">${t.selectOs}</p>
+      </div>
       <div class="os-grid" data-reveal>
         ${renderOsPicker(lang)}
       </div>`
   }
-  return renderVersionList(lang, selectedOs) + renderCnSpeedHint(lang)
+  return `
+    <div class="download-step-row">
+      <span class="download-step-num" aria-hidden="true">02</span>
+      <p class="download-step">${t.pickVersion}</p>
+    </div>
+    ${renderVersionList(lang, selectedOs)}
+    ${renderCnSpeedHint(lang)}`
 }
 
 function renderDownloadLead(lang: Lang): string {
@@ -549,16 +566,17 @@ function render(lang: Lang): string {
     <a class="skip-link" href="#main">${t.skipToContent}</a>
     <div class="scroll-progress" aria-hidden="true"></div>
     <header class="site-header" data-header>
-      <a class="brand-mark" href="#top" aria-label="MagiesTerminal">
-        <img src="/icon.png" alt="MagiesTerminal" width="28" height="28" />
-        <span>MagiesTerminal</span>
+      <a class="brand-mark" href="#top" aria-label="Magies">
+        <img src="/logo-galaxy-v3.png" alt="Magies" width="32" height="32" />
+        <span>Magies</span>
       </a>
       <nav class="site-nav" aria-label="Primary">
-        <a href="#why">${t.navWhy}</a>
+        <a href="#top">${t.navHome}</a>
+        <a href="#product">${t.navProduct}</a>
         <a href="#features">${t.navFeatures}</a>
-        <a href="#platform">${t.navPlatform}</a>
-        <a href="#agent">${t.navAgent}</a>
-        <a href="#download">${t.navDownload}</a>
+        <a href="#download">${t.navPricing}</a>
+        <button type="button" class="nav-text-btn" data-open-changelog>${t.navDocs}</button>
+        <button type="button" class="nav-text-btn" data-open-contact>${t.navAbout}</button>
         <span class="nav-indicator" aria-hidden="true"></span>
       </nav>
       <div class="nav-actions">
@@ -571,65 +589,165 @@ function render(lang: Lang): string {
             ).join('')}
           </select>
         </label>
+        <a class="btn btn-primary btn-enter" href="#download">${t.ctaEnter}</a>
       </div>
     </header>
 
     <main id="main">
       <section class="hero" id="top" aria-label="MagiesTerminal">
-        <div class="hero-copy">
-          <h1 class="brand-hero">MagiesTerminal<span class="cursor-blink" aria-hidden="true"></span></h1>
-          <p class="hero-headline">${t.headline}</p>
-          <p class="hero-sub">${t.sub}</p>
-          <div class="hero-cta">
-            <a class="btn btn-primary" href="#download">${t.ctaDownload}</a>
-          </div>
-          <div class="hero-term" aria-hidden="true">
-            <span class="hero-term-prompt">ops@prod ~ %</span>
-            <span class="hero-term-cmd" data-typer></span>
-            <span class="cursor-blink"></span>
-          </div>
-          <ul class="trust-row" data-reveal>
-            ${t.trustItems.map((item) => `<li>${item}</li>`).join('')}
-          </ul>
+        <div class="hero-bg" aria-hidden="true">
+          <span class="hero-star hero-star-a"></span>
+          <span class="hero-star hero-star-b"></span>
+          <span class="hero-star hero-star-c"></span>
+          <span class="hero-wave"></span>
         </div>
-        <div class="hero-stage" aria-hidden="true">
-          <img
-            src="/screenshots/hero-workspace-v2.webp"
-            alt=""
-            width="1360"
-            height="752"
-            fetchpriority="high"
-            decoding="async"
-          />
+        <div class="hero-inner">
+          <div class="hero-copy">
+            <div class="hero-terminal" aria-hidden="true">
+              <span class="hero-terminal-prompt">$</span>
+              <code data-typer>ssh ops@203.0.113.21</code>
+              <span class="hero-terminal-cursor"></span>
+            </div>
+            <h1 class="hero-title">
+              ${escapeHtml(t.headline).replace('，', '，<br />').replace(', ', ',<br />')}
+            </h1>
+            <p class="hero-sub">${t.sub}</p>
+            <div class="hero-cta">
+              <a class="btn btn-primary" href="#download">${t.ctaStart} →</a>
+              <a class="btn btn-ghost" href="#product">
+                <span class="btn-play" aria-hidden="true"></span>
+                ${t.ctaDemo}
+              </a>
+            </div>
+            <ul class="trust-row">
+              ${t.trustItems
+                .map(
+                  (item, i) =>
+                    `<li><span class="trust-dot trust-dot-${i}" aria-hidden="true"></span>${item}</li>`,
+                )
+                .join('')}
+            </ul>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <div class="hero-orbit" data-hero-orbit>
+              <span class="hero-ring hero-ring-a"></span>
+              <span class="hero-ring hero-ring-b"></span>
+              <span class="hero-ring hero-ring-c"></span>
+              <span class="hero-spark hero-spark-1"></span>
+              <span class="hero-spark hero-spark-2"></span>
+              <span class="hero-spark hero-spark-3"></span>
+              <span class="hero-spark hero-spark-4"></span>
+              <span class="hero-core-glow"></span>
+              <div class="hero-logo-spin" data-logo-spin>
+                <img
+                  class="hero-logo"
+                  src="/logo-galaxy-ring-v3.png"
+                  alt=""
+                  width="880"
+                  height="880"
+                  fetchpriority="high"
+                  decoding="async"
+                />
+              </div>
+              <div class="hero-cross" data-hero-cross>
+                <img
+                  class="hero-cross-image"
+                  src="/logo-cross-v4.png"
+                  alt=""
+                  width="880"
+                  height="880"
+                  decoding="async"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section class="section gallery" id="gallery" aria-label="MagiesTerminal gallery">
-        <div class="gallery-grid">
-          <figure class="gallery-card" data-reveal>
-            <img src="/screenshots/gallery-1-v4.webp" alt="${t.galleryAlt1}" width="1200" height="900" loading="lazy" decoding="async" />
-          </figure>
-          <figure class="gallery-card" data-reveal>
-            <img src="/screenshots/gallery-2-v4.webp" alt="${t.galleryAlt2}" width="1200" height="900" loading="lazy" decoding="async" />
-          </figure>
-          <figure class="gallery-card" data-reveal>
-            <img src="/screenshots/gallery-3-v4.webp" alt="${t.galleryAlt3}" width="1200" height="900" loading="lazy" decoding="async" />
-          </figure>
-          <figure class="gallery-card" data-reveal>
-            <img src="/screenshots/gallery-4-v4.webp" alt="${t.galleryAlt4}" width="1200" height="900" loading="lazy" decoding="async" />
-          </figure>
+      <section class="showcase" id="product" aria-label="${t.navProduct}">
+        <div class="showcase-head" data-reveal>
+          <h2 class="showcase-title">${t.showcaseTitle}</h2>
+          <p class="showcase-lead">${t.showcaseLead}</p>
+        </div>
+        <div class="product-grid">
+          <article class="product-card" data-reveal>
+            <div class="product-shot">
+              <img
+                src="/screenshots/product-hosts-v3.jpg"
+                alt="${t.galleryAlt1}"
+                width="2000"
+                height="1153"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <div class="product-meta">
+              <span class="product-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg>
+              </span>
+              <div>
+                <h3>${t.productHostTitle}</h3>
+                <p>${t.productHostDesc}</p>
+              </div>
+            </div>
+          </article>
+          <article class="product-card" data-reveal>
+            <div class="product-shot">
+              <img
+                src="/screenshots/product-terminal-v3.jpg"
+                alt="${t.galleryAlt2}"
+                width="2000"
+                height="1145"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <div class="product-meta">
+              <span class="product-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 17l6-5-6-5"/><path d="M12 19h8"/></svg>
+              </span>
+              <div>
+                <h3>${t.productTermTitle}</h3>
+                <p>${t.productTermDesc}</p>
+              </div>
+            </div>
+          </article>
+          <article class="product-card" data-reveal>
+            <div class="product-shot">
+              <img
+                src="/screenshots/product-theme-v3.jpg"
+                alt="${t.galleryAlt3}"
+                width="2000"
+                height="1142"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <div class="product-meta">
+              <span class="product-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M3 12h2M19 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+              </span>
+              <div>
+                <h3>${t.productThemeTitle}</h3>
+                <p>${t.productThemeDesc}</p>
+              </div>
+            </div>
+          </article>
         </div>
       </section>
 
       <section class="section why" id="why">
-        <p class="section-label">${t.whyLabel}</p>
-        <h2 class="section-title">${t.whyTitle}</h2>
-        <p class="section-lead">${t.whyLead}</p>
+        <header class="section-head">
+          <p class="section-label">${t.whyLabel}</p>
+          <h2 class="section-title">${t.whyTitle}</h2>
+          <p class="section-lead">${t.whyLead}</p>
+        </header>
         <div class="why-grid">
           ${t.whyItems
             .map(
-              (item) => `
+              (item, i) => `
             <article class="why-card" data-reveal>
+              <span class="card-index" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
               <h3>${item.title}</h3>
               <p>${item.body}</p>
             </article>`,
@@ -639,14 +757,17 @@ function render(lang: Lang): string {
       </section>
 
       <section class="section" id="features">
-        <p class="section-label">${t.featuresLabel}</p>
-        <h2 class="section-title">${t.featuresTitle}</h2>
-        <p class="section-lead">${t.featuresLead}</p>
+        <header class="section-head">
+          <p class="section-label">${t.featuresLabel}</p>
+          <h2 class="section-title">${t.featuresTitle}</h2>
+          <p class="section-lead">${t.featuresLead}</p>
+        </header>
         <div class="feature-rail">
           ${t.features
             .map(
-              (item) => `
+              (item, i) => `
             <article class="feature-item" data-reveal>
+              <span class="card-index" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
               <h3>${item.title}</h3>
               <p>${item.body}</p>
             </article>`,
@@ -656,14 +777,17 @@ function render(lang: Lang): string {
       </section>
 
       <section class="section platform" id="platform">
-        <p class="section-label">${t.platformLabel}</p>
-        <h2 class="section-title">${t.platformTitle}</h2>
-        <p class="section-lead">${t.platformLead}</p>
+        <header class="section-head">
+          <p class="section-label">${t.platformLabel}</p>
+          <h2 class="section-title">${t.platformTitle}</h2>
+          <p class="section-lead">${t.platformLead}</p>
+        </header>
         <div class="platform-grid">
           ${t.platformItems
             .map(
-              (item) => `
+              (item, i) => `
             <article class="platform-card" data-reveal>
+              <span class="card-index" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
               <h3>${item.title}</h3>
               <p>${item.body}</p>
             </article>`,
@@ -673,43 +797,51 @@ function render(lang: Lang): string {
       </section>
 
       <section class="section agent" id="agent">
-        <p class="section-label">${t.agentLabel}</p>
-        <h2 class="section-title">${t.agentTitle}</h2>
-        <p class="section-lead">${t.agentLead}</p>
+        <header class="section-head">
+          <p class="section-label">${t.agentLabel}</p>
+          <h2 class="section-title">${t.agentTitle}</h2>
+          <p class="section-lead">${t.agentLead}</p>
+        </header>
         <ul class="agent-points">
           ${t.agentPoints
             .map(
-              (item) => `
+              (item, i) => `
             <li data-reveal>
+              <span class="card-index" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
               <strong>${item.title}</strong>
               <span>${item.body}</span>
             </li>`,
             )
             .join('')}
         </ul>
-        <figure class="shot-frame" data-reveal>
-          <img
-            src="/screenshots/agent-live-v1.webp"
-            alt="${t.agentShotAlt}"
-            width="1600"
-            height="916"
-            loading="lazy"
-            decoding="async"
-          />
-        </figure>
       </section>
 
       <section class="section download" id="download">
-        <p class="section-label">${t.downloadLabel}</p>
-        <h2 class="section-title">${t.downloadTitle}</h2>
-        <p class="section-lead" data-download-lead>${renderDownloadLead(lang)}</p>
-        <div class="download-flow" data-download-root>
-          ${renderDownloadSection(lang)}
+        <div class="download-glow" aria-hidden="true"></div>
+        <header class="section-head section-head-center">
+          <p class="section-label">${t.downloadLabel}</p>
+          <h2 class="section-title">${t.downloadTitle}</h2>
+          <p class="section-lead" data-download-lead>${renderDownloadLead(lang)}</p>
+        </header>
+        <div class="download-shell">
+          <div class="download-flow" data-download-root>
+            ${renderDownloadSection(lang)}
+          </div>
         </div>
       </section>
     </main>
 
     <footer class="site-footer">
+      <div class="footer-brand">
+        <img
+          class="footer-star"
+          src="/logo-cross-v4.png"
+          alt=""
+          width="880"
+          height="880"
+        />
+        <span class="footer-series">${t.footerSeries}</span>
+      </div>
       <div class="footer-inner">
         <span>${t.footerNote}</span>
         <nav class="footer-links" aria-label="Footer">
@@ -785,13 +917,13 @@ function applyMeta(lang: Lang): void {
   const meta = langMeta(lang)
   const htmlLang = meta.htmlLang
   const ogLocale = meta.ogLocale
-  const ogImage = `${SITE_URL}/screenshots/hero-workspace-v2.webp`
+  const ogImage = `${SITE_URL}/screenshots/product-terminal-v3.jpg`
   const alternateLocales = LANGS.filter((l) => l.id !== lang).map((l) => l.ogLocale)
 
   document.documentElement.lang = htmlLang
   document.title = t.metaTitle
   upsertMeta('name', 'description', t.metaDesc)
-  upsertMeta('name', 'theme-color', '#071018')
+  upsertMeta('name', 'theme-color', '#050510')
   upsertMeta('property', 'og:type', 'website')
   upsertMeta('property', 'og:site_name', 'MagiesTerminal')
   upsertMeta('property', 'og:url', `${SITE_URL}/`)
@@ -1372,7 +1504,7 @@ function bindInteractions(root: HTMLElement, lang: Lang): void {
 
   // Pointer-follow spotlight on cards (see .why-card::after et al. in style.css).
   if (!reduceMotion) {
-    const cardSelector = '.why-card, .platform-card, .os-card, .download-card'
+    const cardSelector = '.why-card, .platform-card, .os-card, .download-card, .product-card'
     let spotlightRaf = 0
     root.addEventListener('pointermove', (event) => {
       const card = (event.target as HTMLElement).closest<HTMLElement>(cardSelector)
@@ -1392,10 +1524,10 @@ function bindInteractions(root: HTMLElement, lang: Lang): void {
   const typer = root.querySelector<HTMLElement>('[data-typer]')
   if (typer) {
     const commands = [
-      'ssh ops@prod-01',
-      'mosh gpu-node --port 4200',
-      'sftp put build.tar staging:/srv',
-      'agent "why is prod-01 load high?"',
+      'ssh ops@203.0.113.21',
+      'mosh admin@198.51.100.42 --port 4200',
+      'rsync -av ./dist/ ops@203.0.113.21:/srv/app',
+      'agent "check server health"',
     ]
     if (reduceMotion) {
       typer.textContent = commands[0]
@@ -1422,38 +1554,7 @@ function bindInteractions(root: HTMLElement, lang: Lang): void {
     }
   }
 
-  // Hero screenshot: gentle idle float + cursor-driven 3D tilt (one transform
-  // source, updated per frame; scale buffer hides the tilt/float edges).
-  const heroImg = root.querySelector<HTMLElement>('.hero-stage img')
-  const hero = root.querySelector<HTMLElement>('.hero')
-  if (heroImg && hero && !reduceMotion) {
-    let tiltX = 0
-    let tiltY = 0
-    let targetX = 0
-    let targetY = 0
-    hero.addEventListener('pointermove', (event) => {
-      const rect = hero.getBoundingClientRect()
-      targetY = ((event as PointerEvent).clientX - rect.left) / rect.width - 0.5
-      targetX = ((event as PointerEvent).clientY - rect.top) / rect.height - 0.5
-    })
-    hero.addEventListener('pointerleave', () => {
-      targetX = 0
-      targetY = 0
-    })
-    const start = performance.now()
-    const tick = (now: number) => {
-      if (window.scrollY < window.innerHeight) {
-        tiltX += (targetX - tiltX) * 0.06
-        tiltY += (targetY - tiltY) * 0.06
-        const floatY = Math.sin((now - start) / 1600) * 6
-        heroImg.style.transform =
-          `perspective(1100px) translate3d(0, ${floatY.toFixed(2)}px, 0) ` +
-          `rotateX(${(-tiltX * 4).toFixed(2)}deg) rotateY(${(tiltY * 5).toFixed(2)}deg) scale(1.04)`
-      }
-      heroFloatFrame = requestAnimationFrame(tick)
-    }
-    heroFloatFrame = requestAnimationFrame(tick)
-  }
+  // Hero logo: ring CW spin + cross scale/flash are pure CSS (style.css).
 
   // Magnetic primary buttons: nudge toward the cursor, ease back on leave.
   if (!reduceMotion) {
