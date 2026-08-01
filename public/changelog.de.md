@@ -1,5 +1,29 @@
 # Änderungsprotokoll
 
+## [0.6.1] - 2026-08-01
+
+### Fehlerbehebungen
+- **Das Speichern einer Datenbankverbindung überschreibt die bereits gespeicherten nicht mehr**: Beim Laden wird jedes Passwort über den Hauptprozess entschlüsselt; ein Speichern davor hängte an eine leere Liste an und ersetzte den gespeicherten Bestand, während der laufende Ladevorgang sich selbst als veraltet verwarf — die gespeicherten Verbindungen waren weg. Vor Abschluss des Ladens wird nichts mehr zurückgeschrieben
+- **Eine fehlgeschlagene Datenbankverbindung bleibt nicht mehr ewig auf „verbinde…“**: Die Ausnahme beim Scheitern des SSH-Tunnels wurde nie abgefangen, sodass die Ansicht ohne jede Meldung endlos wartete. Authentifizierungsfehler, nicht aufbaubare Tunnel und geschlossene Ports nennen nun den Grund
+
+### Verbesserungen
+- **Die KI-Bestätigungskarte zeigt die vollständige SQL-Anweisung**: Bei einer schreibenden Anweisung stand das SQL bisher nur im eingeklappten Argumente-JSON. Es steht nun wie ein Shell-Befehl in der Titelzeile der Karte, mit eigenem Datenbanksymbol und ohne den irreführenden `$`-Prompt
+
+## [0.6.0] - 2026-07-31
+
+### Sicherheit
+- **Anmeldedaten-Leck im Auto-Update-Pfad behoben**: Die zuvor verwendete `electron-updater`-Version gab bei Weiterleitungen die Header `Authorization` und `PRIVATE-TOKEN` an fremde Ursprünge weiter (GHSA-p2f4-r6v6-j797); aktualisiert
+- **Übrige Abhängigkeits-Schwachstellen bereinigt**: Beide CRITICAL-Befunde (Command Injection) sind beseitigt, die Warnungen für Produktionsabhängigkeiten sind von 15 auf 12 gesunken
+
+### Funktionen
+- **Datenbankzugriff für die integrierte KI**: Der Assistent sieht nun die von Ihnen geöffneten Datenbankverbindungen und kann lesende Abfragen ausführen. `INSERT`/`UPDATE`/`DELETE` und DDL sind ebenfalls möglich, lösen davor aber jedes Mal eine Bestätigung mit der vollständigen SQL-Anweisung aus; im Beobachtermodus werden sie abgelehnt. Der Assistent kann eine Verbindung nutzen, aber keine eigene öffnen — SSH- und Datenbank-Anmeldedaten erhält er nicht
+
+### Fehlerbehebungen
+- **Der Scan vor Ordnerübertragungen überlastet die Verbindung nicht mehr**: Die beiden Vorabdurchläufe zum Zählen von Bytes und Dateien stellten Verzeichnisabfragen ohne jede Begrenzung parallel. Bei tiefen oder breiten Bäumen äußerte sich das als Hängen oder Verbindungsabbruch direkt nach dem Start. Sie teilen sich nun dieselbe Parallelitätsgrenze wie die Übertragung selbst
+- **Eine fehlgeschlagene Namensprüfung kann keine vorhandene Datei mehr überschreiben**: Bei der Suche nach einem freien `(copy N)`-Namen galt jeder Fehlschlag als „Name ist frei“, sodass eine kurze Netzstörung einen tatsächlich belegten Namen liefern konnte. Nur ein bestätigt nicht vorhandener Pfad zählt jetzt; andernfalls wird auf einen Namen mit Zeitstempel ausgewichen
+- **„Auf alle anwenden“ bei Upload-Konflikten wird nicht mehr stillschweigend zur Einzelentscheidung**: Je nach zeitlichem Ablauf galt die Wahl nur für diese eine Datei, und es wurde danach erneut gefragt
+- **Eine abgebrochene Übertragung wird nicht mehr als Fehler gemeldet**: Eine großgeschriebene Abbruchmeldung wie `Cancelled by user` wurde als Fehlschlag behandelt und löste eine Fehlermeldung aus; umgekehrt wurde ein echter Fehler mit einem Pfad wie `/var/cancelled-jobs` fälschlich als Abbruch gewertet und seine Details verworfen
+
 ## [0.5.28] - 2026-07-24
 
 ### Funktionen

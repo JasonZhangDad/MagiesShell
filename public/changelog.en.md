@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.6.1] - 2026-08-01
+
+### Fixes
+- **Saving a database connection no longer overwrites the ones already stored**: loading saved connections decrypts each password through a main-process round-trip, and saving before that finished appended to an empty list and replaced the stored set, while the in-flight load discarded itself as stale — the saved connections were gone. Nothing is written back until the load completes
+- **A failed database connection no longer sits on "connecting" forever**: the exception thrown when an SSH tunnel cannot be established was never caught, so the view waited indefinitely with nothing on screen. Authentication failures, unreachable tunnels and closed ports now all report what went wrong
+
+### Improvements
+- **The AI approval card shows the full SQL statement**: when the assistant asks to run a writing statement, the SQL used to appear only inside the collapsed arguments JSON. It now sits on the card's title line like a shell command, with its own database icon and without the misleading `$` shell prompt
+
+## [0.6.0] - 2026-07-31
+
+### Security
+- **Fixed a credential leak on the auto-update path**: the `electron-updater` version previously pulled in leaked `Authorization` and `PRIVATE-TOKEN` headers across origins on redirect (GHSA-p2f4-r6v6-j797); upgraded
+- **Cleared the remaining dependency advisories**: both CRITICAL issues (command injection) are gone, and production advisories dropped from 15 to 12
+
+### Features
+- **Database access for the built-in AI**: the assistant can now see the database connections you have open and run read-only queries. `INSERT`/`UPDATE`/`DELETE` and DDL work too, but each one raises an approval prompt showing the full SQL statement first, and observer mode refuses them outright. The assistant can use a connection but never open one — SSH and database credentials are not handed to it
+
+### Fixes
+- **Folder transfers no longer flood the connection before they start**: the two pre-scans that count bytes and files used to fan out directory listings without any limit, which on deep or wide trees showed up as the transfer stalling or dropping the connection right after you started it. They now share the same concurrency ceiling as the transfer itself
+- **A failed name probe can no longer overwrite an existing file**: while searching for a free `(copy N)` name, any failed probe was read as "that name is available", so a brief network blip could hand back a name that was actually taken. Only a confirmed-missing path now counts; anything else falls back to a timestamped name
+- **"Apply to all" on upload conflicts is no longer silently downgraded**: under some timings the choice applied to just that one file and you were asked again afterwards
+- **A cancelled transfer is no longer reported as an error**: a capitalised cancellation message such as `Cancelled by user` used to be treated as a failure and raise an error toast; conversely, a real error mentioning a path like `/var/cancelled-jobs` was misread as a cancellation and its details discarded
+
 ## [0.5.28] - 2026-07-24
 
 ### Features
